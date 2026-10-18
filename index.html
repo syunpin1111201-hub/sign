@@ -1,0 +1,171 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>八曜和茶 公告簽名</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f3ef;font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif;color:#1f1f1d;font-size:15px}
+.wrap{max-width:520px;margin:0 auto;padding:18px 14px 40px}
+.hd{text-align:center;margin-bottom:14px}.hd p{margin:0}.hd .s{font-size:13px;color:#6b6a65}.hd .t{font-size:20px;font-weight:600;margin:4px 0}
+.card{background:#fff;border:1px solid #e4e2dc;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.lbl{font-size:13px;color:#6b6a65;margin:0 0 8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.box{background:#f4f3ef;border-radius:8px;padding:10px 12px}.box p{margin:0}.box .k{font-size:12px;color:#6b6a65}.box .v{font-size:21px;font-weight:600;margin-top:2px}
+.acc{color:#1d5fa8}
+.kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eeece6;font-size:14px}.kv:last-child{border-bottom:none}
+.note{font-size:13px;color:#6b6a65;line-height:1.6;margin:8px 0 0}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px;border-bottom:1px solid #eeece6;text-align:right}
+th{font-weight:400;font-size:12px;color:#6b6a65}td:first-child,th:first-child{text-align:left}
+tr.me td{background:#e6f0fb;color:#1d5fa8;font-weight:600}
+select{width:100%;height:42px;font-size:15px;border:1px solid #c9c6bd;border-radius:8px;background:#fff;padding:0 8px}
+.err{font-size:13px;color:#c0392b;margin:6px 0 0}
+canvas{width:100%;height:150px;border:1px dashed #b9b6ad;border-radius:8px;touch-action:none;background:#fafaf8;display:block}
+button{font-family:inherit;font-size:14px;border:1px solid #c9c6bd;background:#fff;border-radius:8px;padding:4px 12px}
+#go{width:100%;height:46px;font-size:16px;font-weight:600;background:#1d5fa8;color:#fff;border:none}#go:disabled{opacity:.6}
+.done{text-align:center;background:#eaf5e4;border-color:#b8dca5;color:#2f6b12;font-weight:600}
+#pdf{max-height:70vh;overflow-y:auto;border:1px solid #e4e2dc;border-radius:8px;background:#fafaf8}#pdf canvas{width:100%;height:auto;display:block;border:none;border-bottom:1px solid #e4e2dc;border-radius:0;background:#fff;touch-action:auto}
+.load{text-align:center;color:#6b6a65;padding:60px 0}
+a{color:#1d5fa8;text-decoration:none}
+</style></head><body><div class="wrap" id="app"><p class="load">載入中…</p></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+var API = 'https://script.google.com/macros/s/AKfycbzurwDMfPO_rXuYmeZ-2sodY7SrEQrMkS8VOZa8sMbmdubB0DVdnyYIJ2zget7YbHDr/exec';
+var Q = new URLSearchParams(location.search);
+var D;
+function api(qs){ return fetch(API + '?api=ann&' + qs).then(function(r){ return r.json(); }); }
+function post(body, ok, fail){
+  fetch(API + '?api=ann', { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })
+    .then(function(r){ return r.json(); }).then(ok).catch(fail);
+}
+function loadPdf(id){
+  var box = el('pdf');
+  var bad = function(){ box.innerHTML = '<p class="load">PDF 載入失敗，請點右上角下載</p>'; };
+  api('pdf=' + encodeURIComponent(id)).then(function(r){
+    if (!r.pdf || !window.pdfjsLib) return bad();
+    var raw = atob(r.pdf), bytes = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    return pdfjsLib.getDocument({ data: bytes }).promise.then(function(doc){
+      box.innerHTML = '';
+      var w = box.clientWidth || 360, ratio = Math.min(3, (window.devicePixelRatio || 1) * 1.5);
+      var chain = Promise.resolve();
+      for (var n = 1; n <= doc.numPages; n++) (function(n){
+        chain = chain.then(function(){ return doc.getPage(n); }).then(function(pg){
+          var vp0 = pg.getViewport({ scale: 1 }), vp = pg.getViewport({ scale: w / vp0.width * ratio });
+          var cv = document.createElement('canvas'); cv.width = vp.width; cv.height = vp.height; box.appendChild(cv);
+          return pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+        });
+      })(n);
+      return chain;
+    });
+  }).catch(bad);
+}
+var app = document.getElementById('app');
+function f(n){ return Number(n).toLocaleString(); }
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+var signBlock = '<div class="card"><label style="display:flex;gap:8px;align-items:flex-start;line-height:1.6;font-size:14px">' +
+  '<input type="checkbox" id="ok" style="margin-top:4px;width:18px;height:18px"> 我已閱讀並了解該公告內容</label><p class="err" id="e2"></p></div>' +
+  '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+  '<p class="lbl" style="margin:0">手寫簽名</p><button id="clr">清除</button></div><canvas id="pad"></canvas><p class="err" id="e3"></p></div>' +
+  '<button id="go">送出簽名</button><p class="err" id="e4"></p><div id="done"></div>';
+
+function render(){
+if (D.error) {
+  app.innerHTML = '<div class="card" style="margin-top:40px;text-align:center">' + esc(D.error) + '</div>';
+} else if (D.mode === 'general') {
+  var h = '<div class="hd"><p class="s">八曜和茶 公告簽名</p><p class="t">' + esc(D.title) + '</p><p class="s">' + esc(D.date) + ' 發布</p></div>';
+  h += '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><p class="lbl" style="margin:0">公告內容</p>' +
+       '<a href="https://drive.google.com/uc?export=download&id=' + esc(D.fileId) + '" target="_blank">下載 PDF ↗</a></div>' +
+       '<div id="pdf"><p class="load">公告載入中…</p></div></div>';
+  if (D.closed) {
+    h += '<div class="card" style="text-align:center">這則公告已結束簽名</div>';
+  } else {
+    h += '<div class="card"><p class="lbl">你是誰</p><div style="display:grid;grid-template-columns:1fr 1.3fr;gap:8px">' +
+         '<select id="st"><option value="">門市</option>' + Object.keys(D.stores).map(function(s){ return '<option>' + esc(s) + '</option>'; }).join('') + '</select>' +
+         '<select id="nm"><option value="">姓名</option></select></div><p class="err" id="e1"></p></div>' + signBlock;
+  }
+  app.innerHTML = h;
+  loadPdf(D.id);
+  if (!D.closed) {
+    var st = el('st'), nm = el('nm');
+    st.onchange = function(){
+      nm.innerHTML = '<option value="">姓名</option>' + (D.stores[st.value] || []).map(function(p){
+        return '<option value="' + esc(p[0]) + '"' + (p[2] ? ' disabled' : '') + '>' + esc(p[1]) + (p[2] ? '（已簽）' : '') + '</option>';
+      }).join('');
+      el('e1').textContent = '';
+    };
+    nm.onchange = function(){ el('e1').textContent = ''; };
+    initPad(function(){
+      if (!st.value || !nm.value) { el('e1').textContent = '請選擇門市和姓名'; return false; }
+      return true;
+    }, function(png, ok, fail){
+      post({ action: 'general', id: D.id, empId: nm.value, png: png }, ok, fail);
+    }, function(){ st.disabled = true; nm.disabled = true; });
+  }
+} else {
+  var rows = D.table.map(function(r){
+    return '<tr class="' + (r[0] === D.g ? 'me' : '') + '"><td>' + r[0] + '</td><td>' + f(r[1]) + '</td><td>' + f(r[2]) + '</td></tr>';
+  }).join('');
+  var h = '<div class="hd"><p class="s">八曜和茶 ' + esc(D.store) + '</p><p class="t">' + esc(D.title) + '</p><p class="s">' + esc(D.date) + '</p></div>';
+  h += '<div class="card"><p class="lbl">' + esc(D.name) + ' 的薪資</p>';
+  h += '<div class="grid"><div class="box"><p class="k">目前職等</p><p class="v">' + esc(D.grade) + '</p></div>';
+  h += '<div class="box"><p class="k">' + D.effTxt + ' 起' + D.label + '</p><p class="v acc">' + f(D.newPay) + '</p></div></div>';
+  h += '<p style="margin:0 0 10px;line-height:1.7;font-size:14px">現行 ' + f(D.oldPay) + ' ' + D.unit + '，調整後 +' + f(D.newPay - D.oldPay) +
+       (D.newGrade ? '<br>' + D.effTxt + ' 起升為 ' + esc(D.newGrade) : '') + '<br>' + esc(D.up) + '</p>';
+  if (D.leader) {
+    h += '<div class="kv"><span>考核獎金上限（含茶譜、全勤）</span><span>' + f(D.kpi) + ' 元／月</span></div>';
+    h += '<div class="kv"><span>茶譜加給（含在考核獎金內）</span><span>' + f(D.tea) + ' 元／月</span></div>';
+  } else {
+    h += '<div class="kv"><span>考核獎金上限</span><span>' + f(D.kpi) + ' 元／月</span></div>';
+    h += '<div class="kv"><span>茶譜加給（另外加）</span><span>' + f(D.tea) + ' 元／月</span></div>';
+  }
+  h += '<p class="note">茶譜每月線上考試，當月通過才發放。</p></div>';
+  h += '<div class="card"><p class="lbl">' + D.type + D.label + '表（每升一等 +' + f(D.step) + '）</p>';
+  h += '<table><tr><th>職等</th><th>現行</th><th>12/1 起</th></tr>' + rows + '</table><p class="note">' + esc(D.rule) + '</p></div>';
+  h += D.signed ? '<div class="card done">已完成簽署　' + esc(D.signedAt) + '</div>' : signBlock;
+  app.innerHTML = h;
+  if (!D.signed) {
+    initPad(function(){ return true; }, function(png, ok, fail){
+      post({ action: 'salary', token: D.token, png: png }, ok, fail);
+    }, function(){});
+  }
+}
+
+}
+
+var qs = Q.get('ann') ? 'ann=' + encodeURIComponent(Q.get('ann')) : (Q.get('ak') ? 'ak=' + encodeURIComponent(Q.get('ak')) : '');
+if (!qs) { D = { error: '連結不完整，請向店長確認' }; render(); }
+else api(qs).then(function(d){ D = d; render(); }).catch(function(){ D = { error: '網路不穩，請重新整理一次' }; render(); });
+
+
+function initPad(check, send, lock){
+  var c = el('pad'), x = c.getContext('2d'), dr = false, inked = false;
+  var r = c.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+  c.width = r.width * d; c.height = r.height * d; x.scale(d, d);
+  x.lineWidth = 2.4; x.lineCap = 'round'; x.lineJoin = 'round'; x.strokeStyle = '#111';
+  function p(ev){ var b = c.getBoundingClientRect(); return [ev.clientX - b.left, ev.clientY - b.top]; }
+  c.addEventListener('pointerdown', function(ev){ dr = true; var a = p(ev); x.beginPath(); x.moveTo(a[0], a[1]); c.setPointerCapture(ev.pointerId); });
+  c.addEventListener('pointermove', function(ev){ if (!dr) return; var a = p(ev); x.lineTo(a[0], a[1]); x.stroke(); inked = true; el('e3').textContent = ''; });
+  c.addEventListener('pointerup', function(){ dr = false; });
+  el('clr').onclick = function(){ x.clearRect(0, 0, c.width, c.height); inked = false; };
+  el('ok').onchange = function(){ el('e2').textContent = ''; };
+  el('go').onclick = function(){
+    var bad = !check();
+    if (!el('ok').checked) { el('e2').textContent = '請先勾選已閱讀'; bad = true; }
+    if (!inked) { el('e3').textContent = '請在框內簽名'; bad = true; }
+    if (bad) return;
+    var btn = el('go'); btn.disabled = true; btn.textContent = '送出中…'; el('e4').textContent = '';
+    send(c.toDataURL('image/png'), function(res){
+      if (res && res.ok) {
+        btn.style.display = 'none';
+        el('done').innerHTML = '<div class="card done" style="margin-top:12px">' + (res.name ? esc(res.name) + ' ' : '') + '已完成簽名　' + esc(res.at) + '</div>';
+        c.style.pointerEvents = 'none'; el('clr').style.display = 'none'; el('ok').disabled = true; lock();
+      } else {
+        btn.disabled = false; btn.textContent = '送出簽名';
+        el('e4').textContent = (res && res.msg) || '送出失敗，請再試一次';
+      }
+    }, function(){
+      btn.disabled = false; btn.textContent = '送出簽名';
+      el('e4').textContent = '網路不穩，請再按一次送出';
+    });
+  };
+}
+</script></body></html>
