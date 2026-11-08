@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="八曜劃假">
+<meta name="theme-color" content="#7a4e24">
+<title>八曜劃假</title>
+<style>
+body{margin:0;background:#f4f1ea;font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif;color:#22201c}
+#m{padding:60px 20px;text-align:center;color:#7a4e24;font-size:16px;line-height:1.8}
+#m button{margin-top:12px;font-size:16px;padding:10px 22px;border-radius:20px;border:1px solid #7a4e24;background:#fff;color:#7a4e24}
+</style>
+</head>
+<body>
+<div id="m">📅 載入中…</div>
+<script>
+// 劃假網頁版：頁面放在這裡，資料跟幹部機器人拿（不用登入 Google，也不用在 LINE 裡開）
+var EXEC = 'https://script.google.com/macros/s/AKfycbx4hEX0BHIQ__l06mgO5NrtOE1SkdVZ9Xru5Ps2buciWW4KhjVAFShpUdlKhBWRPkd5/exec';
+var q = location.search && location.search.length > 1 ? location.search : '?s=rh&k=lv26k8';
+function load(n) {
+  fetch(EXEC + q + '&api=lvhtml')
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function (h) {
+      if (h.indexOf('<html') < 0) throw new Error('bad');
+      document.open(); document.write(h); document.close();
+      document.title = '八曜劃假';
+    })
+    .catch(function () {
+      if (n < 2) return setTimeout(function () { load(n + 1); }, 1200);
+      document.getElementById('m').innerHTML = '網路不穩，打不開<br><button onclick="location.reload()">重新整理</button>';
+    });
+}
+load(0);
+</script>
+</body>
+</html>
