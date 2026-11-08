@@ -87,6 +87,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <!-- 首頁 -->
 <div class="scr" id="home">
   <div class="hd"><div class="s" id="hs"></div><h2 id="hn"></h2><span class="rf" id="rf">↻ 更新</span><span class="rf" id="sw" style="display:none;right:90px"></span></div>
+  <div class="card" id="ldc" style="display:none;margin-top:14px"></div>
   <div id="btd" style="display:none"><div class="sec2" id="btdh"></div><div class="card" id="btdl"></div></div>
   <div class="grid">
     <div class="t" onclick="go('lv')"><span class="badge" id="b1" style="display:none">1</span><span class="e">📅</span><b>劃假</b><small id="c1">　</small></div>
@@ -247,6 +248,7 @@ function render() {
   sgRender();
   mtRender();
   bossRender();
+  leadRender();
   var hr = d.hr;
   $('hrc').style.display = hr ? '' : 'none';
   if (hr) $('hrc').innerHTML = '<b>🔑 風行人資系統</b><div class="hrk"><span>網域</span><b>' + hr.dom + '<i onclick="cp(\'' + hr.dom + '\')">複製</i></b></div><div class="hrk"><span>帳號</span><b>' + esc(hr.id) + '<i onclick="cp(\'' + esc(hr.id) + '\')">複製</i></b></div><div class="hrk"><span>預設密碼</span><b>' + hr.pw + '</b></div>';
@@ -345,7 +347,22 @@ function sgOpen(i) {
   var o = $('sgf').querySelector('iframe'); if (o) o.remove();
   var f = document.createElement('iframe'); f.src = x.url; $('sgf').appendChild(f); $('sgf').style.display = 'flex';
 }
-function sgClose() { $('sgf').style.display = 'none'; var o = $('sgf').querySelector('iframe'); if (o) o.remove(); }
+function ovOpen(t, u) {   // 在 App 裡開頁面（打考核、簽名…）
+  $('sgt').innerHTML = esc(t) + ' <a href="' + u + '" target="_blank" style="color:#fff;font-weight:400;font-size:12px;margin-left:8px;text-decoration:underline">打不開點這裡</a>';
+  var o = $('sgf').querySelector('iframe'); if (o) o.remove();
+  var f = document.createElement('iframe'); f.src = u; $('sgf').appendChild(f); $('sgf').style.display = 'flex';
+}
+function leadRender() {
+  var L = DATA && DATA.lead;
+  $('ldc').style.display = L && !L.err ? '' : 'none';
+  if (!L || L.err) return;
+  var done = L.total - L.left.length;
+  $('ldc').innerHTML = '<b>📝 打員工考核</b><span style="color:var(--mu);font-size:13px">' + L.period + '・' + L.dl + ' 前打完</span>' +
+    '<div style="display:flex;justify-content:space-between;margin-top:6px"><span>' + (DATA.store || '') + '</span><span>' + done + '／' + L.total + ' 人</span></div><div class="bar2"><i style="width:' + (L.total ? Math.round(done / L.total * 100) : 0) + '%"></i></div>' +
+    (L.left.length ? '<div style="font-size:13px;color:var(--mu)">還沒打完：' + L.left.map(esc).join('、') + '</div>' : '<div style="font-size:13px;color:#2f6b12">✅ 都打完了</div>') +
+    '<span class="chip f" onclick="ovOpen(\'打員工考核\', DATA.lead.url)">開始打考核 ›</span>';
+}
+function sgClose() { $('sgf').style.display = 'none'; var o = $('sgf').querySelector('iframe'); if (o) o.remove(); LAST = 0; load(0); }   // 關掉就更新進度
 window.addEventListener('message', function (e) { if (e.data && e.data.annSigned) { bar('簽好了 👍', 2000); setTimeout(function () { LAST = 0; load(0); }, 1500); } });
 function esc(x) { return String(x).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
 function hist(a) { $('sayh').innerHTML = a && a.length ? '<b>之前說過的</b>' + a.map(function (x) { return '<div>' + esc(x.x) + '<br><small>' + x.t + ' 送出</small></div>'; }).join('') : ''; }
