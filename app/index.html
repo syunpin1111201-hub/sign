@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="我喜歡上班">
+<meta name="theme-color" content="#b08560">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>我喜歡上班</title>
+<style>
+:root{--bg:#f8f2ea;--hd:#b08560;--ac:#8b5e34;--tx:#3b2a1a;--mu:#a08a74;--ln:#eadfce}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif}
+.scr{display:none;position:fixed;inset:0;bottom:calc(64px + env(safe-area-inset-bottom));overflow-y:auto}
+.scr.on{display:block}
+#login.on,#gone.on{bottom:0}
+.hd{background:var(--hd);color:#fff;padding:calc(18px + env(safe-area-inset-top)) 18px 16px;position:relative}
+.hd .s{font-size:12px;color:#f3e6d6}.hd h2{margin:4px 0 0;font-size:20px}
+.rf{position:absolute;right:14px;bottom:14px;color:#fff;font-size:12px;background:#ffffff2e;border-radius:12px;padding:4px 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.t{background:#fff;border-radius:16px;padding:16px 14px;min-height:96px;position:relative}
+.t b{font-size:16px;display:block;margin-top:6px}.t small{color:var(--mu);font-size:12px;display:block;margin-top:2px}.t .e{font-size:26px}
+.t.dim{opacity:.55}
+.badge{position:absolute;top:10px;right:10px;background:#d9534f;color:#fff;border-radius:10px;font-size:11px;padding:1px 7px}
+.card{background:#fff;margin:0 16px 10px;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.6}.card b{color:var(--ac);margin-right:8px}
+.nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--ln);display:flex;justify-content:space-around;padding:6px 0 calc(8px + env(safe-area-inset-bottom));font-size:11px;color:#b5a28e;z-index:5}
+.nav div{text-align:center;flex:1;padding-top:2px}.nav div i{font-style:normal;font-size:20px;display:block}.nav .on{color:var(--ac);font-weight:700}
+#fr{position:fixed;inset:0;bottom:calc(64px + env(safe-area-inset-bottom));display:none;background:var(--bg)}
+#fr iframe{border:0;width:100%;height:100%}
+#fr .msg{padding:60px 20px;text-align:center;color:var(--ac);line-height:1.8}
+.bar{display:none;position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top));background:#3b2a1a;color:#fff;border-radius:12px;padding:10px 14px;font-size:14px;z-index:9;text-align:center}
+.box{padding:26px 22px}.box h3{margin:0 0 6px}.box p{color:#8a7560;font-size:13px;margin:0 0 18px;line-height:1.6}
+select,input{width:100%;background:#fff;border:1px solid #e0d2bf;border-radius:10px;padding:12px;font-size:16px;margin-bottom:12px;color:var(--tx);-webkit-appearance:none;appearance:none}
+.btn{background:var(--hd);color:#fff;text-align:center;border-radius:10px;padding:13px;font-size:16px;border:0;width:100%}
+.btn:disabled{opacity:.5}
+.err{color:#c0392b;font-size:14px;min-height:20px;margin-bottom:8px}
+.soon{padding:70px 24px;text-align:center;color:var(--mu);line-height:1.9}
+.soon i{font-style:normal;font-size:44px;display:block}
+.out{font-size:12px;color:var(--mu);text-align:center;margin:18px 0 24px}.out span{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<!-- 登入 -->
+<div class="scr" id="login">
+  <div class="hd"><div class="s">八曜和茶</div><h2>我喜歡上班</h2></div>
+  <div class="box">
+    <h3>第一次使用</h3>
+    <p>選門市、名字，輸入生日確認是本人<br>之後這支手機會記住，不用再輸入</p>
+    <select id="ls"><option value="">選門市</option><option value="rh">熱河</option><option value="fs">鳳山中山</option></select>
+    <select id="ln" disabled><option value="">先選門市</option></select>
+    <input id="lb" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="生日 4 碼（例：3 月 15 日 → 0315）">
+    <div class="err" id="le"></div>
+    <button class="btn" id="lgo">開始使用</button>
+  </div>
+</div>
+
+<!-- 首頁 -->
+<div class="scr" id="home">
+  <div class="hd"><div class="s" id="hs"></div><h2 id="hn"></h2><span class="rf" id="rf">↻ 更新</span></div>
+  <div class="grid">
+    <div class="t" onclick="go('lv')"><span class="badge" id="b1" style="display:none">1</span><span class="e">📅</span><b>劃假</b><small id="c1">　</small></div>
+    <div class="t" onclick="go('sc')"><span class="e">🗓️</span><b>我的班表</b><small id="c2">　</small></div>
+    <div class="t dim" onclick="go('ex')"><span class="e">📝</span><b>考試</b><small>即將開放</small></div>
+    <div class="t dim" onclick="go('sg')"><span class="e">✍️</span><b>公告簽名</b><small>即將開放</small></div>
+  </div>
+  <div class="card"><b>今天</b><span id="td">　</span></div>
+  <div class="card" id="rmc" style="display:none"><b>提醒</b><span id="rm"></span></div>
+  <div class="out">不是你？<span onclick="logout()">登出</span></div>
+</div>
+
+<div class="scr" id="ex"><div class="soon"><i>📝</i>考試功能下一階段開放<br>目前請照原本 LINE 連結考試</div></div>
+<div class="scr" id="sg"><div class="soon"><i>✍️</i>公告簽名下一階段開放<br>目前請照原本 LINE 連結簽名</div></div>
+
+<!-- 已離職 -->
+<div class="scr" id="gone"><div class="soon"><i>🔒</i><span id="gm">已無使用權限</span><br><br><button class="btn" style="width:auto;padding:10px 24px" onclick="logout()">回登入畫面</button></div></div>
+
+<!-- 劃假／班表（沿用現有頁面） -->
+<div id="fr"><div class="msg" id="frm">📅 載入中…</div></div>
+
+<div class="bar" id="bar"></div>
+
+<div class="nav" id="nav">
+  <div data-v="home"><i>🏠</i>首頁</div>
+  <div data-v="lv"><i>📅</i>劃假</div>
+  <div data-v="sc"><i>🗓️</i>班表</div>
+  <div data-v="ex"><i>📝</i>考試</div>
+  <div data-v="sg"><i>✍️</i>簽名</div>
+</div>
+
+<script>
+var EXEC = 'https://script.google.com/macros/s/AKfycbx4hEX0BHIQ__l06mgO5NrtOE1SkdVZ9Xru5Ps2buciWW4KhjVAFShpUdlKhBWRPkd5/exec';
+var WK = '日一二三四五六';
+function $(i) { return document.getElementById(i); }
+function LS(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } }
+function api(q) {
+  return fetch(EXEC + '?api=app&' + q).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+}
+function retry(fn, n) { return fn().catch(function (e) { if (n > 0) return new Promise(function (r) { setTimeout(r, 1200); }).then(function () { return retry(fn, n - 1); }); throw e; }); }
+function bar(t, ms, fn) { var b = $('bar'); b.textContent = t; b.style.display = 'block'; b.onclick = fn || null; clearTimeout(bar.t); if (ms) bar.t = setTimeout(function () { b.style.display = 'none'; }, ms); }
+function md(s) { var p = s.split('/'); return +p[1] + '/' + +p[2]; }
+function wk(s) { var p = s.split('/'); return WK[new Date(+p[0], p[1] - 1, +p[2]).getDay()]; }
+
+var U = { s: LS('app_s'), n: LS('app_n'), tok: LS('app_tok') }, DATA = null, CUR = 'home', FRV = '', FRH = '', LAST = 0;
+
+// ---------- 登入 ----------
+$('ls').onchange = function () {
+  var s = this.value, n = $('ln');
+  n.disabled = true; n.innerHTML = '<option value="">' + (s ? '名單載入中…' : '先選門市') + '</option>';
+  if (!s) return;
+  retry(function () { return api('op=staff&s=' + s); }, 2).then(function (j) {
+    if ($('ls').value !== s) return;
+    n.innerHTML = '<option value="">選你的名字</option>' + j.staff.map(function (x) { return '<option>' + x + '</option>'; }).join('');
+    n.disabled = false;
+  }).catch(function () { n.innerHTML = '<option value="">網路不穩，請重選門市</option>'; });
+};
+$('lgo').onclick = function () {
+  var s = $('ls').value, n = $('ln').value, b = $('lb').value.replace(/\D/g, '');
+  if (!s || !n) { $('le').textContent = '請選門市和名字'; return; }
+  if (b.length !== 4) { $('le').textContent = '生日請輸入 4 碼，例：0315'; return; }
+  $('le').textContent = ''; this.disabled = true; this.textContent = '確認中…';
+  var me = this;
+  retry(function () { return api('op=login&s=' + s + '&n=' + encodeURIComponent(n) + '&b=' + b); }, 1).then(function (j) {
+    me.disabled = false; me.textContent = '開始使用';
+    if (!j.ok) { $('le').textContent = j.err; return; }
+    U = { s: s, n: n, tok: j.tok }; LS('app_s', s); LS('app_n', n); LS('app_tok', j.tok); LS('lvMe' + s, n);
+    start();
+  }).catch(function () { me.disabled = false; me.textContent = '開始使用'; $('le').textContent = '網路不穩，請再按一次'; });
+};
+function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function (k) { LS(k, null); }); if (U.s) LS('lvMe' + U.s, null); U = {}; DATA = null; FRH = ''; show('login'); }
+
+// ---------- 畫面切換 ----------
+function show(v) {
+  CUR = v;
+  ['login', 'home', 'ex', 'sg', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  $('fr').style.display = (v === 'lv' || v === 'sc') ? 'block' : 'none';
+  $('nav').style.display = (v === 'login' || v === 'gone') ? 'none' : 'flex';
+  [].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.classList.toggle('on', d.getAttribute('data-v') === v); });
+  if (v === 'lv' || v === 'sc') frame();
+  if (v === 'home') load(0);
+}
+function go(v) { show(v); }
+[].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.onclick = function () { go(d.getAttribute('data-v')); }; });
+
+// ---------- 首頁 ----------
+function render() {
+  var d = DATA; if (!d) return;
+  $('hs').textContent = d.store + '｜' + d.me.sh + d.me.cls; $('hn').textContent = d.me.n + ' 你好';
+  var h = d.home || {}, p = h.per;
+  if (p) {
+    $('c1').textContent = h.mine ? '已劃 ' + h.mine + ' 天・' + md(p.dl) + ' 截止' : md(p.dl) + ' 截止，還沒劃';
+    $('b1').style.display = h.mine ? 'none' : '';
+    $('rm').textContent = md(p.s) + '–' + md(p.e) + ' 劃假 ' + md(p.dl) + '（' + wk(p.dl) + '）截止' + (p.left <= 3 ? '，剩 ' + p.left + ' 天' : '');
+    $('rmc').style.display = '';
+  } else { $('c1').textContent = '目前沒有開放'; $('b1').style.display = 'none'; $('rmc').style.display = 'none'; }
+  $('c2').textContent = h.tomorrow ? '明天 ' + h.tomorrow : '班表還沒發布';
+  $('td').textContent = h.today ? h.today : '班表還沒發布';
+}
+
+// ---------- 劃假／班表（沿用原本頁面，放在框框裡） ----------
+function frame() {
+  var f = $('fr'), ifr = f.querySelector('iframe');
+  if (!DATA) { $('frm').style.display = 'block'; return; }
+  var want = CUR === 'sc' ? 1 : 0;
+  if (!ifr || FRV !== DATA.html) {
+    if (ifr) ifr.remove();
+    ifr = document.createElement('iframe'); FRV = DATA.html;
+    ifr.onload = function () { tune(ifr); setMode(ifr, CUR === 'sc' ? 1 : 0); };
+    LS('lvMe' + U.s, U.n);
+    ifr.srcdoc = DATA.html; f.appendChild(ifr); $('frm').style.display = 'none';
+  } else setMode(ifr, want);
+}
+function tune(ifr) {
+  try {
+    var st = ifr.contentDocument.createElement('style');
+    st.textContent = '.me a{display:none!important}#mt{display:none!important}body{padding-bottom:20px}';
+    ifr.contentDocument.head.appendChild(st);
+  } catch (e) { }
+}
+function setMode(ifr, k) { try { ifr.contentWindow.mode(k); ifr.contentWindow.scrollTo(0, 0); } catch (e) { } }
+
+// ---------- 抓資料：先顯示上次的，再背景更新 ----------
+function load(force) {
+  if (!U.tok) return;
+  if (!force && Date.now() - LAST < 60000) return;
+  LAST = Date.now();
+  if (force) bar('更新中…');
+  retry(function () { return api('op=all&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok); }, 2).then(function (j) {
+    if (!j.ok) {
+      if (j.out) { ['app_tok', 'app_cache'].forEach(function (k) { LS(k, null); }); $('gm').innerHTML = j.err.replace('，', '<br>'); show('gone'); return; }
+      bar(j.err, 4000); return;
+    }
+    var changed = !DATA || DATA.html !== j.html;
+    DATA = j; LS('app_cache', JSON.stringify(j)); render();
+    if (CUR === 'lv' || CUR === 'sc') {
+      if (changed) bar('有新資料，點這裡更新', 0, function () { $('bar').style.display = 'none'; frame(); });
+      else if (force) bar('已是最新', 1500);
+    } else { if (force) bar('已更新', 1500); }
+  }).catch(function () { bar(DATA ? '網路不穩，先顯示上次的資料' : '網路不穩，請稍後再試', 3000); if (!DATA) $('frm').innerHTML = '網路不穩，打不開<br><button class="btn" style="width:auto;padding:10px 22px" onclick="load(1)">重新整理</button>'; });
+}
+$('rf').onclick = function () { load(1); };
+document.addEventListener('visibilitychange', function () { if (!document.hidden) load(0); });
+
+function start() {
+  if (!U.tok) { show('login'); return; }
+  try { DATA = JSON.parse(LS('app_cache') || 'null'); } catch (e) { DATA = null; }
+  if (DATA && DATA.me && DATA.me.n !== U.n) DATA = null;
+  if (DATA) render(); else { $('hs').textContent = '載入中…'; $('hn').textContent = U.n + ' 你好'; }
+  show('home');
+  LAST = 0; load(0);
+}
+start();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () { });
+</script>
+</body>
+</html>
