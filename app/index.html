@@ -30,6 +30,10 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font-family:
 .card{background:#fff;margin:0 16px 10px;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.6}.card b{color:var(--ac);margin-right:8px}
 .nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--ln);display:flex;justify-content:space-around;padding:6px 0 calc(8px + env(safe-area-inset-bottom));font-size:11px;color:#b5a28e;z-index:5}
 .nav div{text-align:center;flex:1;padding-top:2px}.nav div i{font-style:normal;font-size:20px;display:block}.nav .on{color:var(--ac);font-weight:700}
+#exf{position:fixed;inset:0;bottom:calc(64px + env(safe-area-inset-bottom));display:none;background:var(--bg);flex-direction:column}
+#exf .eh{background:var(--hd);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;font-size:15px;font-weight:700}#exf .eh small{display:block;font-weight:400;font-size:12px;color:#f3e6d6}
+#exf iframe{border:0;width:100%;flex:1}
+.rec div{background:#fff;border-radius:10px;padding:10px 12px;margin:8px 16px 0;font-size:14px}
 #fr{position:fixed;inset:0;bottom:calc(64px + env(safe-area-inset-bottom));display:none;background:var(--bg)}
 #fr iframe{border:0;width:100%;height:100%}
 #fr .msg{padding:60px 20px;text-align:center;color:var(--ac);line-height:1.8}
@@ -70,7 +74,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div class="grid">
     <div class="t" onclick="go('lv')"><span class="badge" id="b1" style="display:none">1</span><span class="e">📅</span><b>劃假</b><small id="c1">　</small></div>
     <div class="t" onclick="go('sc')"><span class="e">🗓️</span><b>我的班表</b><small id="c2">　</small></div>
-    <div class="t dim" onclick="go('ex')"><span class="e">📝</span><b>考試</b><small>即將開放</small></div>
+    <div class="t" onclick="go('ex')"><span class="badge" id="b3" style="display:none">!</span><span class="e">📝</span><b>考試</b><small id="c3">沒有考試</small></div>
     <div class="t dim" onclick="go('sg')"><span class="e">✍️</span><b>公告簽名</b><small>即將開放</small></div>
   </div>
   <div class="card"><b>今天</b><span id="td">　</span></div>
@@ -90,7 +94,8 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
     <div class="hist" id="sayh"></div>
   </div>
 </div>
-<div class="scr" id="ex"><div class="soon"><i>📝</i>考試功能下一階段開放<br>目前請照原本 LINE 連結考試</div></div>
+<div class="scr" id="ex"><div class="soon" id="exm"></div><div class="rec" id="exr"></div></div>
+<div id="exf"><div class="eh" id="exh"></div></div>
 <div class="scr" id="sg"><div class="soon"><i>✍️</i>公告簽名下一階段開放<br>目前請照原本 LINE 連結簽名</div></div>
 
 <!-- 已離職 -->
@@ -155,6 +160,9 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 function show(v) {
   CUR = v;
   ['login', 'home', 'say', 'ex', 'sg', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
+  if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
+  CUR0 = v;
   $('fr').style.display = (v === 'lv' || v === 'sc') ? 'block' : 'none';
   $('nav').style.display = (v === 'login' || v === 'gone') ? 'none' : 'flex';
   [].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.classList.toggle('on', d.getAttribute('data-v') === (v === 'say' ? 'home' : v)); });
@@ -162,6 +170,32 @@ function show(v) {
   if (v === 'home') load(0);
 }
 function go(v) { show(v); }
+// ---------- 考試（幹部開考才有，30 分鐘內要開始；考試中離開 App 會通知幹部群） ----------
+var CUR0 = '', EXT = '';
+function EXA() { var c = DATA && DATA.exam && DATA.exam.cur; return c && c.t ? c : null; }
+function exRender() {
+  var x = (DATA && DATA.exam) || {}, c = x.cur, rec = x.rec || [];
+  $('b3').style.display = c && c.t ? '' : 'none';
+  $('c3').textContent = c && c.t ? (c.st === '作答中' ? c.title + ' 作答中' : c.title + '・' + c.left + ' 分內開始') : c && c.expired ? '已過期，找幹部重開' : rec.length ? '最近：' + rec[0].type + (rec[0].ok ? ' ✅' : ' ❌') : '沒有考試';
+  $('exm').innerHTML = c && c.expired ? '<i>⌛</i>' + c.title + '超過 30 分鐘沒開始<br>請找幹部重新開考' : '<i>📝</i>目前沒有考試<br>到店後請幹部幫你開考';
+  $('exr').innerHTML = rec.length ? '<div style="background:none;padding:0 0 0 2px;color:var(--mu)">最近考試</div>' + rec.map(function (r) { return '<div>' + (r.ok ? '✅' : '❌') + ' ' + r.d + '　' + r.type + '考試　' + r.sc + ' 分</div>'; }).join('') : '';
+  if (CUR === 'ex') show('ex');
+}
+function exFrame() {
+  var c = EXA(); if (!c) return;
+  $('exh').innerHTML = '📝 ' + c.title + '<small>考試中離開 App（切到 LINE、相簿等）會通知幹部</small>';
+  if (EXT === c.t && $('exf').querySelector('iframe')) return;
+  var o = $('exf').querySelector('iframe'); if (o) o.remove();
+  var f = document.createElement('iframe'); f.src = c.url; $('exf').appendChild(f); EXT = c.t;
+}
+document.addEventListener('visibilitychange', function () {
+  var c = EXA(); if (!c || CUR !== 'ex' || EXT !== c.t) return;
+  var k = 'exlv_' + c.t;
+  if (document.hidden) {
+    var n = (Number(LS(k)) || 0) + 1; LS(k, n);
+    try { fetch(EXEC + '?api=app&op=exlv&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&t=' + c.t + '&c=' + n, { keepalive: true }).catch(function () { }); } catch (e) { }
+  } else bar('⚠️ 考試中離開 App 已通知幹部（第 ' + (LS(k) || 1) + ' 次）', 4000);
+});
 [].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.onclick = function () { go(d.getAttribute('data-v')); }; });
 
 // ---------- 首頁 ----------
@@ -185,6 +219,7 @@ function render() {
   $('mny').innerHTML = mh; $('mny').style.display = mh ? '' : 'none';
   $('sayb').style.display = BOSS() || !d.says ? 'none' : '';   // 機器人還沒更新前先藏起來
   hist(d.says);
+  exRender();
 }
 function esc(x) { return String(x).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
 function hist(a) { $('sayh').innerHTML = a && a.length ? '<b>之前說過的</b>' + a.map(function (x) { return '<div>' + esc(x.x) + '<br><small>' + x.t + ' 送出</small></div>'; }).join('') : ''; }
