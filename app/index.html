@@ -56,6 +56,15 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 .mchip{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 0}.mchip span{flex:0 0 auto;background:#fff;border:1px solid var(--ln);border-radius:16px;padding:6px 14px;font-size:14px}.mchip span.on{background:var(--hd);color:#fff;border-color:var(--hd)}
 .mtx{background:#fff;margin:12px 16px 20px;border-radius:14px;padding:16px;font-size:15px;line-height:1.85;white-space:pre-wrap;word-break:break-word}
 .hrk{display:flex;justify-content:space-between;align-items:center;padding:3px 0}.hrk span{color:var(--mu)}.hrk i{font-style:normal;font-size:12px;color:var(--ac);border:1px solid var(--ac);border-radius:10px;padding:1px 8px;margin-left:8px}
+.td{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f1e8dc}.td:last-child{border:0}
+.dt{flex:0 0 44px;text-align:center;font-weight:700;color:var(--ac);font-size:13px;background:#f6ece0;border-radius:8px;padding:4px 0}
+.td .x{flex:1;font-size:14px}.tdx{font-size:13px;color:#7a6550;margin-top:4px;line-height:1.6}
+.st{flex:0 0 auto;font-size:12px;border-radius:10px;padding:3px 9px;border:1px solid #e0d2bf;color:#a08a74}.st.ok{background:#e5f4e4;color:#2f6b12;border-color:#b8dca5}.st.due{background:#fdecea;color:#c0392b;border-color:#f3b8b2}.st.soon{background:#fff3cd;color:#8a6d00;border-color:#f0dc9a}
+.chip{text-decoration:none;display:inline-block;margin:6px 6px 0 0;background:#fff;color:var(--ac);border:1px solid var(--ac);border-radius:8px;padding:3px 10px;font-size:13px}
+.chip.f{background:var(--ac);color:#fff}
+.sec2{margin:14px 18px 6px;font-size:13px;color:#9a8068;font-weight:700}
+.bar2{height:8px;background:#f1e8dc;border-radius:4px;overflow:hidden;margin:4px 0}.bar2 i{display:block;height:100%;background:var(--hd)}
+.pl{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f1e8dc;font-size:14px}.pl:last-child{border:0}
 .out{font-size:12px;color:var(--mu);text-align:center;margin:18px 0 24px}.out span{text-decoration:underline}
 </style>
 </head>
@@ -78,6 +87,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <!-- 首頁 -->
 <div class="scr" id="home">
   <div class="hd"><div class="s" id="hs"></div><h2 id="hn"></h2><span class="rf" id="rf">↻ 更新</span><span class="rf" id="sw" style="display:none;right:90px"></span></div>
+  <div id="btd" style="display:none"><div class="sec2" id="btdh"></div><div class="card" id="btdl"></div></div>
   <div class="grid">
     <div class="t" onclick="go('lv')"><span class="badge" id="b1" style="display:none">1</span><span class="e">📅</span><b>劃假</b><small id="c1">　</small></div>
     <div class="t" onclick="go('sc')"><span class="e">🗓️</span><b>我的班表</b><small id="c2">　</small></div>
@@ -93,6 +103,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div class="out">不是你？<span onclick="logout()">登出</span></div>
 </div>
 
+<div class="scr" id="kh"><div class="hd"><div class="s" id="khs"></div><h2>📊 考核</h2></div><div id="khb"></div><div style="height:20px"></div></div>
 <div class="scr" id="mt"><div class="hd"><div class="s" id="mts"></div><h2>📋 開會內容</h2></div><div id="mtb"></div></div>
 <div class="scr" id="say">
   <div class="hd"><div class="s">只有可樂看得到</div><h2>💬 對可樂說</h2></div>
@@ -170,7 +181,7 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 // ---------- 畫面切換 ----------
 function show(v) {
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'ex', 'sg', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'ex', 'sg', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
@@ -235,9 +246,63 @@ function render() {
   exRender();
   sgRender();
   mtRender();
+  bossRender();
   var hr = d.hr;
   $('hrc').style.display = hr ? '' : 'none';
   if (hr) $('hrc').innerHTML = '<b>🔑 風行人資系統</b><div class="hrk"><span>網域</span><b>' + hr.dom + '<i onclick="cp(\'' + hr.dom + '\')">複製</i></b></div><div class="hrk"><span>帳號</span><b>' + esc(hr.id) + '<i onclick="cp(\'' + esc(hr.id) + '\')">複製</i></b></div><div class="hrk"><span>預設密碼</span><b>' + hr.pw + '</b></div>';
+}
+// ---------- 可樂：每月待辦＋考核進度 ----------
+function bossRender() {
+  var B = DATA && DATA.boss, nv = document.querySelector('.nav div[data-v=ex]') || document.querySelector('.nav div[data-v=kh]');
+  if (nv) { nv.setAttribute('data-v', B ? 'kh' : 'ex'); nv.innerHTML = B ? '<i>📊</i>考核' : '<i>📝</i>考試'; }
+  $('btd').style.display = B ? '' : 'none';
+  if (!B) return;
+  var now = new Date(), dn = now.getDate(), last = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  $('btdh').textContent = '這個月要做的（' + (now.getMonth() + 1) + ' 月）';
+  $('btdl').innerHTML = (B.todo || []).map(function (t, i) {
+    var dd = (t.d === 99 ? last : t.d) - dn, c, lab;
+    if (t.done) { c = 'ok'; lab = '✓ 完成'; } else if (dd < 0) { c = 'due'; lab = '過期'; } else if (dd === 0) { c = 'due'; lab = '今天'; } else if (dd <= 3) { c = 'soon'; lab = '剩 ' + dd + ' 天'; } else { c = ''; lab = '打勾'; }
+    var open = !t.done && dd <= 3;
+    return '<div class="td"><span class="dt">' + esc(t.dl) + '</span><span class="x" onclick="var e=$(\'tdx' + i + '\');e.style.display=e.style.display?\'\':\'none\'"><b style="color:var(--tx);margin:0">' + esc(t.t) + '</b>' +
+      '<div class="tdx" id="tdx' + i + '" style="' + (open ? '' : 'display:none') + '">' + esc(t.x) + '<br>' +
+      t.cmd.map(function (c2) { return '<span class="chip" onclick="event.stopPropagation();cp(\'' + esc(c2) + '\')">' + esc(c2) + ' 複製</span>'; }).join('') +
+      (t.btn === 'kh' ? '<span class="chip f" onclick="event.stopPropagation();go(\'kh\')">開考核頁 ›</span>' : '') + '</div></span>' +
+      '<span class="st ' + c + '" onclick="tdDone(' + i + ')">' + lab + '</span></div>';
+  }).join('') || '<div style="color:var(--mu)">還沒有待辦（老闆管理中心「46_可樂每月待辦」可以加）</div>';
+  khRender();
+}
+function tdDone(i) {
+  var t = DATA.boss.todo[i]; if (!t) return;
+  t.done = !t.done; bossRender();
+  api('op=btodo&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&r=' + t.r + '&v=' + (t.done ? 1 : 0)).then(function (j) {
+    if (j.ok && j.todo) { DATA.boss.todo = j.todo; LS('app_cache', JSON.stringify(DATA)); bossRender(); } else { t.done = !t.done; bossRender(); bar(j.err || '沒存到，請再按一次', 2500); }
+  }).catch(function () { t.done = !t.done; bossRender(); bar('網路不穩，請再按一次', 2500); });
+}
+function khRender() {
+  var B = DATA && DATA.boss; if (!B) return;
+  $('khs').textContent = '考核期 ' + B.period + '（' + B.m + ' 期）';
+  var h = '<div class="sec2">員工考核（幹部打）</div><div class="card">';
+  (B.kh || []).forEach(function (k) {
+    var done = k.total - k.left.length, sn = k.s === '熱河' ? '熱河' : '鳳山';
+    h += '<div style="margin-top:6px;display:flex;justify-content:space-between"><b style="color:var(--tx)">' + sn + '</b><span>' + done + '／' + k.total + ' 人</span></div><div class="bar2"><i style="width:' + (k.total ? Math.round(done / k.total * 100) : 0) + '%"></i></div>' +
+      (k.left.length ? '<div style="font-size:13px;color:var(--mu)">還沒打完：' + k.left.map(esc).join('、') + '</div>' : '<div style="font-size:13px;color:#2f6b12">✅ 都打完了</div>') +
+      '<a class="chip f" href="' + k.boss + '" target="_blank">' + sn + '審核頁 ›</a>' + (k.left.length ? '<span class="chip" onclick="remind(\'' + (k.s === '熱河' ? 'rh' : 'fs') + '\',' + k.left.length + ')">📣 提醒' + sn + '幹部</span>' : '') + '<div style="height:8px"></div>';
+  });
+  h += '</div><div class="sec2">我要打的</div><div class="card">';
+  var cd = (B.cad || []).filter(function (x) { return x.st !== '未打' && x.st !== '草稿'; }).length;
+  h += '<b style="color:var(--tx)">幹部考核</b>　<span class="st ' + (cd === (B.cad || []).length && cd ? 'ok' : 'soon') + '">' + cd + '／' + (B.cad || []).length + '</span>' +
+    ((B.cad || []).length ? (B.cad || []).map(function (x) { return '<div class="pl"><span>' + esc(x.n) + ' <small style="color:var(--mu)">' + esc(x.s) + (x.t !== '幹部' ? '・' + esc(x.t) : '') + '・' + esc(x.st) + '</small></span><span><a class="chip f" href="' + x.url + '" target="_blank">打分</a><a class="chip" href="' + x.talk + '" target="_blank">面談</a></span></div>'; }).join('')
+      : '<div style="font-size:13px;color:var(--mu);margin-top:6px">這期連結還沒產生：老闆機器人打一次 #幹部考核 就會出現</div>');
+  var rd = (B.rsv || []).filter(function (x) { return x.st !== '未打' && x.st !== '草稿'; }).length;
+  h += '<div style="height:10px"></div><b style="color:var(--tx)">儲備考核</b>　<span class="st ' + (rd === (B.rsv || []).length ? 'ok' : 'soon') + '">' + rd + '／' + (B.rsv || []).length + '</span>' +
+    (B.rsv || []).map(function (x) { return '<div class="pl"><span>' + esc(x.n) + ' <small style="color:var(--mu)">' + esc(x.st) + '</small></span><span><a class="chip f" href="' + x.url + '" target="_blank">打分</a><a class="chip" href="' + x.talk + '" target="_blank">面談</a></span></div>'; }).join('') + '</div>';
+  var tk = [], tn = 0; (B.kh || []).forEach(function (k) { k.talk.forEach(function (t) { tk.push(t); if (t.ok) tn++; }); });
+  h += '<div class="sec2">員工面談（25 號～5 號）已簽 ' + tn + '／' + tk.length + '</div><div class="card">' + tk.map(function (t) { return '<div class="pl"><span>' + (t.ok ? '✅ ' : '') + esc(t.n) + '</span><a class="chip" href="' + t.url + '" target="_blank">面談頁 ›</a></div>'; }).join('') + '</div>';
+  $('khb').innerHTML = h;
+}
+function remind(s, n) {
+  if (!confirm('推到' + (s === 'rh' ? '熱河' : '鳳山') + '幹部群，提醒還有 ' + n + ' 位考核沒打完？')) return;
+  api('op=remind&s=' + s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok).then(function (j) { bar(j.msg || j.err || '已送出', 2500); }).catch(function () { bar('網路不穩，請再按一次', 2500); });
 }
 function cp(t) { try { navigator.clipboard.writeText(t).then(function () { bar('已複製 ' + t, 1500); }); } catch (e) { bar(t, 3000); } }
 // ---------- 開會內容（可樂私訊機器人 #開會內容 放上來） ----------
