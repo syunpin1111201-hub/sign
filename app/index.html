@@ -183,7 +183,7 @@ function render() {
   if (m.owe) mh += '<div class="card"><b>⏱ 尚欠時數</b><span class="big">' + m.owe + ' 小時</span></div>';
   if (m.loan) mh += '<div class="card"><b>💰 借支</b><span class="big">剩 ' + m.loan.bal.toLocaleString() + '</span><small>' + (m.loan.mon ? m.loan.m + ' 月扣 ' + m.loan.mon.toLocaleString() : m.loan.m + ' 月沒有要扣') + '</small></div>';
   $('mny').innerHTML = mh; $('mny').style.display = mh ? '' : 'none';
-  $('sayb').style.display = BOSS() ? 'none' : '';
+  $('sayb').style.display = BOSS() || !d.says ? 'none' : '';   // 機器人還沒更新前先藏起來
   hist(d.says);
 }
 function esc(x) { return String(x).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
