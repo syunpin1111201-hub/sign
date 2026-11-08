@@ -230,6 +230,17 @@ function render() {
 // ---------- 公告簽名（沿用原本簽名頁，從 App 打開直接帶本人） ----------
 function sgRender() {
   if (!DATA || !DATA.ann) { $('c4').textContent = '即將開放'; $('b4').style.display = 'none'; $('sgl').innerHTML = '<div class="soon" style="padding:50px 24px"><i>✍️</i>即將開放</div>'; return; }   // 機器人還沒更新
+  if (DATA.ann.boss) {   // 可樂：每則公告還有誰沒簽
+    var B = DATA.ann.list || [], left = B.reduce(function (n, x) { return n + x.todo.length; }, 0);
+    $('b4').style.display = left ? '' : 'none'; $('b4').textContent = left;
+    $('c4').textContent = B.length ? B.length + ' 則進行中・' + left + ' 人未簽' : '沒有進行中的公告';
+    $('sgl').innerHTML = B.length ? B.map(function (x) {
+      var g = {}; x.todo.forEach(function (p) { (g[p.s] = g[p.s] || []).push(p.n); });
+      return '<div class="card" style="margin-top:10px"><b style="color:var(--tx)">' + esc(x.t) + '</b><br><span style="color:var(--mu);font-size:13px">' + x.type + '｜已簽 ' + x.done + '／' + x.total + '</span>' +
+        (x.todo.length ? Object.keys(g).map(function (k) { return '<div style="margin-top:6px"><b>' + k + ' 未簽 ' + g[k].length + '</b>' + g[k].map(esc).join('、') + '</div>'; }).join('') : '<div style="margin-top:6px;color:#2f6b12">✅ 全部簽完</div>') + '</div>';
+    }).join('') : '<div class="soon" style="padding:50px 24px"><i>✅</i>沒有進行中的公告</div>';
+    return;
+  }
   var a = (DATA && DATA.ann) || { todo: [], done: [] }, t = a.todo || [], dn = a.done || [];
   $('b4').style.display = t.length ? '' : 'none'; $('b4').textContent = t.length;
   $('c4').textContent = t.length ? t.length + ' 份還沒簽' : '都簽好了';
