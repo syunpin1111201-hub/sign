@@ -62,7 +62,7 @@ select,input{width:100%;background:#fff;border:1px solid #e0d2bf;border-radius:1
 
 <!-- 首頁 -->
 <div class="scr" id="home">
-  <div class="hd"><div class="s" id="hs"></div><h2 id="hn"></h2><span class="rf" id="rf">↻ 更新</span></div>
+  <div class="hd"><div class="s" id="hs"></div><h2 id="hn"></h2><span class="rf" id="rf">↻ 更新</span><span class="rf" id="sw" style="display:none;right:90px"></span></div>
   <div class="grid">
     <div class="t" onclick="go('lv')"><span class="badge" id="b1" style="display:none">1</span><span class="e">📅</span><b>劃假</b><small id="c1">　</small></div>
     <div class="t" onclick="go('sc')"><span class="e">🗓️</span><b>我的班表</b><small id="c2">　</small></div>
@@ -103,6 +103,7 @@ function api(q) {
 }
 function retry(fn, n) { return fn().catch(function (e) { if (n > 0) return new Promise(function (r) { setTimeout(r, 1200); }).then(function () { return retry(fn, n - 1); }); throw e; }); }
 function bar(t, ms, fn) { var b = $('bar'); b.textContent = t; b.style.display = 'block'; b.onclick = fn || null; clearTimeout(bar.t); if (ms) bar.t = setTimeout(function () { b.style.display = 'none'; }, ms); }
+function BOSS() { return U.n === '可樂'; }
 function md(s) { var p = s.split('/'); return +p[1] + '/' + +p[2]; }
 function wk(s) { var p = s.split('/'); return WK[new Date(+p[0], p[1] - 1, +p[2]).getDay()]; }
 
@@ -128,7 +129,7 @@ $('lgo').onclick = function () {
   retry(function () { return api('op=login&s=' + s + '&n=' + encodeURIComponent(n) + '&b=' + b); }, 1).then(function (j) {
     me.disabled = false; me.textContent = '開始使用';
     if (!j.ok) { $('le').textContent = j.err; return; }
-    U = { s: s, n: n, tok: j.tok }; LS('app_s', s); LS('app_n', n); LS('app_tok', j.tok); LS('lvMe' + s, n);
+    U = { s: s, n: n, tok: j.tok }; LS('app_s', s); LS('app_n', n); LS('app_tok', j.tok);
     start();
   }).catch(function () { me.disabled = false; me.textContent = '開始使用'; $('le').textContent = '網路不穩，請再按一次'; });
 };
@@ -150,11 +151,13 @@ function go(v) { show(v); }
 // ---------- 首頁 ----------
 function render() {
   var d = DATA; if (!d) return;
-  $('hs').textContent = d.store + '｜' + d.me.sh + d.me.cls; $('hn').textContent = d.me.n + ' 你好';
+  $('hs').textContent = d.store + '｜' + d.me.sh + d.me.cls;
+  $('sw').style.display = BOSS() ? '' : 'none'; $('sw').textContent = '換' + (U.s === 'rh' ? '鳳山中山' : '熱河'); $('hn').textContent = d.me.n + ' 你好';
   var h = d.home || {}, p = h.per;
   if (p) {
     $('c1').textContent = h.mine ? '已劃 ' + h.mine + ' 天・' + md(p.dl) + ' 截止' : md(p.dl) + ' 截止，還沒劃';
-    $('b1').style.display = h.mine ? 'none' : '';
+    $('b1').style.display = h.mine || BOSS() ? 'none' : '';
+    if (BOSS()) $('c1').textContent = '看全部人・' + md(p.dl) + ' 截止';
     $('rm').textContent = md(p.s) + '–' + md(p.e) + ' 劃假 ' + md(p.dl) + '（' + wk(p.dl) + '）截止' + (p.left <= 3 ? '，剩 ' + p.left + ' 天' : '');
     $('rmc').style.display = '';
   } else { $('c1').textContent = '目前沒有開放'; $('b1').style.display = 'none'; $('rmc').style.display = 'none'; }
@@ -171,7 +174,7 @@ function frame() {
     if (ifr) ifr.remove();
     ifr = document.createElement('iframe'); FRV = DATA.html;
     ifr.onload = function () { tune(ifr); setMode(ifr, CUR === 'sc' ? 1 : 0); };
-    LS('lvMe' + U.s, U.n);
+    LS('lvMe' + U.s, BOSS() ? '__view' : U.n);   // 可樂＝只看模式（看得到全部人）
     ifr.srcdoc = DATA.html; f.appendChild(ifr); $('frm').style.display = 'none';
   } else setMode(ifr, want);
 }
@@ -204,12 +207,16 @@ function load(force) {
   }).catch(function () { bar(DATA ? '網路不穩，先顯示上次的資料' : '網路不穩，請稍後再試', 3000); if (!DATA) $('frm').innerHTML = '網路不穩，打不開<br><button class="btn" style="width:auto;padding:10px 22px" onclick="load(1)">重新整理</button>'; });
 }
 $('rf').onclick = function () { load(1); };
+$('sw').onclick = function () {   // 可樂切換門市
+  U.s = U.s === 'rh' ? 'fs' : 'rh'; LS('app_s', U.s); DATA = null; FRV = ''; var f = $('fr').querySelector('iframe'); if (f) f.remove();
+  $('hs').textContent = '載入中…'; $('frm').style.display = 'block'; LAST = 0; load(1);
+};
 document.addEventListener('visibilitychange', function () { if (!document.hidden) load(0); });
 
 function start() {
   if (!U.tok) { show('login'); return; }
   try { DATA = JSON.parse(LS('app_cache') || 'null'); } catch (e) { DATA = null; }
-  if (DATA && DATA.me && DATA.me.n !== U.n) DATA = null;
+  if (DATA && DATA.me && (DATA.me.n !== U.n || (DATA.s && DATA.s !== U.s))) DATA = null;
   if (DATA) render(); else { $('hs').textContent = '載入中…'; $('hn').textContent = U.n + ' 你好'; }
   show('home');
   LAST = 0; load(0);
