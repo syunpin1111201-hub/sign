@@ -352,7 +352,11 @@ function start() {
   LAST = 0; load(0);
 }
 start();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () { });
+if ('serviceWorker' in navigator) {
+  var hadSW = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (r) { try { r.update(); } catch (e) { } }).catch(function () { });
+  navigator.serviceWorker.addEventListener('controllerchange', function () { if (hadSW && !window.__rl) { window.__rl = 1; location.reload(); } });   // App 有新版 → 自動換
+}
 </script>
 </body>
 </html>
