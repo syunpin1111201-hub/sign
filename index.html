@@ -93,6 +93,8 @@ if (D.error) {
       el('e1').textContent = '';
     };
     nm.onchange = function(){ el('e1').textContent = ''; };
+    var pe = Q.get('e');   // 從 App 打開：直接帶本人，不用選
+    if (pe) Object.keys(D.stores).forEach(function(s){ D.stores[s].forEach(function(p){ if (p[0] === pe) { st.value = s; st.onchange(); nm.value = pe; st.disabled = true; nm.disabled = true; } }); });
     initPad(function(){
       if (!st.value || !nm.value) { el('e1').textContent = '請選擇門市和姓名'; return false; }
       return true;
@@ -158,6 +160,7 @@ function initPad(check, send, lock){
         btn.style.display = 'none';
         el('done').innerHTML = '<div class="card done" style="margin-top:12px">' + (res.name ? esc(res.name) + ' ' : '') + '已完成簽名　' + esc(res.at) + '</div>';
         c.style.pointerEvents = 'none'; el('clr').style.display = 'none'; el('ok').disabled = true; lock();
+        try { if (window.parent !== window) window.parent.postMessage({ annSigned: 1 }, '*'); } catch (e) {}   // 告訴 App 簽好了
       } else {
         btn.disabled = false; btn.textContent = '送出簽名';
         el('e4').textContent = (res && res.msg) || '送出失敗，請再試一次';
