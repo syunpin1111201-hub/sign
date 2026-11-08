@@ -52,6 +52,10 @@ select,input{width:100%;background:#fff;border:1px solid #e0d2bf;border-radius:1
 .say{display:block;margin:0 16px 10px;background:var(--ac);color:#fff;border-radius:14px;padding:12px;font-size:15px;text-align:center}
 textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;padding:10px;font-size:16px;font-family:inherit;color:var(--tx)}
 .hist{margin-top:18px}.hist div{background:#fff;border-radius:10px;padding:9px 11px;margin-top:8px;font-size:14px;line-height:1.5;white-space:pre-wrap}.hist small{color:var(--mu)}
+.new{background:#d9534f;color:#fff;border-radius:8px;font-size:11px;padding:1px 6px;margin-left:6px}
+.mchip{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 0}.mchip span{flex:0 0 auto;background:#fff;border:1px solid var(--ln);border-radius:16px;padding:6px 14px;font-size:14px}.mchip span.on{background:var(--hd);color:#fff;border-color:var(--hd)}
+.mtx{background:#fff;margin:12px 16px 20px;border-radius:14px;padding:16px;font-size:15px;line-height:1.85;white-space:pre-wrap;word-break:break-word}
+.hrk{display:flex;justify-content:space-between;align-items:center;padding:3px 0}.hrk span{color:var(--mu)}.hrk i{font-style:normal;font-size:12px;color:var(--ac);border:1px solid var(--ac);border-radius:10px;padding:1px 8px;margin-left:8px}
 .out{font-size:12px;color:var(--mu);text-align:center;margin:18px 0 24px}.out span{text-decoration:underline}
 </style>
 </head>
@@ -82,11 +86,14 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   </div>
   <div class="card"><b>今天</b><span id="td">　</span></div>
   <div class="card" id="rmc" style="display:none"><b>提醒</b><span id="rm"></span></div>
+  <div class="card" id="mtc" onclick="go('mt')" style="display:none"><b>📋 開會內容</b><span id="mtt"></span><span style="float:right;color:var(--mu)">›</span></div>
+  <div class="card" id="hrc" style="display:none"></div>
   <div class="row2" id="mny" style="display:none"></div>
   <div class="say" id="sayb" onclick="go('say')">💬 對可樂說</div>
   <div class="out">不是你？<span onclick="logout()">登出</span></div>
 </div>
 
+<div class="scr" id="mt"><div class="hd"><div class="s" id="mts"></div><h2>📋 開會內容</h2></div><div id="mtb"></div></div>
 <div class="scr" id="say">
   <div class="hd"><div class="s">只有可樂看得到</div><h2>💬 對可樂說</h2></div>
   <div class="box">
@@ -163,16 +170,17 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 // ---------- 畫面切換 ----------
 function show(v) {
   CUR = v;
-  ['login', 'home', 'say', 'ex', 'sg', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'ex', 'sg', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
   CUR0 = v;
   $('fr').style.display = (v === 'lv' || v === 'sc') ? 'block' : 'none';
   $('nav').style.display = (v === 'login' || v === 'gone') ? 'none' : 'flex';
-  [].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.classList.toggle('on', d.getAttribute('data-v') === (v === 'say' ? 'home' : v)); });
+  [].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.classList.toggle('on', d.getAttribute('data-v') === (v === 'say' || v === 'mt' ? 'home' : v)); });
   if (v === 'lv' || v === 'sc') frame();
-  if (v === 'home') load(0);
+  if (v === 'home') { load(0); if (DATA) mtRender(); }
+  if (v === 'mt') { MTI = 0; mtRender(); window.scrollTo(0, 0); }
 }
 function go(v) { show(v); }
 // ---------- 考試（幹部開考才有，30 分鐘內要開始；考試中離開 App 會通知幹部群） ----------
@@ -226,6 +234,25 @@ function render() {
   hist(d.says);
   exRender();
   sgRender();
+  mtRender();
+  var hr = d.hr;
+  $('hrc').style.display = hr ? '' : 'none';
+  if (hr) $('hrc').innerHTML = '<b>🔑 風行人資系統</b><div class="hrk"><span>網域</span><b>' + hr.dom + '<i onclick="cp(\'' + hr.dom + '\')">複製</i></b></div><div class="hrk"><span>帳號</span><b>' + esc(hr.id) + '<i onclick="cp(\'' + esc(hr.id) + '\')">複製</i></b></div><div class="hrk"><span>預設密碼</span><b>' + hr.pw + '</b></div>';
+}
+function cp(t) { try { navigator.clipboard.writeText(t).then(function () { bar('已複製 ' + t, 1500); }); } catch (e) { bar(t, 3000); } }
+// ---------- 開會內容（可樂私訊機器人 #開會內容 放上來） ----------
+var MTI = 0;
+function ymTxt(ym) { var p = ym.split('/'); return +p[0] + ' 年 ' + +p[1] + ' 月'; }
+function mtRender() {
+  var L = (DATA && DATA.mtg) || [];
+  $('mtc').style.display = L.length ? '' : 'none';
+  if (!L.length) return;
+  var seen = LS('mt_seen_' + U.s) || '';
+  $('mtt').innerHTML = ymTxt(L[0].ym) + (seen < L[0].ym + L[0].at ? '<span class="new">新</span>' : '');
+  if (MTI >= L.length) MTI = 0;
+  $('mts').textContent = (DATA.store || '') + '｜' + L[MTI].at + ' 更新';
+  $('mtb').innerHTML = '<div class="mchip">' + L.map(function (x, i) { return '<span class="' + (i === MTI ? 'on' : '') + '" onclick="MTI=' + i + ';mtRender()">' + ymTxt(x.ym).replace(/^\d+ 年 /, '') + '</span>'; }).join('') + '</div><div class="mtx">' + esc(L[MTI].x) + '</div>';
+  if (CUR === 'mt' && MTI === 0) LS('mt_seen_' + U.s, L[0].ym + L[0].at);
 }
 // ---------- 公告簽名（沿用原本簽名頁，從 App 打開直接帶本人） ----------
 function sgRender() {
