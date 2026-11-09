@@ -63,6 +63,9 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 .chip{text-decoration:none;display:inline-block;margin:6px 6px 0 0;background:#fff;color:var(--ac);border:1px solid var(--ac);border-radius:8px;padding:3px 10px;font-size:13px}
 .chip.f{background:var(--ac);color:#fff}
 .sec2{margin:14px 18px 6px;font-size:13px;color:#9a8068;font-weight:700}
+.s2p{display:flex;gap:8px;margin:12px 16px 0}.s2p span{flex:1;text-align:center;border:1px solid var(--ac);color:var(--ac);background:#fff;border-radius:20px;padding:7px 0;font-size:14px}.s2p span.on{background:var(--ac);color:#fff}
+.s2d{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;-webkit-overflow-scrolling:touch}.s2d span{flex:0 0 46px;text-align:center;background:#fff;border:1px solid var(--ln);border-radius:10px;padding:5px 0;font-size:12px;line-height:1.4}.s2d span.on{background:var(--ac);color:#fff;border-color:var(--ac)}.s2d span.we{color:#c0392b}.s2d span.on.we{color:#fff}
+.s2c h3{margin:0 0 4px;font-size:16px;display:flex;justify-content:space-between;align-items:baseline}.s2c h3 small{font-weight:400;color:var(--mu);font-size:12px}.s2c .t2{font-size:12px;color:var(--mu);margin:6px 0 0}.s2c .r{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed var(--ln)}.s2c .of{font-size:12px;color:var(--mu);margin-top:6px}
 .bar2{height:8px;background:#f1e8dc;border-radius:4px;overflow:hidden;margin:4px 0}.bar2 i{display:block;height:100%;background:var(--hd)}
 .pl{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f1e8dc;font-size:14px}.pl:last-child{border:0}
 #tlf input[type=date]{min-width:0;flex:1;font-size:15px}
@@ -122,6 +125,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
     <div style="display:flex;gap:8px;margin-top:10px"><input id="qDrink" placeholder="飲品名，例：覺醒奶茶" style="margin:0"><span class="chip" style="flex:0 0 auto;margin:0;padding:10px" onclick="qDrink('#查飲品比例','比例')">比例</span><span class="chip" style="flex:0 0 auto;margin:0;padding:10px" onclick="qDrink('#飲品成本','成本')">成本</span></div></div>
   <div class="sec2" id="qhh"></div><div class="card" id="qh" style="display:none"></div>
   <div style="height:20px"></div></div>
+<div class="scr" id="s2"><div class="hd"><div class="s">老闆・點日期兩間一起換</div><h2>🗓️ 兩店班表</h2></div><div id="s2b"></div><div style="height:20px"></div></div>
 <div class="scr" id="kh"><div class="hd"><div class="s" id="khs"></div><h2>📊 考核</h2></div><div id="khb"></div><div style="height:20px"></div></div>
 <div class="scr" id="mt"><div class="hd"><div class="s" id="mts"></div><h2>📋 開會內容</h2></div><div id="mtb"></div></div>
 <div class="scr" id="say">
@@ -200,20 +204,53 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 
 // ---------- 畫面切換 ----------
 function show(v) {
+  if (v === 'sc' && BOSS()) v = 's2';   // 11/10 可樂：兩店班表一起看
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
   CUR0 = v;
   $('fr').style.display = (v === 'lv' || v === 'sc') ? 'block' : 'none';
   $('nav').style.display = (v === 'login' || v === 'gone') ? 'none' : 'flex';
-  [].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.classList.toggle('on', d.getAttribute('data-v') === (v === 'say' || v === 'mt' || v === 'tl' ? 'home' : v)); });
+  [].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.classList.toggle('on', d.getAttribute('data-v') === (v === 'say' || v === 'mt' || v === 'tl' ? 'home' : v === 's2' ? 'sc' : v)); });
+  if (v === 's2') { s2Render(); window.scrollTo(0, 0); }
   if (v === 'lv' || v === 'sc') frame();
   if (v === 'home') { load(0); if (DATA) mtRender(); }
   if (v === 'mt') { MTI = 0; mtRender(); window.scrollTo(0, 0); }
 }
 function go(v) { show(v); }
+// ---------- 可樂：兩店班表（11/10） ----------
+var S2B = '', S2D = '';
+function s2Day(s, n) { var p = s.split('/'), d = new Date(+p[0], p[1] - 1, +p[2] + n); return d.getFullYear() + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + ('0' + d.getDate()).slice(-2); }
+function s2Render() {
+  var S = DATA && DATA.sch2, el = $('s2b');
+  if (!S) { el.innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>'; return; }
+  var bl = {};
+  ['熱河', '鳳山中山'].forEach(function (k) { (S[k] || []).forEach(function (b) { bl[b.s] = b.e; }); });
+  var B = Object.keys(bl).sort();
+  if (!B.length) { el.innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">兩間的班表都還沒發布</div>'; return; }
+  var td = s2Day(ds0(), 0);
+  if (B.indexOf(S2B) < 0) { S2B = B[0]; B.forEach(function (s) { if (s <= td && bl[s] >= td) S2B = s; }); S2D = ''; }
+  if (!S2D || S2D < S2B || S2D > bl[S2B]) S2D = td >= S2B && td <= bl[S2B] ? td : S2B;
+  var h = B.length > 1 ? '<div class="s2p">' + B.map(function (s) { return '<span class="' + (s === S2B ? 'on' : '') + '" onclick="S2B=\'' + s + '\';S2D=\'\';s2Render()">' + md(s) + '–' + md(bl[s]) + '</span>'; }).join('') + '</div>' : '<div class="s2p"><span class="on">' + md(S2B) + '–' + md(bl[S2B]) + '</span></div>';
+  h += '<div class="s2d" id="s2dr">';
+  for (var i = 0; ; i++) { var d = s2Day(S2B, i); if (d > bl[S2B]) break; var w = new Date(d.replace(/\//g, '-') + 'T00:00').getDay(); h += '<span class="' + (d === S2D ? 'on ' : '') + (w === 0 || w === 6 ? 'we' : '') + '" onclick="S2D=\'' + d + '\';s2Render()">' + WK[w] + '<br>' + md(d) + '</span>'; }
+  h += '</div>';
+  ['熱河', '鳳山中山'].forEach(function (k) {
+    var b = (S[k] || []).filter(function (x) { return x.s <= S2D && x.e >= S2D; })[0], day = b && (b.days || []).filter(function (x) { return x.d === S2D; })[0];
+    h += '<div class="card s2c"><h3>' + k + (day ? '<small>早 ' + day.e.length + '・晚 ' + day.l.length + '</small>' : '') + '</h3>';
+    if (!day) { h += '<div style="color:var(--mu)">這天還沒發布</div></div>'; return; }
+    var row = function (x) { return '<div class="r"><span>' + esc(x[0]) + '</span><span>' + esc(x[1]) + '</span></div>'; };
+    h += '<div class="t2">☀️ 早班</div>' + (day.e.map(row).join('') || '<div style="color:var(--mu)">—</div>');
+    h += '<div class="t2">🌙 晚班</div>' + (day.l.map(row).join('') || '<div style="color:var(--mu)">—</div>');
+    if (day.off && day.off.length) h += '<div class="of">休：' + day.off.map(function (x) { return esc(x[0]) + (x[1] && x[1] !== '休' ? '（' + esc(x[1]) + '）' : ''); }).join('、') + '</div>';
+    h += '</div>';
+  });
+  el.innerHTML = h;
+  var on = el.querySelector('.s2d span.on'), r = $('s2dr'); if (on && r) r.scrollLeft = on.offsetLeft - r.offsetWidth / 2 + 23;
+}
+function ds0() { var d = new Date(); return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate(); }
 // ---------- 考試（幹部開考才有，30 分鐘內要開始；考試中離開 App 會通知幹部群） ----------
 var CUR0 = '', EXT = '';
 function EXA() { var c = DATA && DATA.exam && DATA.exam.cur; return c && c.t ? c : null; }
@@ -549,7 +586,7 @@ function load(force) {
       bar(j.err, 4000); return;
     }
     var changed = !DATA || DATA.html !== j.html;
-    DATA = j; LS('app_cache', JSON.stringify(j)); render();
+    DATA = j; LS('app_cache', JSON.stringify(j)); render(); if (CUR === 's2') s2Render();
     if (CUR === 'lv' || CUR === 'sc') {
       if (changed) bar('有新資料，點這裡更新', 0, function () { $('bar').style.display = 'none'; frame(); });
       else if (force) bar('已是最新', 1500);
