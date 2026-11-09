@@ -107,6 +107,21 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 </div>
 
 <div class="scr" id="tl"><div class="hd"><div class="s">可樂常用</div><h2 id="tlh"></h2></div><div class="box" id="tlf"></div><div id="tlr"></div><div style="height:20px"></div></div>
+<div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
+  <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('exp')">💸 打支出</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('net')">💰 看淨利</span>
+    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span></div>
+  <div id="qf"></div><div id="qr"></div>
+  <div class="sec2">👤 查人</div><div class="card"><div id="qps"></div>
+    <span class="chip" onclick="qP('#查員工','員工資料')">員工資料</span><span class="chip" onclick="qP('#查薪資','薪資')">薪資</span><span class="chip" onclick="qP('#查欠時數','欠時數')">欠時數</span><span class="chip" onclick="qP('#查借支','借支')">借支</span><span class="chip" onclick="qP('#查考核','考核')">考核</span><span class="chip" onclick="qP('#查紅黑榜','紅黑榜')">紅黑榜</span><span class="chip" onclick="qP('#查獎金','獎金')">獎金</span><span class="chip" onclick="qP('#查禮金','禮金')">禮金</span><span class="chip" onclick="qP('#查代班','代班')">代班</span></div>
+  <div class="sec2">📊 總表</div><div class="card"><span class="chip" onclick="qRun('#借支總表','借支總表')">借支總表</span><span class="chip" onclick="qRun('#查扣款','本月扣款')">本月扣款</span><span class="chip" onclick="qRun('#欠時數總表','欠時數總表')">欠時數總表</span><span class="chip" onclick="qRun('#待辦清單','待辦清單')">待辦清單</span><span class="chip" onclick="qRun('#本月調薪提醒','本月調薪')">本月調薪</span></div>
+  <div class="sec2">🏪 營運</div><div class="card"><span class="chip" onclick="qRun('#查營收','營收')">營收</span><span class="chip" onclick="qRun('#查支出','支出')">支出</span><span class="chip" onclick="qRun('#查墊付款','墊付款')">墊付款</span><span class="chip" onclick="qRun('#杯數進度','杯數進度')">杯數進度</span><span class="chip" onclick="qRun('#銷量排行','銷量排行')">銷量排行</span><span class="chip" onclick="qRun('#毛利排行','毛利排行')">毛利排行</span><span class="chip" onclick="qRun('#利潤貢獻','利潤貢獻')">利潤貢獻</span><span class="chip" onclick="qRun('#查異常','異常')">異常</span>
+    <div style="display:flex;gap:8px;margin-top:10px"><input id="qItem" placeholder="品名，例：厚奶" style="margin:0"><span class="chip" style="flex:0 0 auto;margin:0;padding:10px" onclick="qItem('#查庫存','庫存')">庫存</span><span class="chip" style="flex:0 0 auto;margin:0;padding:10px" onclick="qItem('#查包材','包材')">包材</span></div></div>
+  <div class="sec2">🗓️ 班表・飲品</div><div class="card"><div style="display:flex;gap:8px"><select id="qSt" style="margin:0"><option>熱河</option><option>鳳山</option></select><input id="qDay" type="date" style="margin:0;min-width:0"></div>
+    <span class="chip" onclick="qRun('#今日班表\n'+$('qSt').value,$('qSt').value+'今日班表')">今日班表</span><span class="chip" onclick="qSched()">查那天班表</span>
+    <div style="display:flex;gap:8px;margin-top:10px"><input id="qDrink" placeholder="飲品名，例：覺醒奶茶" style="margin:0"><span class="chip" style="flex:0 0 auto;margin:0;padding:10px" onclick="qDrink('#查飲品比例','比例')">比例</span><span class="chip" style="flex:0 0 auto;margin:0;padding:10px" onclick="qDrink('#飲品成本','成本')">成本</span></div></div>
+  <div class="sec2" id="qhh"></div><div class="card" id="qh" style="display:none"></div>
+  <div style="height:20px"></div></div>
 <div class="scr" id="kh"><div class="hd"><div class="s" id="khs"></div><h2>📊 考核</h2></div><div id="khb"></div><div style="height:20px"></div></div>
 <div class="scr" id="mt"><div class="hd"><div class="s" id="mts"></div><h2>📋 開會內容</h2></div><div id="mtb"></div></div>
 <div class="scr" id="say">
@@ -136,6 +151,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div data-v="home"><i>🏠</i>首頁</div>
   <div data-v="lv"><i>📅</i>劃假</div>
   <div data-v="sc"><i>🗓️</i>班表</div>
+  <div data-v="q" id="navq" style="display:none"><i>🔍</i>查詢</div>
   <div data-v="ex"><i>📝</i>考試</div>
   <div data-v="sg"><i>✍️</i>簽名</div>
 </div>
@@ -185,7 +201,7 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 // ---------- 畫面切換 ----------
 function show(v) {
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'ex', 'sg', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
@@ -260,7 +276,8 @@ function render() {
 function bossRender() {
   var B = DATA && DATA.boss, nv = document.querySelector('.nav div[data-v=ex]') || document.querySelector('.nav div[data-v=kh]');
   if (nv) { nv.setAttribute('data-v', B ? 'kh' : 'ex'); nv.innerHTML = B ? '<i>📊</i>考核' : '<i>📝</i>考試'; }
-  $('btd').style.display = B ? '' : 'none'; $('btl').style.display = B ? '' : 'none';
+  $('btd').style.display = B ? '' : 'none'; $('btl').style.display = B ? '' : 'none'; $('navq').style.display = B ? '' : 'none';
+  if (B && !$('qps').innerHTML) $('qps').innerHTML = nameSel('qN'); qHist();
   if (!B) return;
   var now = new Date(), dn = now.getDate(), last = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   $('btdh').textContent = '這個月要做的（' + (now.getMonth() + 1) + ' 月）';
@@ -342,6 +359,57 @@ function toolCmd(c, who) {
     $('tlr').innerHTML = '<div class="mtx" style="font-size:14px">' + esc(t).replace(/(https?:\/\/\S+)/g, '<a href="$1" target="_blank">$1</a>') + '</div>' +
       '<div style="padding:0 16px;display:flex;gap:8px;flex-wrap:wrap">' + (u ? '<span class="chip f" onclick="location.href=\'https://line.me/R/share?text=\'+encodeURIComponent(window.__share)">用 LINE 傳給' + (who ? esc(who) : '員工') + '</span><span class="chip" onclick="cp(window.__share)">複製要傳的訊息</span>' : '') + '<span class="chip" onclick="cp(window.__all)">複製全部</span></div>';
   }).catch(function () { $('tlr').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再按一次</div>'; });
+}
+// ---------- 可樂查詢頁（跟 LINE 一樣的指令，結果顯示在 App） ----------
+function qOut(h) { $('qr').innerHTML = h; $('qr').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+function qRun(c, lab, write) {
+  if (write && !confirm('確定送出？\n\n' + c)) return;
+  qOut('<div class="card" style="color:var(--mu)">查詢中…（' + esc(lab) + '）</div>');
+  api('op=bcmd&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&cmd=' + encodeURIComponent(c)).then(function (j) {
+    if (!j.ok) { qOut('<div class="card" style="color:#c0392b">' + esc(j.err || '失敗') + '</div>'); return; }
+    window.__q = j.text || ''; window.__qc = c; window.__ql = lab;
+    qOut('<div class="sec2">' + esc(lab) + '　<span class="chip" onclick="cp(window.__q)">複製</span><span class="chip" onclick="qRun(window.__qc,window.__ql)">重新查</span></div><div class="mtx" style="font-size:14px;margin-top:0">' + esc(window.__q) + '</div>');
+    if (!write) { try { var H = JSON.parse(LS('q_hist') || '[]').filter(function (x) { return x.c !== c; }); H.unshift({ c: c, l: lab }); LS('q_hist', JSON.stringify(H.slice(0, 8))); } catch (e) { } qHist(); }
+  }).catch(function () { qOut('<div class="card" style="color:#c0392b">網路不穩，請再按一次</div>'); });
+}
+function qHist() {
+  var H = []; try { H = JSON.parse(LS('q_hist') || '[]'); } catch (e) { }
+  $('qhh').textContent = H.length ? '最近查過' : ''; $('qh').style.display = H.length ? '' : 'none';
+  $('qh').innerHTML = H.map(function (x, i) { return '<span class="chip" onclick="qHi(' + i + ')">' + esc(x.l) + '</span>'; }).join('');
+}
+function qHi(i) { var H = JSON.parse(LS('q_hist') || '[]'); if (H[i]) qRun(H[i].c, H[i].l); }
+function qP(c, lab) { var n = $('qN').value; if (!n) { bar('先選人', 2000); return; } qRun(c + '\n' + n, n + '・' + lab); }
+function qItem(c, lab) { var t = $('qItem').value.trim(); qRun(c + (t ? '\n' + t : ''), (t || '全部') + '・' + lab); }
+function qDrink(c, lab) { var t = $('qDrink').value.trim(); if (!t) { bar('請打飲品名', 2000); return; } qRun(c + '\n' + t, t + '・' + lab); }
+function qSched() { var d = $('qDay').value; if (!d) { bar('先選日期', 2000); return; } qRun('#查班表\n' + $('qSt').value + '\n' + md2(d), $('qSt').value + ' ' + md2(d) + ' 班表'); }
+function qForm(k) {
+  var now = new Date(), ym = function (o) { var d = new Date(now.getFullYear(), now.getMonth() - o, 1); return String(d.getFullYear()).slice(2) + ('0' + (d.getMonth() + 1)).slice(-2); };
+  var h = '';
+  if (k === 'net') { qRun('#更新財務 ' + ym(0), ym(0) + ' 淨利'); h = '<div class="card">看別的月份：<span class="chip" onclick="qRun(\'#更新財務 ' + ym(1) + '\',\'' + ym(1) + ' 淨利\')">' + ym(1) + '</span><span class="chip" onclick="qRun(\'#更新財務 ' + ym(2) + '\',\'' + ym(2) + ' 淨利\')">' + ym(2) + '</span></div>'; }
+  else if (k === 'waste') h = '<div class="card">耗損分析：<span class="chip f" onclick="qRun(\'#耗損分析\',\'兩店耗損\')">兩店</span><span class="chip" onclick="qRun(\'#耗損分析\\n熱河\',\'熱河耗損\')">熱河</span><span class="chip" onclick="qRun(\'#耗損分析\\n鳳山\',\'鳳山耗損\')">鳳山</span></div>';
+  else if (k === 'exp') h = '<div class="card"><b>💸 打支出</b><select id="xS" onchange="$(\'xSp\').style.display=this.value===\'共用\'?\'\':\'none\'"><option>熱河</option><option>鳳山</option><option>共用</option></select>' +
+    '<input id="xI" placeholder="項目，例：清潔用品"><input id="xA" inputmode="numeric" placeholder="金額"><input id="xP" placeholder="付款方式，例：現金／轉帳" list="xPl"><datalist id="xPl"><option>現金</option><option>轉帳</option><option>信用卡</option></datalist>' +
+    '<select id="xSp" style="display:none"><option>50/50</option><option>100%熱河</option><option>100%鳳山</option></select><input id="xW" placeholder="付款人（可不填）"><input id="xN" placeholder="備註（可不填）"><button class="btn" onclick="qExp()">送出支出</button></div>';
+  else if (k === 'emp') {
+    var F = ['電話', '身分證字號', '緊急聯絡人', '緊急聯絡電話', '轉正日期', '生日日期', '駕照', '制服尺寸', '良民證', 'Line ID', '員工編號', '學習路線'];
+    h = '<div class="card"><b>📝 補員工資料</b><p style="font-size:13px;color:var(--mu);margin:4px 0 8px">只填要補的，空白的不會動到原本資料</p>' + nameSel('eN') +
+      F.map(function (f, i) { return /日期/.test(f) ? '<label style="font-size:13px;color:var(--mu)">' + f + '</label><input id="eF' + i + '" type="date">' : f === '良民證' ? '<select id="eF' + i + '"><option value="">良民證（不改）</option><option>已繳</option><option>未繳</option></select>' : '<input id="eF' + i + '" placeholder="' + f + '">'; }).join('') +
+      '<button class="btn" onclick="qEmp()">送出</button></div>';
+    window.__EF = F;
+  }
+  $('qf').innerHTML = h; if (k !== 'net') { $('qr').innerHTML = ''; $('qf').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+}
+function qExp() {
+  var st = $('xS').value, it = $('xI').value.trim(), am = $('xA').value.replace(/[^\d.]/g, '');
+  if (!it || !am) { bar('請填項目和金額', 2000); return; }
+  var c = '#支出\n門市：' + st + '\n項目：' + it + '\n金額：' + am + '\n付款方式：' + $('xP').value.trim() + (st === '共用' ? '\n分攤方式：' + $('xSp').value : '') + ($('xW').value.trim() ? '\n付款人：' + $('xW').value.trim() : '') + '\n備註：' + $('xN').value.trim();
+  qRun(c, '打支出', true);
+}
+function qEmp() {
+  var n = $('eN').value; if (!n) { bar('先選人', 2000); return; }
+  var L = []; (window.__EF || []).forEach(function (f, i) { var v = ($('eF' + i).value || '').trim(); if (!v) return; if (/^\d{4}-\d{2}-\d{2}$/.test(v)) v = v.replace(/-/g, '/'); L.push(f + '：' + v); });
+  if (!L.length) { bar('沒有填要補的欄位', 2000); return; }
+  qRun('#補資料\n姓名：' + n + '\n' + L.join('\n'), n + '・補資料', true);
 }
 function tdDone(i) {
   var t = DATA.boss.todo[i]; if (!t) return;
