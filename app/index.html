@@ -317,7 +317,7 @@ function toolGo(x) {
 }
 function toolCmd(c, who) {
   $('tlr').innerHTML = '<div class="card" style="margin-top:6px;color:var(--mu)">處理中…</div>';
-  api('op=bcmd&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&c=' + encodeURIComponent(c)).then(function (j) {
+  api('op=bcmd&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&cmd=' + encodeURIComponent(c)).then(function (j) {
     if (!j.ok) { $('tlr').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '失敗') + '</div>'; return; }
     var t = j.text || '', urls = t.match(/https?:\/\/\S+/g) || [], u = urls[urls.length - 1] || '';
     var lab = c.indexOf('#多劃') === 0 ? '多劃假連結' : c.indexOf('#簽收單') === 0 ? '現金簽收單' : c.indexOf('#分期連結') === 0 ? '分期借支連結' : '借支連結';
