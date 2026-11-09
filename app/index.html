@@ -65,6 +65,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 .sec2{margin:14px 18px 6px;font-size:13px;color:#9a8068;font-weight:700}
 .bar2{height:8px;background:#f1e8dc;border-radius:4px;overflow:hidden;margin:4px 0}.bar2 i{display:block;height:100%;background:var(--hd)}
 .pl{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f1e8dc;font-size:14px}.pl:last-child{border:0}
+#tlf input[type=date]{min-width:0;flex:1;font-size:15px}
 .out{font-size:12px;color:var(--mu);text-align:center;margin:18px 0 24px}.out span{text-decoration:underline}
 </style>
 </head>
@@ -89,6 +90,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div class="hd"><div class="s" id="hs"></div><h2 id="hn"></h2><span class="rf" id="rf">↻ 更新</span><span class="rf" id="sw" style="display:none;right:90px"></span></div>
   <div class="card" id="ldc" style="display:none;margin-top:14px"></div>
   <div id="btd" style="display:none"><div class="sec2" id="btdh"></div><div class="card" id="btdl"></div></div>
+  <div id="btl" style="display:none"><div class="sec2">常用</div><div class="card" style="display:flex;gap:8px;flex-wrap:wrap"><span class="chip f" onclick="tool('grant')">🏖️ 多劃假</span><span class="chip f" onclick="tool('slip')">💵 簽收單</span><span class="chip f" onclick="tool('loan')">💳 借支單</span></div></div>
   <div class="grid">
     <div class="t" onclick="go('lv')"><span class="badge" id="b1" style="display:none">1</span><span class="e">📅</span><b>劃假</b><small id="c1">　</small></div>
     <div class="t" onclick="go('sc')"><span class="e">🗓️</span><b>我的班表</b><small id="c2">　</small></div>
@@ -104,6 +106,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div class="out">不是你？<span onclick="logout()">登出</span></div>
 </div>
 
+<div class="scr" id="tl"><div class="hd"><div class="s">可樂常用</div><h2 id="tlh"></h2></div><div class="box" id="tlf"></div><div id="tlr"></div><div style="height:20px"></div></div>
 <div class="scr" id="kh"><div class="hd"><div class="s" id="khs"></div><h2>📊 考核</h2></div><div id="khb"></div><div style="height:20px"></div></div>
 <div class="scr" id="mt"><div class="hd"><div class="s" id="mts"></div><h2>📋 開會內容</h2></div><div id="mtb"></div></div>
 <div class="scr" id="say">
@@ -182,14 +185,14 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 // ---------- 畫面切換 ----------
 function show(v) {
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'ex', 'sg', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'ex', 'sg', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
   CUR0 = v;
   $('fr').style.display = (v === 'lv' || v === 'sc') ? 'block' : 'none';
   $('nav').style.display = (v === 'login' || v === 'gone') ? 'none' : 'flex';
-  [].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.classList.toggle('on', d.getAttribute('data-v') === (v === 'say' || v === 'mt' ? 'home' : v)); });
+  [].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.classList.toggle('on', d.getAttribute('data-v') === (v === 'say' || v === 'mt' || v === 'tl' ? 'home' : v)); });
   if (v === 'lv' || v === 'sc') frame();
   if (v === 'home') { load(0); if (DATA) mtRender(); }
   if (v === 'mt') { MTI = 0; mtRender(); window.scrollTo(0, 0); }
@@ -257,7 +260,7 @@ function render() {
 function bossRender() {
   var B = DATA && DATA.boss, nv = document.querySelector('.nav div[data-v=ex]') || document.querySelector('.nav div[data-v=kh]');
   if (nv) { nv.setAttribute('data-v', B ? 'kh' : 'ex'); nv.innerHTML = B ? '<i>📊</i>考核' : '<i>📝</i>考試'; }
-  $('btd').style.display = B ? '' : 'none';
+  $('btd').style.display = B ? '' : 'none'; $('btl').style.display = B ? '' : 'none';
   if (!B) return;
   var now = new Date(), dn = now.getDate(), last = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   $('btdh').textContent = '這個月要做的（' + (now.getMonth() + 1) + ' 月）';
@@ -272,6 +275,57 @@ function bossRender() {
       '<span class="st ' + c + '" onclick="tdDone(' + i + ')">' + lab + '</span></div>';
   }).join('') || '<div style="color:var(--mu)">還沒有待辦（老闆管理中心「46_可樂每月待辦」可以加）</div>';
   khRender();
+}
+// ---------- 可樂常用：多劃假、簽收單、借支單 ----------
+var TL = '';
+function nameSel(id) {
+  var N = (DATA.boss && DATA.boss.names) || {};
+  return '<select id="' + id + '"><option value="">選人</option>' + Object.keys(N).map(function (k) { return '<optgroup label="' + k + '">' + N[k].map(function (n) { return '<option>' + esc(n) + '</option>'; }).join('') + '</optgroup>'; }).join('') + '</select>';
+}
+function tool(k) {
+  TL = k; $('tlr').innerHTML = '';
+  var now = new Date(), yms = [0, 1, 2].map(function (i) { var d = new Date(now.getFullYear(), now.getMonth() - i, 1); return String(d.getFullYear()).slice(2) + ('0' + (d.getMonth() + 1)).slice(-2); });
+  if (k === 'grant') {
+    $('tlh').textContent = '🏖️ 多劃假';
+    $('tlf').innerHTML = '<p>同意某人多休，產生他專屬的劃假連結（照特休檔自動分特休／欠休）</p>' + nameSel('tlN') +
+      '<input id="tlD" type="number" inputmode="numeric" placeholder="天數，例 2">' +
+      '<p style="margin:0 0 6px">只能劃哪幾天（不填＝現在開放的這一期）</p><div style="display:flex;gap:8px"><input id="tlA" type="date"><input id="tlB" type="date"></div>' +
+      '<button class="btn" onclick="toolGo()">產生連結</button>';
+  } else if (k === 'slip') {
+    $('tlh').textContent = '💵 簽收單';
+    $('tlf').innerHTML = '<p>這個人所有還沒簽的現金一次簽（杯數、紅榜、國定假日、現金薪資…）</p>' + nameSel('tlN') +
+      '<select id="tlM"><option value="">全部還沒簽的</option>' + yms.map(function (y) { return '<option value="' + y + '">只簽 ' + y + '</option>'; }).join('') + '</select>' +
+      '<button class="btn" onclick="toolGo()">產生簽收單</button><button class="btn" style="background:#fff;color:var(--ac);border:1px solid var(--ac);margin-top:8px" onclick="toolGo(\'rec\')">看他的簽收紀錄</button>';
+  } else {
+    $('tlh').textContent = '💳 借支單';
+    $('tlf').innerHTML = '<p>一般借支：下次發薪一次扣清，連結可以直接傳給員工</p><button class="btn" onclick="toolCmd(\'#借支連結\')">拿一般借支連結</button>' +
+      '<p style="margin-top:18px">分期借支：談過才給，只有這個人能用、用一次就失效</p>' + nameSel('tlN') + '<button class="btn" onclick="toolGo()">產生分期連結</button>' +
+      '<button class="btn" style="background:#fff;color:var(--ac);border:1px solid var(--ac);margin-top:18px" onclick="toolCmd(\'#借支待核\')">看待核准的借支</button>';
+  }
+  show('tl'); window.scrollTo(0, 0);
+}
+function md2(v) { var p = v.split('-'); return +p[1] + '/' + +p[2]; }
+function toolGo(x) {
+  var n = $('tlN') ? $('tlN').value : '';
+  if (!n) { bar('請先選人', 2000); return; }
+  if (TL === 'grant') {
+    var d = $('tlD').value.trim(), a = $('tlA').value, b = $('tlB').value;
+    if (!(+d > 0)) { bar('請填天數', 2000); return; }
+    toolCmd('#多劃 ' + n + ' ' + d + (a ? ' ' + md2(a) + (b && b !== a ? '-' + md2(b) : '') : ''), n);
+  } else if (TL === 'slip') toolCmd(x === 'rec' ? '#簽收紀錄 ' + n : '#簽收單 ' + n + ($('tlM').value ? ' ' + $('tlM').value : ''), x === 'rec' ? '' : n);
+  else toolCmd('#分期連結 ' + n, n);
+}
+function toolCmd(c, who) {
+  $('tlr').innerHTML = '<div class="card" style="margin-top:6px;color:var(--mu)">處理中…</div>';
+  api('op=bcmd&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&c=' + encodeURIComponent(c)).then(function (j) {
+    if (!j.ok) { $('tlr').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '失敗') + '</div>'; return; }
+    var t = j.text || '', urls = t.match(/https?:\/\/\S+/g) || [], u = urls[urls.length - 1] || '';
+    var lab = c.indexOf('#多劃') === 0 ? '多劃假連結' : c.indexOf('#簽收單') === 0 ? '現金簽收單' : c.indexOf('#分期連結') === 0 ? '分期借支連結' : '借支連結';
+    window.__share = u ? ((who ? who + ' 你好～\n' : '') + '這是你的' + lab + '，請點開確認👇\n' + u) : t;
+    window.__all = t;
+    $('tlr').innerHTML = '<div class="mtx" style="font-size:14px">' + esc(t).replace(/(https?:\/\/\S+)/g, '<a href="$1" target="_blank">$1</a>') + '</div>' +
+      '<div style="padding:0 16px;display:flex;gap:8px;flex-wrap:wrap">' + (u ? '<span class="chip f" onclick="location.href=\'https://line.me/R/share?text=\'+encodeURIComponent(window.__share)">用 LINE 傳給' + (who ? esc(who) : '員工') + '</span><span class="chip" onclick="cp(window.__share)">複製要傳的訊息</span>' : '') + '<span class="chip" onclick="cp(window.__all)">複製全部</span></div>';
+  }).catch(function () { $('tlr').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再按一次</div>'; });
 }
 function tdDone(i) {
   var t = DATA.boss.todo[i]; if (!t) return;
