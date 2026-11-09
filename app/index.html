@@ -279,12 +279,20 @@ function bossRender() {
 // ---------- 可樂常用：多劃假、簽收單、借支單 ----------
 var TL = '';
 function nameSel(id) {
-  var N = (DATA.boss && DATA.boss.names) || {};
+  var N = (DATA.boss && DATA.boss.names) || (DATA.lead && DATA.lead.names ? (function () { var o = {}; o[DATA.store || '本店'] = DATA.lead.names.filter(function (n) { return n !== U.n; }); return o; })() : {});
   return '<select id="' + id + '"><option value="">選人</option>' + Object.keys(N).map(function (k) { return '<optgroup label="' + k + '">' + N[k].map(function (n) { return '<option>' + esc(n) + '</option>'; }).join('') + '</optgroup>'; }).join('') + '</select>';
 }
 function tool(k) {
-  TL = k; $('tlr').innerHTML = '';
+  TL = k; $('tlr').innerHTML = ''; $('tl').querySelector('.s').textContent = DATA.boss ? '可樂常用' : '幹部';
   var now = new Date(), yms = [0, 1, 2].map(function (i) { var d = new Date(now.getFullYear(), now.getMonth() - i, 1); return String(d.getFullYear()).slice(2) + ('0' + (d.getMonth() + 1)).slice(-2); });
+  if (k === 'exam') {
+    $('tlh').textContent = '📝 幫員工開考試';
+    $('tlf').innerHTML = '<p>員工要在現場、在你面前考。開考後他的 App「考試」會亮起來，30 分鐘內要開始；成績和考試中離開 App 都會通知幹部群</p>' + nameSel('tlN') +
+      '<select id="tlT"><option value="茶譜">茶譜考試</option><option value="果汁">果汁比例考試</option></select>' +
+      '<label style="display:flex;gap:8px;align-items:center;font-size:14px;margin:0 0 12px"><input id="tlR" type="checkbox" style="width:20px;height:20px;padding:0;margin:0;-webkit-appearance:checkbox;appearance:auto"> 已經考過，要重考</label>' +
+      '<button class="btn" onclick="exOpenGo()">開考</button>';
+    show('tl'); window.scrollTo(0, 0); $('tlr').innerHTML = ''; return;
+  }
   if (k === 'grant') {
     $('tlh').textContent = '🏖️ 多劃假';
     $('tlf').innerHTML = '<p>同意某人多休，產生他專屬的劃假連結（照特休檔自動分特休／欠休）</p>' + nameSel('tlN') +
@@ -303,6 +311,14 @@ function tool(k) {
       '<button class="btn" style="background:#fff;color:var(--ac);border:1px solid var(--ac);margin-top:18px" onclick="toolCmd(\'#借支待核\')">看待核准的借支</button>';
   }
   show('tl'); window.scrollTo(0, 0);
+}
+function exOpenGo() {
+  var n = $('tlN').value; if (!n) { bar('請先選人', 2000); return; }
+  $('tlr').innerHTML = '<div class="card" style="margin-top:6px;color:var(--mu)">開考中…</div>';
+  api('op=exopen&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&e=' + encodeURIComponent(n) + '&ty=' + encodeURIComponent($('tlT').value) + '&re=' + ($('tlR').checked ? 1 : 0)).then(function (j) {
+    var t = j.ok ? String(j.text || '').split('━━━━━━━━━━')[0].trim() : (j.err || '失敗');
+    $('tlr').innerHTML = '<div class="mtx" style="font-size:14px' + (j.ok ? '' : ';color:#c0392b') + '">' + esc(t) + '</div>';
+  }).catch(function () { $('tlr').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再按一次</div>'; });
 }
 function md2(v) { var p = v.split('-'); return +p[1] + '/' + +p[2]; }
 function toolGo(x) {
@@ -414,7 +430,7 @@ function leadRender() {
   $('ldc').innerHTML = '<b>📝 打員工考核</b><span style="color:var(--mu);font-size:13px">' + L.period + '・' + L.dl + ' 前打完</span>' +
     '<div style="display:flex;justify-content:space-between;margin-top:6px"><span>' + (DATA.store || '') + '</span><span>' + done + '／' + L.total + ' 人</span></div><div class="bar2"><i style="width:' + (L.total ? Math.round(done / L.total * 100) : 0) + '%"></i></div>' +
     (L.left.length ? '<div style="font-size:13px;color:var(--mu)">還沒打完：' + L.left.map(esc).join('、') + '</div>' : '<div style="font-size:13px;color:#2f6b12">✅ 都打完了</div>') +
-    '<span class="chip f" onclick="ovOpen(\'打員工考核\', DATA.lead.url)">開始打考核 ›</span>';
+    '<span class="chip f" onclick="ovOpen(\'打員工考核\', DATA.lead.url)">開始打考核 ›</span><span class="chip" onclick="tool(\'exam\')">📝 幫員工開考試</span>';
 }
 function sgClose() { $('sgf').style.display = 'none'; var o = $('sgf').querySelector('iframe'); if (o) o.remove(); LAST = 0; load(0); }   // 關掉就更新進度
 window.addEventListener('message', function (e) { if (e.data && e.data.annSigned) { bar('簽好了 👍', 2000); setTimeout(function () { LAST = 0; load(0); }, 1500); } });
