@@ -62,6 +62,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 .st{flex:0 0 auto;font-size:12px;border-radius:10px;padding:3px 9px;border:1px solid #e0d2bf;color:#a08a74}.st.ok{background:#e5f4e4;color:#2f6b12;border-color:#b8dca5}.st.due{background:#fdecea;color:#c0392b;border-color:#f3b8b2}.st.soon{background:#fff3cd;color:#8a6d00;border-color:#f0dc9a}
 .chip{text-decoration:none;display:inline-block;margin:6px 6px 0 0;background:#fff;color:var(--ac);border:1px solid var(--ac);border-radius:8px;padding:3px 10px;font-size:13px}
 .chip.f{background:var(--ac);color:#fff}
+.prm{border:2px solid #e8b4a0;background:#fff8f4}.prm h3{margin:0 0 6px;font-size:15px;color:#b3502e}.pri{display:flex;justify-content:space-between;border-bottom:1px dashed var(--ln);padding:5px 0}.pri span:last-child{color:var(--mu);font-size:12px}.tg{font-size:12px;border-radius:10px;padding:1px 8px;float:right}.tg.r{background:#fde3dc;color:#b3502e}.tg.y{background:#fdf1d0;color:#8a6200}.tg.g{background:#e5f4e4;color:#2f6b12}
 .sec2{margin:14px 18px 6px;font-size:13px;color:#9a8068;font-weight:700}
 .s2p{display:flex;gap:8px;margin:12px 16px 0}.s2p span{flex:1;text-align:center;border:1px solid var(--ac);color:var(--ac);background:#fff;border-radius:20px;padding:7px 0;font-size:14px}.s2p span.on{background:var(--ac);color:#fff}
 .s2d{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;-webkit-overflow-scrolling:touch}.s2d span{flex:0 0 46px;text-align:center;background:#fff;border:1px solid var(--ln);border-radius:10px;padding:5px 0;font-size:12px;line-height:1.4}.s2d span.on{background:var(--ac);color:#fff;border-color:var(--ac)}.s2d span.we{color:#c0392b}.s2d span.on.we{color:#fff}
@@ -101,6 +102,8 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
     <div class="t" onclick="go('sg')"><span class="badge" id="b4" style="display:none"></span><span class="e">✍️</span><b>公告簽名</b><small id="c4">沒有要簽的</small></div>
   </div>
   <div class="card"><b>今天</b><span id="td">　</span></div>
+  <div class="card" id="prc" style="display:none"></div>
+  <div class="card" id="hcc" style="display:none"></div>
   <div class="card" id="rmc" style="display:none"><b>提醒</b><span id="rm"></span></div>
   <div class="card" id="mtc" onclick="go('mt')" style="display:none"><b>📋 開會內容</b><span id="mtt"></span><span style="float:right;color:var(--mu)">›</span></div>
   <div class="card" id="hrc" style="display:none"></div>
@@ -280,8 +283,21 @@ document.addEventListener('visibilitychange', function () {
 [].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.onclick = function () { go(d.getAttribute('data-v')); }; });
 
 // ---------- 首頁 ----------
+function prRender(p) {   // 11/10 我的資料還缺什麼、體檢到期
+  var a = $('prc'), b = $('hcc');
+  if (!p || BOSS()) { a.style.display = b.style.display = 'none'; return; }
+  var m = p.miss || [];
+  a.style.display = m.length ? '' : 'none'; a.className = 'card prm';
+  a.innerHTML = '<h3>📋 你的資料還缺 ' + m.length + ' 項</h3>' + m.map(function (x) { return '<div class="pri"><span>' + x.e + ' ' + esc(x.t) + '</span><span>找幹部補</span></div>'; }).join('') + '<div style="font-size:12px;color:var(--mu);margin-top:6px">補好後幹部會幫你更新，這裡就會消失</div>';
+  var h = p.hc;
+  if (!h) { b.style.display = 'none'; return; }
+  var cls = h.days < 0 ? 'r' : h.days <= 30 ? 'y' : 'g', st = h.days < 0 ? '已過期 ' + (-h.days) + ' 天' : h.days <= 30 ? '還有 ' + h.days + ' 天' : '還有 ' + h.days + ' 天';
+  b.style.display = ''; b.className = 'card';
+  b.innerHTML = '<b>🩺 體檢</b><span class="tg ' + cls + '">' + h.due + ' ' + (h.last ? '到期' : '前要做') + '・' + st + '</span><div style="font-size:12px;color:var(--mu);margin-top:4px">' + (h.last ? '上次體檢 ' + h.last + '，每年一次' : '還沒有體檢紀錄，到職 3 個月內要做第一次') + '</div>';
+}
 function render() {
   var d = DATA; if (!d) return;
+  prRender(d.prof);
   $('hs').textContent = d.store + '｜' + d.me.sh + d.me.cls;
   $('sw').style.display = BOSS() ? '' : 'none'; $('sw').textContent = '換' + (U.s === 'rh' ? '鳳山中山' : '熱河'); $('hn').textContent = d.me.n + ' 你好';
   var h = d.home || {}, p = h.per;
