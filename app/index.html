@@ -65,6 +65,9 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 .chip.f{background:var(--ac);color:#fff}
 .prm{border:2px solid #e8b4a0;background:#fff8f4}.prm h3{margin:0 0 6px;font-size:15px;color:#b3502e}.pri{display:flex;justify-content:space-between;border-bottom:1px dashed var(--ln);padding:5px 0}.pri span:last-child{color:var(--mu);font-size:12px}.tg{font-size:12px;border-radius:10px;padding:1px 8px;float:right}.tg.r{background:#fde3dc;color:#b3502e}.tg.y{background:#fdf1d0;color:#8a6200}.tg.g{background:#e5f4e4;color:#2f6b12}
 .sec2{margin:14px 18px 6px;font-size:13px;color:#9a8068;font-weight:700}
+.tq{display:grid;grid-template-columns:54px 1fr auto;gap:6px;align-items:center;padding:7px 0;border-bottom:1px dashed #eadfce}.tq:last-child{border:0}.tq b.n{font-size:20px;color:#b3502e}
+.tst{display:flex;align-items:center;gap:6px}.tst span{width:30px;height:30px;border-radius:50%;border:1px solid var(--ac);color:var(--ac);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}.tst b{min-width:36px;text-align:center;font-size:16px}
+.tq select{margin:0;padding:5px 6px;font-size:13px;width:auto}
 .s2p{display:flex;gap:8px;margin:12px 16px 0}.s2p span{flex:1;text-align:center;border:1px solid var(--ac);color:var(--ac);background:#fff;border-radius:20px;padding:7px 0;font-size:14px}.s2p span.on{background:var(--ac);color:#fff}
 .s2d{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;-webkit-overflow-scrolling:touch}.s2d span{flex:0 0 46px;text-align:center;background:#fff;border:1px solid var(--ln);border-radius:10px;padding:5px 0;font-size:12px;line-height:1.4}.s2d span.on{background:var(--ac);color:#fff;border-color:var(--ac)}.s2d span.we{color:#c0392b}.s2d span.on.we{color:#fff}
 .s2c h3{margin:0 0 4px;font-size:16px;display:flex;justify-content:space-between;align-items:baseline}.s2c h3 small{font-weight:400;color:var(--mu);font-size:12px}.s2c .t2{font-size:12px;color:var(--mu);margin:6px 0 0}.s2c .r{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed var(--ln)}.s2c .of{font-size:12px;color:var(--mu);margin-top:6px}
@@ -101,6 +104,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
     <div class="t" onclick="go('sc')"><span class="e">🗓️</span><b>我的班表</b><small id="c2">　</small></div>
     <div class="t" onclick="go('ex')"><span class="badge" id="b3" style="display:none">!</span><span class="e">📝</span><b>考試</b><small id="c3">沒有考試</small></div>
     <div class="t" onclick="go('sg')"><span class="badge" id="b4" style="display:none"></span><span class="e">✍️</span><b>公告簽名</b><small id="c4">沒有要簽的</small></div>
+    <div class="t" id="teat" style="display:none" onclick="go('tea')"><span class="badge" id="b5" style="display:none">!</span><span class="e">🧊</span><b>留茶湯</b><small id="c5">　</small></div>
   </div>
   <div class="card"><b>今天</b><span id="td">　</span></div>
   <div class="card" id="prc" style="display:none"></div>
@@ -113,6 +117,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div class="out">不是你？<span onclick="logout()">登出</span></div>
 </div>
 
+<div class="scr" id="tea"><div class="hd"><div class="s" id="teas"></div><h2>🧊 留茶湯</h2><span class="rf" id="teasw" style="display:none" onclick="teaSw()"></span></div><div class="s2p" id="teatab"></div><div id="teab"></div><div style="height:20px"></div></div>
 <div class="scr" id="tl"><div class="hd"><div class="s">可樂常用</div><h2 id="tlh"></h2></div><div class="box" id="tlf"></div><div id="tlr"></div><div style="height:20px"></div></div>
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -210,7 +215,7 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 function show(v) {
   if (v === 'sc' && BOSS()) v = 's2';   // 11/10 可樂：兩店班表一起看
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
@@ -219,11 +224,89 @@ function show(v) {
   $('nav').style.display = (v === 'login' || v === 'gone') ? 'none' : 'flex';
   [].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.classList.toggle('on', d.getAttribute('data-v') === (v === 'say' || v === 'mt' || v === 'tl' ? 'home' : v === 's2' ? 'sc' : v)); });
   if (v === 's2') { s2Render(); window.scrollTo(0, 0); }
+  if (v === 'tea') { teaLoad(); window.scrollTo(0, 0); }
   if (v === 'lv' || v === 'sc') frame();
   if (v === 'home') { load(0); if (DATA) mtRender(); }
   if (v === 'mt') { MTI = 0; mtRender(); window.scrollTo(0, 0); }
 }
 function go(v) { show(v); }
+// ---------- 11/11 留茶湯 ----------
+var TEA = null, TEAK = 0, TEAF = null;
+var TEA_OPEN = false;   // 11/11 先只給可樂用；之後開放幹部、儲備幹部（員工只看）→ 改 true，後端 TEA_OPEN 也要改
+function teaCan() { return BOSS() || (TEA_OPEN && (!!(DATA && DATA.lead) || ['蔡雅雯', '陳可婕'].indexOf(U.n) >= 0)); }
+function teaB(cc) { var b = cc / 10000; return b <= 0 ? '0' : (b % 1 ? b.toFixed(1) : String(b)); }
+function teaHome() {
+  var t = DATA && DATA.tea, el = $('c5'); if (!el) return;
+  $('teat').style.display = BOSS() || TEA_OPEN ? '' : 'none';
+  var h = new Date().getHours();
+  if (t && t.done) { el.textContent = t.who + ' ' + t.t + ' 填了'; $('b5').style.display = 'none'; }
+  else { el.textContent = h >= 16 ? '今天還沒填' : '16:00 填冰箱剩多少'; $('b5').style.display = h >= 16 && teaCan() ? '' : 'none'; }
+}
+function teaSw() { $('sw').onclick(); TEA = null; teaLoad(); }
+function teaLoad() {
+  $('teasw').style.display = BOSS() ? '' : 'none'; $('teasw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
+  if (!TEA) $('teab').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
+  api('op=tea&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok).then(function (j) {
+    if (!j.ok) { $('teab').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; }
+    TEA = j; TEAF = null; teaRender();
+  }).catch(function () { $('teab').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+}
+function teaTrend(f) { var p = Math.round((f - 1) * 100); return p >= 5 ? '⬆️ 比平常多 ' + p + '%' : p <= -5 ? '⬇️ 比平常少 ' + (-p) + '%' : '➖ 跟平常差不多'; }
+function teaTimes() {
+  var o = ['<option value="">—</option>'], h = new Date().getHours();
+  for (var i = 12; i <= 23; i++) o.push('<option>昨天 ' + ('0' + i).slice(-2) + ':00</option>');
+  for (var k = 0; k <= h; k++) o.push('<option>' + ('0' + k).slice(-2) + ':00</option>');
+  return o.join('');
+}
+function teaRender() {
+  var P = TEA; if (!P) return;
+  $('teas').textContent = (P.store === '鳳山中山' ? '鳳山中山' : '熱河') + '・' + P.day + (P.can ? '' : '｜只能看');
+  $('teatab').innerHTML = ['晚班 16:00', '明早開店'].map(function (t, i) { return '<span class="' + (i === TEAK ? 'on' : '') + '" onclick="TEAK=' + i + ';teaRender()">' + t + '</span>'; }).join('');
+  var h = '<div class="card" style="background:#fff4e0;margin-top:12px">今晚 ' + esc(P.ft.why) + '<br>明天 ' + esc(P.tmr) + ' ' + esc(P.fm.why) + '<br><b>' + teaTrend(P.fm.f) + '</b></div>';
+  if (TEAK === 1) {
+    h += '<div class="card"><b>☀️ 明天早班 9:30 開店前，冰箱要有</b>' + P.morn.map(function (x) {
+      return '<div class="tq"><b>' + x.t + '</b><span></span><b class="n">' + (x.v > 0 ? teaB(x.v) + ' 桶' : '<span style="font-size:14px;color:#2e7d32">冰箱不用</span>') + '</b></div>';
+    }).join('') + '<div class="tq"><b>厚奶</b><span></span><b class="n">' + P.mornMilk + ' 包</b></div><div class="tq"><b>白玉</b><span style="color:var(--mu);font-size:12px">晚班準備好的那盒</span><b class="n">' + P.ball + ' g</b></div>' +
+      '<div class="tq"><b>黑烏龍</b><span style="color:var(--mu);font-size:12px">12H，賣掉再補</span><b class="n">0.5 桶</b></div><div class="tq"><b>青茶</b><span style="color:var(--mu);font-size:12px">12H，賣掉再補</span><b class="n">1 桶</b></div>' +
+      '<div style="color:var(--mu);font-size:12px;margin-top:6px">已扣掉調飲機裡的量（和茶、307、308 各 1.5 桶，紅茶、406 各 5000，505 7000）</div></div>';
+    $('teab').innerHTML = h; return;
+  }
+  var F = P.filled;
+  h += '<div class="card"><b>🧊 從現在到收店＋留給明早，冰箱總共要</b>' + P.night.map(function (x) {
+    return '<div class="tq"><b>' + x.t + '</b><span style="color:var(--mu);font-size:12px">' + (F ? '現在剩 ' + x.left + ' 桶' : '') + '</span><b class="n">' + teaB(x.total) + ' 桶</b></div>';
+  }).join('') + '<div class="tq"><b>厚奶</b><span style="color:var(--mu);font-size:12px">' + (F ? '現在剩 ' + P.milk.left + ' 包' : '') + '</span><b class="n">' + P.milk.total + ' 包</b></div>' +
+    (F ? '<div style="color:var(--mu);font-size:12px;margin-top:6px">' + esc(F.who) + ' ' + esc(F.t) + ' 填的</div>' : '') + '</div>';
+  if (P.warn && P.warn.length) h += '<div class="card" style="color:#b3502e;font-size:14px">' + P.warn.map(esc).join('<br>') + '</div>';
+  h += '<div class="card"><b>🌙 21:30 收店時冰箱要留（給明早）</b><br>' + P.night.filter(function (x) { return x.keep > 0; }).map(function (x) { return x.t + ' ' + teaB(x.keep); }).join('・') + '・厚奶 ' + P.milk.keep + ' 包' +
+    '<div class="tq" style="margin-top:6px"><b>白玉</b><span style="color:var(--mu);font-size:12px">準備好一盒，給明天開早用</span><b class="n">' + P.ball + ' g</b></div>' +
+    '<span style="color:var(--mu);font-size:12px">今天的白玉當天賣完；黑烏龍、青茶（12H）今天報廢</span></div>';
+  if (P.can) {
+    if (!TEAF) TEAF = { l: P.night.map(function (x) { return F ? x.left : 0; }), m: F ? P.milk.left : 0, e: P.night.map(function (x) { return F && F.early && F.early[x.t] || ''; }) };
+    var opt = teaTimes();
+    h += '<div class="card"><b>' + (F ? '重新填' : '16:00 填冰箱還剩多少') + '</b><span style="color:var(--mu);font-size:12px">（桶，＋最早那桶幾點煮的）</span>' +
+      P.night.map(function (x, i) {
+        return '<div class="tq"><b>' + x.t + '</b><div class="tst"><span onclick="teaStep(' + i + ',-0.5)">−</span><b id="tl' + i + '">' + TEAF.l[i] + '</b><span onclick="teaStep(' + i + ',0.5)">＋</span></div><select id="te' + i + '">' + opt + '</select></div>';
+      }).join('') +
+      '<div class="tq"><b>厚奶</b><div class="tst"><span onclick="teaStep(-1,-1)">−</span><b id="tlm">' + TEAF.m + '</b><span onclick="teaStep(-1,1)">＋</span></div><span style="color:var(--mu)">包</span></div>' +
+      '<button class="btn" onclick="teaSave()">送出</button></div>';
+  }
+  $('teab').innerHTML = h;
+  if (P.can) P.night.forEach(function (x, i) { var s = $('te' + i); if (s && TEAF.e[i]) { if (![].some.call(s.options, function (o) { return o.value === TEAF.e[i]; })) s.insertAdjacentHTML('beforeend', '<option>' + esc(TEAF.e[i]) + '</option>'); s.value = TEAF.e[i]; } });
+}
+function teaStep(i, d) {
+  if (i < 0) { TEAF.m = Math.max(0, TEAF.m + d); $('tlm').textContent = TEAF.m; return; }
+  TEAF.l[i] = Math.max(0, Math.round((TEAF.l[i] + d) * 2) / 2); $('tl' + i).textContent = TEAF.l[i];
+}
+function teaSave() {
+  var q = 'op=teaset&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&lm=' + TEAF.m;
+  TEA.night.forEach(function (x, i) { q += '&l' + i + '=' + TEAF.l[i] + '&e' + i + '=' + encodeURIComponent($('te' + i).value); });
+  bar('送出中…');
+  api(q).then(function (j) {
+    if (!j.ok) { bar(j.err || '沒送出，請再按一次', 3000); return; }
+    TEA = j; TEAF = null; teaRender(); window.scrollTo(0, 0); bar('已送出', 1500);
+    if (DATA) { DATA.tea = { done: true, who: j.filled.who, t: j.filled.t }; teaHome(); }
+  }).catch(function () { bar('網路不穩，請再按一次', 3000); });
+}
 // ---------- 可樂：兩店班表（11/10） ----------
 var S2B = '', S2D = '';
 function s2Day(s, n) { var p = s.split('/'), d = new Date(+p[0], p[1] - 1, +p[2] + n); return d.getFullYear() + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + ('0' + d.getDate()).slice(-2); }
@@ -322,6 +405,7 @@ function render() {
   mtRender();
   bossRender();
   leadRender();
+  teaHome();
   var hr = d.hr;
   $('hrc').style.display = hr ? '' : 'none';
   if (hr) $('hrc').innerHTML = '<b>🔑 風行人資系統</b><div class="hrk"><span>網域</span><b>' + hr.dom + '<i onclick="cp(\'' + hr.dom + '\')">複製</i></b></div><div class="hrk"><span>帳號</span><b>' + esc(hr.id) + '<i onclick="cp(\'' + esc(hr.id) + '\')">複製</i></b></div><div class="hrk"><span>預設密碼</span><b>' + hr.pw + '</b></div>';
