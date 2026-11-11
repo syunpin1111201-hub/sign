@@ -240,7 +240,7 @@ function teaHome() {
   $('teat').style.display = BOSS() || TEA_OPEN ? '' : 'none';
   var h = new Date().getHours();
   if (t && t.done) { el.textContent = t.who + ' ' + t.t + ' 填了'; $('b5').style.display = 'none'; }
-  else { el.textContent = h >= 16 ? '今天還沒填' : '16:00 填冰箱剩多少'; $('b5').style.display = h >= 16 && teaCan() ? '' : 'none'; }
+  else { el.textContent = '今晚收店要留多少'; $('b5').style.display = 'none'; }
 }
 function teaSw() { $('sw').onclick(); TEA = null; teaLoad(); }
 function teaLoad() {
@@ -262,7 +262,7 @@ function teaRender() {
   var P = TEA; if (!P) return;
   $('teas').textContent = (P.store === '鳳山中山' ? '鳳山中山' : '熱河') + '・' + P.day + (P.can ? '' : '｜只能看');
   $('teatab').innerHTML = ['晚班 16:00', '明早開店'].map(function (t, i) { return '<span class="' + (i === TEAK ? 'on' : '') + '" onclick="TEAK=' + i + ';teaRender()">' + t + '</span>'; }).join('');
-  var h = '<div class="card" style="background:#fff4e0;margin-top:12px">今晚 ' + esc(P.ft.why) + '<br>明天 ' + esc(P.tmr) + ' ' + esc(P.fm.why) + '<br><b>' + teaTrend(P.fm.f) + '</b></div>';
+  var h = '<div class="card" style="background:#fff4e0;margin-top:12px">明天 ' + esc(P.tmr) + ' ' + esc(P.fm.why) + '<br><b>' + teaTrend(P.fm.f) + '</b></div>';
   if (TEAK === 1) {
     h += '<div class="card"><b>☀️ 明天早班 9:30 開店前，冰箱要有</b>' + P.morn.map(function (x) {
       return '<div class="tq"><b>' + x.t + '</b><span></span><b class="n">' + (x.v > 0 ? teaB(x.v) + ' 桶' : '<span style="font-size:14px;color:#2e7d32">冰箱不用</span>') + '</b></div>';
@@ -271,27 +271,16 @@ function teaRender() {
       '<div style="color:var(--mu);font-size:12px;margin-top:6px">已扣掉調飲機裡的量（和茶、307、308 各 1.5 桶，紅茶、406 各 5000，505 7000）</div></div>';
     $('teab').innerHTML = h; return;
   }
-  var F = P.filled;
-  h += '<div class="card"><b>🧊 從現在到 21:30 下班前，冰箱總共要</b><div style="color:var(--mu);font-size:12px">只算冰箱，已扣掉調飲機裡的量</div>' + P.night.map(function (x) {
-    return '<div class="tq"><b>' + x.t + '</b><span style="color:var(--mu);font-size:12px">' + (F ? '現在剩 ' + x.left + ' 桶' : '') + '</span><b class="n">' + teaB(x.total) + ' 桶</b></div>';
-  }).join('') + '<div class="tq"><b>厚奶</b><span style="color:var(--mu);font-size:12px">' + (F ? '現在剩 ' + P.milk.left + ' 包' : '') + '</span><b class="n">' + P.milk.total + ' 包</b></div>' +
-    (F ? '<div style="color:var(--mu);font-size:12px;margin-top:6px">' + esc(F.who) + ' ' + esc(F.t) + ' 填的</div>' : '') + '</div>';
-  if (P.warn && P.warn.length) h += '<div class="card" style="color:#b3502e;font-size:14px">' + P.warn.map(esc).join('<br>') + '</div>';
-  h += '<div class="card"><b>🌙 21:30 收店時冰箱要留（給明早）</b><br>' + P.night.filter(function (x) { return x.keep > 0; }).map(function (x) { return x.t + ' ' + teaB(x.keep); }).join('・') + '・厚奶 ' + P.milk.keep + ' 包' +
-    '<div class="tq" style="margin-top:6px"><b>白玉</b><span style="color:var(--mu);font-size:12px">準備好一盒，給明天開早用</span><b class="n">' + P.ball + ' g</b></div>' +
-    '<span style="color:var(--mu);font-size:12px">今天的白玉當天賣完；黑烏龍、青茶（12H）今天報廢</span></div>';
-  if (P.can) {
-    if (!TEAF) TEAF = { l: P.night.map(function (x) { return F ? x.left : 0; }), m: F ? P.milk.left : 0, e: P.night.map(function (x) { return F && F.early && F.early[x.t] || ''; }) };
-    var opt = teaTimes();
-    h += '<div class="card"><b>' + (F ? '重新填' : '16:00 填冰箱還剩多少') + '</b><span style="color:var(--mu);font-size:12px">（桶，＋最早那桶幾點煮的）</span>' +
-      P.night.map(function (x, i) {
-        return '<div class="tq"><b>' + x.t + '</b><div class="tst"><span onclick="teaStep(' + i + ',-0.5)">−</span><b id="tl' + i + '">' + TEAF.l[i] + '</b><span onclick="teaStep(' + i + ',0.5)">＋</span></div><select id="te' + i + '">' + opt + '</select></div>';
-      }).join('') +
-      '<div class="tq"><b>厚奶</b><div class="tst"><span onclick="teaStep(-1,-1)">−</span><b id="tlm">' + TEAF.m + '</b><span onclick="teaStep(-1,1)">＋</span></div><span style="color:var(--mu)">包</span></div>' +
-      '<button class="btn" onclick="teaSave()">送出</button></div>';
-  }
+  // 11/12 16:00 發布的是「22:30 收店要留給明天早班」的量（晚上還會再煮，所以不算晚上用量；505、406 不留）
+  h += '<div class="card"><b>🌙 22:30 收店前，冰箱要留給明天早班</b><div style="color:var(--mu);font-size:12px">照明天的星期、天氣算好的量</div>' +
+    P.night.filter(function (x) { return x.keep > 0; }).map(function (x) {
+      return '<div class="tq"><b>' + x.t + '</b><span></span><b class="n">' + teaB(x.keep) + ' 桶</b></div>';
+    }).join('') +
+    '<div class="tq"><b>厚奶</b><span></span><b class="n">' + P.milk.keep + ' 包</b></div>' +
+    '<div class="tq"><b>白玉</b><span style="color:var(--mu);font-size:12px">準備好一盒，給明天開早用</span><b class="n">' + P.ball + ' g</b></div>' +
+    '<div style="color:var(--mu);font-size:12px;margin-top:6px">今天的白玉當天賣完；黑烏龍、青茶（12H）今天報廢</div></div>';
   $('teab').innerHTML = h;
-  if (P.can) P.night.forEach(function (x, i) { var s = $('te' + i); if (s && TEAF.e[i]) { if (![].some.call(s.options, function (o) { return o.value === TEAF.e[i]; })) s.insertAdjacentHTML('beforeend', '<option>' + esc(TEAF.e[i]) + '</option>'); s.value = TEAF.e[i]; } });
+  if (false) P.night.forEach(function (x, i) { var s = $('te' + i); if (s && TEAF.e[i]) { if (![].some.call(s.options, function (o) { return o.value === TEAF.e[i]; })) s.insertAdjacentHTML('beforeend', '<option>' + esc(TEAF.e[i]) + '</option>'); s.value = TEAF.e[i]; } });
 }
 function teaStep(i, d) {
   if (i < 0) { TEAF.m = Math.max(0, TEAF.m + d); $('tlm').textContent = TEAF.m; return; }
