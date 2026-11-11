@@ -39,6 +39,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font-family:
 .rec div{background:#fff;border-radius:10px;padding:10px 12px;margin:8px 16px 0;font-size:14px}
 #fr{position:fixed;inset:0;bottom:calc(64px + env(safe-area-inset-bottom));display:none;background:var(--bg)}
 #fr iframe{border:0;width:100%;height:100%}
+.swf{position:absolute;top:12px;right:12px;z-index:5;color:#fff;font-size:13px;background:#ffffff33;border:1px solid #ffffff80;border-radius:14px;padding:5px 12px;cursor:pointer}
 #fr .msg{padding:60px 20px;text-align:center;color:var(--ac);line-height:1.8}
 .bar{display:none;position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top));background:#3b2a1a;color:#fff;border-radius:12px;padding:10px 14px;font-size:14px;z-index:9;text-align:center}
 .box{padding:26px 22px}.box h3{margin:0 0 6px}.box p{color:#8a7560;font-size:13px;margin:0 0 18px;line-height:1.6}
@@ -91,7 +92,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 
 <!-- 首頁 -->
 <div class="scr" id="home">
-  <div class="hd"><div class="s" id="hs"></div><h2 id="hn"></h2><span class="rf" id="rf">↻ 更新</span><span class="rf" id="sw" style="display:none;right:90px"></span></div>
+  <div class="hd"><div class="s" id="hs"></div><h2 id="hn"></h2><span class="rf" id="rf">↻ 更新</span></div>
   <div class="card" id="ldc" style="display:none;margin-top:14px"></div>
   <div id="btd" style="display:none"><div class="sec2" id="btdh"></div><div class="card" id="btdl"></div></div>
   <div id="btl" style="display:none"><div class="sec2">常用</div><div class="card" style="display:flex;gap:8px;flex-wrap:wrap"><span class="chip f" onclick="tool('grant')">🏖️ 多劃假</span><span class="chip f" onclick="tool('slip')">💵 簽收單</span><span class="chip f" onclick="tool('loan')">💳 借支單</span><span class="chip f" onclick="tool('exam')">📝 開考試</span></div></div>
@@ -150,7 +151,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div class="scr" id="gone"><div class="soon"><i>🔒</i><span id="gm">已無使用權限</span><br><br><button class="btn" style="width:auto;padding:10px 24px" onclick="logout()">回登入畫面</button></div></div>
 
 <!-- 劃假／班表（沿用現有頁面） -->
-<div id="fr"><div class="msg" id="frm">📅 載入中…</div></div>
+<div id="fr"><span id="sw" class="swf" style="display:none"></span><div class="msg" id="frm">📅 載入中…</div></div>
 
 <div class="bar" id="bar"></div>
 
@@ -299,7 +300,7 @@ function render() {
   var d = DATA; if (!d) return;
   prRender(d.prof);
   $('hs').textContent = d.store + '｜' + d.me.sh + d.me.cls;
-  $('sw').style.display = BOSS() ? '' : 'none'; $('sw').textContent = '換' + (U.s === 'rh' ? '鳳山中山' : '熱河'); $('hn').textContent = d.me.n + ' 你好';
+  $('sw').style.display = BOSS() ? '' : 'none'; $('sw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河'); $('hn').textContent = d.me.n + ' 你好';
   var h = d.home || {}, p = h.per;
   if (p) {
     $('c1').textContent = h.mine ? '已劃 ' + h.mine + ' 天・' + md(p.dl) + ' 截止' : md(p.dl) + ' 截止，還沒劃';
@@ -577,7 +578,11 @@ function frame() {
   if (!ifr || FRV !== DATA.html) {
     if (ifr) ifr.remove();
     ifr = document.createElement('iframe'); FRV = DATA.html;
-    ifr.onload = function () { tune(ifr); setMode(ifr, CUR === 'sc' ? 1 : 0); };
+    ifr.onload = function () {
+      tune(ifr);
+      try { var w = ifr.contentWindow; if (w.setMe && !(w.D && w.D.grant)) w.setMe(BOSS() ? '__view' : U.n); } catch (e) { }   // 11/11 一定用登入的人（避免沿用之前測試記住的人）
+      setMode(ifr, CUR === 'sc' ? 1 : 0);
+    };
     LS('lvMe' + U.s, BOSS() ? '__view' : U.n);   // 可樂＝只看模式（看得到全部人）
     ifr.srcdoc = DATA.html; f.appendChild(ifr); $('frm').style.display = 'none';
   } else setMode(ifr, want);
@@ -605,7 +610,8 @@ function load(force) {
     var changed = !DATA || DATA.html !== j.html;
     DATA = j; LS('app_cache', JSON.stringify(j)); render(); if (CUR === 's2') s2Render();
     if (CUR === 'lv' || CUR === 'sc') {
-      if (changed) bar('有新資料，點這裡更新', 0, function () { $('bar').style.display = 'none'; frame(); });
+      if (changed && !FRV) frame();   // 11/11 剛換店 → 直接顯示
+      else if (changed) bar('有新資料，點這裡更新', 0, function () { $('bar').style.display = 'none'; frame(); });
       else if (force) bar('已是最新', 1500);
     } else { if (force) bar('已更新', 1500); }
   }).catch(function () { bar(DATA ? '網路不穩，先顯示上次的資料' : '網路不穩，請稍後再試', 3000); if (!DATA) $('frm').innerHTML = '網路不穩，打不開<br><button class="btn" style="width:auto;padding:10px 22px" onclick="load(1)">重新整理</button>'; });
