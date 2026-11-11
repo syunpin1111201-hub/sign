@@ -489,7 +489,8 @@ function bossRender() {
 // ---------- 可樂常用：多劃假、簽收單、借支單 ----------
 var TL = '';
 function nameSel(id) {
-  var N = (DATA.boss && DATA.boss.names) || (DATA.lead && DATA.lead.names ? (function () { var o = {}; o[DATA.store || '本店'] = DATA.lead.names.filter(function (n) { return n !== U.n; }); return o; })() : {});
+  var LN = (DATA.lead && DATA.lead.names) || (DATA.rsv && DATA.rsv.names);   // 11/12 儲備幹部也能選人開考
+  var N = (DATA.boss && DATA.boss.names) || (LN ? (function () { var o = {}; o[DATA.store || '本店'] = LN.filter(function (n) { return n !== U.n; }); return o; })() : {});
   return '<select id="' + id + '"><option value="">選人</option>' + Object.keys(N).map(function (k) { return '<optgroup label="' + k + '">' + N[k].map(function (n) { return '<option>' + esc(n) + '</option>'; }).join('') + '</optgroup>'; }).join('') + '</select>';
 }
 function tool(k) {
@@ -686,6 +687,9 @@ function ovOpen(t, u) {   // 在 App 裡開頁面（打考核、簽名…）
 }
 function leadRender() {
   var L = DATA && DATA.lead;
+  if (!L && DATA && DATA.rsv) {   // 11/12 儲備幹部：只有開考試
+    $('ldc').style.display = ''; $('ldc').innerHTML = '<b>📝 儲備幹部</b><span style="color:var(--mu);font-size:13px">可以幫員工開考試</span><br><span class="chip f" onclick="tool(\'exam\')">📝 幫員工開考試</span>'; return;
+  }
   $('ldc').style.display = L && !L.err ? '' : 'none';
   if (!L || L.err) return;
   var done = L.total - L.left.length;
