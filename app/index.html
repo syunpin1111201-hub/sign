@@ -232,12 +232,12 @@ function show(v) {
 function go(v) { show(v); }
 // ---------- 11/11 留茶湯 ----------
 var TEA = null, TEAK = 0, TEAF = null;
-var TEA_OPEN = false;   // 11/11 先只給可樂用；之後開放幹部、儲備幹部（員工只看）→ 改 true，後端 TEA_OPEN 也要改
+var TEA_OPEN = true;   // 11/12 開放幹部、儲備幹部（員工看不到）；原 11/11 先只給可樂用；之後開放幹部、儲備幹部（員工只看）→ 改 true，後端 TEA_OPEN 也要改
 function teaCan() { return BOSS() || (TEA_OPEN && (!!(DATA && DATA.lead) || ['蔡雅雯', '陳可婕'].indexOf(U.n) >= 0)); }
 function teaB(cc) { var b = cc / 10000; return b <= 0 ? '0' : (b % 1 ? b.toFixed(1) : String(b)); }
 function teaHome() {
   var t = DATA && DATA.tea, el = $('c5'); if (!el) return;
-  $('teat').style.display = BOSS() || TEA_OPEN ? '' : 'none';
+  $('teat').style.display = BOSS() || teaCan() ? '' : 'none';
   var h = new Date().getHours();
   if (t && t.done) { el.textContent = t.who + ' ' + t.t + ' 填了'; $('b5').style.display = 'none'; }
   else { el.textContent = '今晚收店要留多少'; $('b5').style.display = 'none'; }
