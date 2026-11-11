@@ -94,7 +94,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div class="hd"><div class="s" id="hs"></div><h2 id="hn"></h2><span class="rf" id="rf">↻ 更新</span><span class="rf" id="sw" style="display:none;right:90px"></span></div>
   <div class="card" id="ldc" style="display:none;margin-top:14px"></div>
   <div id="btd" style="display:none"><div class="sec2" id="btdh"></div><div class="card" id="btdl"></div></div>
-  <div id="btl" style="display:none"><div class="sec2">常用</div><div class="card" style="display:flex;gap:8px;flex-wrap:wrap"><span class="chip f" onclick="tool('grant')">🏖️ 多劃假</span><span class="chip f" onclick="tool('slip')">💵 簽收單</span><span class="chip f" onclick="tool('loan')">💳 借支單</span></div></div>
+  <div id="btl" style="display:none"><div class="sec2">常用</div><div class="card" style="display:flex;gap:8px;flex-wrap:wrap"><span class="chip f" onclick="tool('grant')">🏖️ 多劃假</span><span class="chip f" onclick="tool('slip')">💵 簽收單</span><span class="chip f" onclick="tool('loan')">💳 借支單</span><span class="chip f" onclick="tool('exam')">📝 開考試</span></div></div>
   <div class="grid">
     <div class="t" onclick="go('lv')"><span class="badge" id="b1" style="display:none">1</span><span class="e">📅</span><b>劃假</b><small id="c1">　</small></div>
     <div class="t" onclick="go('sc')"><span class="e">🗓️</span><b>我的班表</b><small id="c2">　</small></div>
@@ -385,7 +385,8 @@ function tool(k) {
 function exOpenGo() {
   var n = $('tlN').value; if (!n) { bar('請先選人', 2000); return; }
   $('tlr').innerHTML = '<div class="card" style="margin-top:6px;color:var(--mu)">開考中…</div>';
-  api('op=exopen&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&e=' + encodeURIComponent(n) + '&ty=' + encodeURIComponent($('tlT').value) + '&re=' + ($('tlR').checked ? 1 : 0)).then(function (j) {
+  var og = $('tlN').selectedOptions[0].parentNode, st = og && og.label ? og.label : '';
+  api('op=exopen&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&st=' + encodeURIComponent(st) + '&e=' + encodeURIComponent(n) + '&ty=' + encodeURIComponent($('tlT').value) + '&re=' + ($('tlR').checked ? 1 : 0)).then(function (j) {
     var t = j.ok ? String(j.text || '').split('━━━━━━━━━━')[0].trim() : (j.err || '失敗');
     $('tlr').innerHTML = '<div class="mtx" style="font-size:14px' + (j.ok ? '' : ';color:#c0392b') + '">' + esc(t) + '</div>';
   }).catch(function () { $('tlr').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再按一次</div>'; });
