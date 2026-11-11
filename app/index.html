@@ -272,7 +272,7 @@ function teaRender() {
     $('teab').innerHTML = h; return;
   }
   var F = P.filled;
-  h += '<div class="card"><b>🧊 從現在到收店＋留給明早，冰箱總共要</b>' + P.night.map(function (x) {
+  h += '<div class="card"><b>🧊 從現在到 21:30 下班前，冰箱總共要</b>' + P.night.map(function (x) {
     return '<div class="tq"><b>' + x.t + '</b><span style="color:var(--mu);font-size:12px">' + (F ? '現在剩 ' + x.left + ' 桶' : '') + '</span><b class="n">' + teaB(x.total) + ' 桶</b></div>';
   }).join('') + '<div class="tq"><b>厚奶</b><span style="color:var(--mu);font-size:12px">' + (F ? '現在剩 ' + P.milk.left + ' 包' : '') + '</span><b class="n">' + P.milk.total + ' 包</b></div>' +
     (F ? '<div style="color:var(--mu);font-size:12px;margin-top:6px">' + esc(F.who) + ' ' + esc(F.t) + ' 填的</div>' : '') + '</div>';
