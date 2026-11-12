@@ -300,6 +300,7 @@ function teaRender() {
       return teaRow(x.t, x.keep / 10000, '桶', '', 'night', x.t, 0.5, x.adj, '不留');
     }).join('') +
     teaRow('厚奶', P.milk.keep, '包', '', 'night', '厚奶', 1, P.milk.adj) +
+    (P.sugar ? teaRow('琥珀糖', P.sugar.keep, '罐', '5kg 糖＋約 1630 水', 'night', '琥珀糖', 1, P.sugar.adj) : '') +
     teaRow('白玉', P.ball, 'g', '準備好一盒，給明天開早用', 'night', '白玉', 500, P.ballAdj) +
     '<div style="color:var(--mu);font-size:12px;margin-top:6px">今天的白玉當天賣完；黑烏龍、青茶（12H）今天報廢</div></div>';
   $('teab').innerHTML = h;
