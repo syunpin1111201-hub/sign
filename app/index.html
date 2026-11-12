@@ -259,8 +259,8 @@ function teaTimes() {
   return o.join('');
 }
 function teaRow(name, val, unit, note, kind, key, step, adj, zeroTxt) {
-  var B = BOSS(), shown = val > 0 ? (unit === '桶' ? teaB(val * 10000) : val) + ' ' + unit : (zeroTxt || '0');
-  var r = '<div class="tq"><b>' + name + '</b><span style="color:var(--mu);font-size:12px">' + (note || '') + (adj ? ' <span style="color:#8b5e34;font-weight:700">✏️ 可樂調整</span>' : '') + '</span>';
+  var B = !!(TEA && TEA.can), shown = val > 0 ? (unit === '桶' ? teaB(val * 10000) : val) + ' ' + unit : (zeroTxt || '0');
+  var r = '<div class="tq"><b>' + name + '</b><span style="color:var(--mu);font-size:12px">' + (note || '') + (adj ? ' <span style="color:#8b5e34;font-weight:700">✏️ 已調整</span>' : '') + '</span>';
   if (!B) return r + '<b class="n">' + shown + '</b></div>';
   var a = JSON.stringify([kind, key, val, step]).replace(/"/g, '&quot;');
   return r + '<span class="tst"><span onclick="teaAdj(' + a + ',-1)">−</span><b class="n" style="min-width:64px;text-align:center;font-size:18px">' + shown + '</b><span onclick="teaAdj(' + a + ',1)">＋</span>' +
@@ -283,7 +283,7 @@ function teaRender() {
     (trs.length ? '<div style="color:var(--mu);font-size:12px;margin-top:4px">最近 4 週用量自己修整：' + trs.join('、') + '</div>' : '') +
     (P.perf && P.perf.day ? '<div style="margin-top:4px">📊 今天全天 ' + P.perf.day.cups + ' 杯，平常同一天 ' + P.perf.day.avg + ' 杯（' + (P.perf.day.r >= 1 ? '+' : '−') + Math.abs(Math.round((P.perf.day.r - 1) * 100)) + '%）→ 明早煮的量 ' + (P.perf.day.f >= 1 ? '+' : '−') + Math.abs(Math.round((P.perf.day.f - 1) * 100)) + '%</div>' : '') +
     (P.perf ? '<div style="margin-top:4px">📊 今天早班 ' + P.perf.cups + ' 杯，平常同一天 ' + P.perf.avg + ' 杯（' + (P.perf.r >= 1 ? '+' : '−') + Math.abs(Math.round((P.perf.r - 1) * 100)) + '%）→ 晚上留的量 ' + (P.perf.f >= 1 ? '+' : '−') + Math.abs(Math.round((P.perf.f - 1) * 100)) + '%</div>' : '<div style="color:var(--mu);font-size:12px;margin-top:4px">📊 早班營收報表還沒填（16:30 算完錢後，17:00 再看會照今天生意加減）</div>') +
-    (BOSS() ? '<div style="color:var(--mu);font-size:12px;margin-top:4px">有大單或覺得不妥，按 ＋／− 改明天的量（只改這一次，↺ 改回）</div>' : '') + '</div>';
+    (P.can ? '<div style="color:var(--mu);font-size:12px;margin-top:4px">有大單或覺得不妥，按 ＋／− 改明天的量（只改這一次，↺ 改回）</div>' : '') + '</div>';
   if (TEAK === 1) { $('teab').innerHTML = h + teaExpHtml(P); return; }
   if (TEAK === 2) {
     h += '<div class="card"><b>☀️ 明天早班 9:30 開店前，冰箱要有</b>' + P.morn.map(function (x) {
@@ -296,7 +296,7 @@ function teaRender() {
   }
   // 11/12 16:00 發布的是「22:30 收店要留給明天早班」的量（晚上還會再煮，所以不算晚上用量；505、406 平常不留）
   h += '<div class="card"><b>🌙 22:30 收店前，冰箱要留給明天早班</b><div style="color:var(--mu);font-size:12px">照明天的星期、天氣、最近用量算好的量</div>' +
-    P.night.filter(function (x) { return x.keep > 0 || BOSS(); }).map(function (x) {
+    P.night.filter(function (x) { return x.keep > 0 || P.can; }).map(function (x) {
       return teaRow(x.t, x.keep / 10000, '桶', '', 'night', x.t, 0.5, x.adj, '不留');
     }).join('') +
     teaRow('厚奶', P.milk.keep, '包', '', 'night', '厚奶', 1, P.milk.adj) +
