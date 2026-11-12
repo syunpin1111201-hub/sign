@@ -1,5 +1,5 @@
 // 我喜歡上班：網頁外殼先跟網路拿最新的（拿不到才用手機裡存的），資料另外跟機器人拿
-var V = 'app-v8', FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
+var V = 'app-v9', FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(V).then(function (c) { return Promise.all(FILES.map(function (u) { return fetch(new Request(u, { cache: 'reload' })).then(function (r) { if (r.ok) return c.put(u, r); }); })); }));
   self.skipWaiting();
