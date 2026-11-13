@@ -80,7 +80,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 .pdr .pv{color:#998;font-size:11px;text-align:right;line-height:1.3;flex:0 0 auto}
 .pdr input{width:58px;margin:0;border:1.5px solid #c9b29a;border-radius:8px;font-size:16px;text-align:center;padding:5px 2px;font-weight:700;color:#5c3d22}
 .pdr input.in{width:44px;font-size:13px;font-weight:400;border-style:dashed}
-.pdr.ok input.q{border-color:#2e7d32}.pdr.bad input.q{border-color:#c0392b;background:#fdeaea}
+.pdr.ok input.q{border-color:#2e7d32}.pdr.prv input.q{border-color:#e08a00;background:#fff4e0}.pdr.bad input.q{border-color:#c0392b;background:#fdeaea}
 .pdr .wm{display:block;color:#a12b1f;font-size:11px;font-weight:400}
 .out{font-size:12px;color:var(--mu);text-align:center;margin:18px 0 24px}.out span{text-decoration:underline}
 </style>
@@ -755,17 +755,29 @@ function pdLoad(sh) {
   }).catch(function () { $('pdb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
 }
 function pdUse(it) { var v = PDV[it.r]; if (v === undefined || v === '') return null; return (it.prev || 0) + (Number(PDI[it.r]) || 0) - Number(v); }
+// 11/13 前一天盤錯：昨天用太少、今天用太多（或反過來），兩天加起來正常 → 是昨天的人數錯，今天的數字沒問題（回傳 'P:' 開頭）
+function pdPrv(it, u) {
+  if (it.pu == null || it.med < 2) return '';
+  var tol = Math.max(2, Math.ceil(it.med * 0.3)), sum = u + it.pu, who = PD.pw ? '（' + PD.pw + '）' : '';
+  if (Math.abs(sum - 2 * it.med) > tol) return '';
+  if (u > it.hi && it.pu < it.med) return 'P:今天用 ' + u + '、昨天只用 ' + it.pu + '，兩天加起來正常 → 可能是昨天' + who + '數錯，今天的數字沒問題';
+  if ((u < 0 || u < it.med * 0.5) && it.pu > it.hi) return 'P:今天只用 ' + u + '、昨天用了 ' + it.pu + '，兩天加起來正常 → 可能是昨天' + who + '數錯，今天的數字沒問題';
+  return '';
+}
 function pdChk(it) {
   var u = pdUse(it); if (u === null) return null;
+  var pv = pdPrv(it, u); if (pv) return pv;
   if (u < 0) return '比上次多 ' + (-u) + (PDI[it.r] ? '' : '，今天沒填到貨') + '，再數一次';
   if (u > it.hi) return '用了 ' + u + '，平常這班 ' + (it.lo === it.hi80 ? '約 ' + it.med : it.lo + '–' + it.hi80) + '，再數一次';
   if (it.med >= 5 && u < it.med * 0.3) return '只用了 ' + u + '，平常約 ' + it.med + '，再數一次';
   return '';
 }
 function pdNm(n) { var m = String(n).match(/^([^（(]+)(.*)$/); return m ? esc(m[1].trim()) + (m[2] ? '<small>' + esc(m[2]) + '</small>' : '') : esc(n); }
+function pdCls(w) { return w === null ? '' : !w ? 'ok' : w.indexOf('P:') === 0 ? 'prv' : 'bad'; }
+function pdNmH(it, w) { var p = w && w.indexOf('P:') === 0; return (w ? (p ? '🟠 ' : '⚠️ ') : '') + pdNm(it.n) + '<span class="wm"' + (p ? ' style="color:#b06000"' : '') + '>' + (w ? w.replace(/^P:/, '') : '') + '</span>'; }
 function pdRow(it) {
-  var w = pdChk(it), v = PDV[it.r], cls = w === null ? '' : w ? 'bad' : 'ok';
-  return '<div class="pdr ' + cls + '" id="pdr' + it.r + '"><span class="nm">' + (w ? '⚠️ ' : '') + pdNm(it.n) + '<span class="wm">' + (w || '') + '</span></span>' +
+  var w = pdChk(it), v = PDV[it.r], cls = pdCls(w);
+  return '<div class="pdr ' + cls + '" id="pdr' + it.r + '"><span class="nm">' + pdNmH(it, w) + '</span>' +
     '<span class="pv">昨 ' + (it.prev == null ? '–' : it.prev) + '</span>' +
     '<input class="in" inputmode="numeric" placeholder="到貨" value="' + (PDI[it.r] || '') + '" oninput="pdIn(' + it.r + ',this.value)">' +
     '<input class="q" inputmode="decimal" value="' + (v === undefined ? '' : v) + '" oninput="pdV(' + it.r + ',this.value)"></div>';
@@ -773,14 +785,14 @@ function pdRow(it) {
 function pdIt(r) { return PD.items.filter(function (x) { return x.r === r; })[0]; }
 function pdUpd(r) {
   var it = pdIt(r), el = $('pdr' + r); if (!el) return;
-  var w = pdChk(it); el.className = 'pdr ' + (w === null ? '' : w ? 'bad' : 'ok');
-  el.querySelector('.nm').innerHTML = (w ? '⚠️ ' : '') + pdNm(it.n) + '<span class="wm">' + (w || '') + '</span>';
+  var w = pdChk(it); el.className = 'pdr ' + pdCls(w);
+  el.querySelector('.nm').innerHTML = pdNmH(it, w);
   pdCount(); pdSave();
 }
 function pdV(r, x) { x = String(x).replace(/[^\d.]/g, ''); if (x === '') delete PDV[r]; else PDV[r] = x; pdUpd(r); }
 function pdIn(r, x) { x = String(x).replace(/\D/g, ''); if (x === '') delete PDI[r]; else PDI[r] = x; pdUpd(r); }
 function pdCount() {
-  var left = 0, bad = 0; PD.items.forEach(function (it) { var w = pdChk(it); if (w === null) left++; else if (w) bad++; });
+  var left = 0, bad = 0; PD.items.forEach(function (it) { var w = pdChk(it); if (w === null) left++; else if (w && w.indexOf('P:') < 0) bad++; });
   $('pdtab').innerHTML = ['全部 ' + PD.items.length, '還沒填 ' + left, '⚠️ ' + bad].map(function (t, i) { return '<span class="' + (i === PDF ? 'on' : '') + '" onclick="PDF=' + i + ';pdRender()">' + t + '</span>'; }).join('');
   var b = $('pdgo'); if (b) b.textContent = left ? '還有 ' + left + ' 項沒填' : '送出';
   return { left: left, bad: bad };
@@ -805,9 +817,10 @@ function pdGo(force) {
   var c = pdCount();
   if (c.left) { PDF = 1; pdRender(); bar('還有 ' + c.left + ' 項沒填', 2000); return; }
   if (!PDW) { bar('請選盤點人', 2000); return; }
-  var flags = PD.items.map(function (it) { var w = pdChk(it); return w ? it.n.replace(/[（(].*$/, '') + '：' + w.replace('，再數一次', '') : ''; }).filter(Boolean);
-  if (flags.length && !force) {
-    $('pdb').insertAdjacentHTML('afterbegin', '<div class="card" id="pdcf" style="border:2px solid #c0392b;margin-top:10px"><b style="color:#a12b1f">⚠️ 這 ' + flags.length + ' 項跟平常差很多，確定都重數過了？</b><div style="font-size:13px;margin:6px 0">・' + flags.map(esc).join('<br>・') + '</div><button class="btn" onclick="PDF=2;pdRender();window.scrollTo(0,0)">回去重數</button><button class="btn" style="background:#fff;color:var(--ac);border:1px solid var(--ac);margin-top:8px" onclick="pdGo(1)">確定送出（會通知幹部）</button></div>');
+  var flags = PD.items.map(function (it) { var w = pdChk(it); return w ? it.n.replace(/[（(].*$/, '') + '：' + w.replace('，再數一次', '').replace(/^P:/, '🟠 ') : ''; }).filter(Boolean);
+  var hard = flags.filter(function (f) { return f.indexOf('🟠') < 0; });
+  if (hard.length && !force) { flags = hard.concat(flags.filter(function (f) { return f.indexOf('🟠') >= 0; }));
+    $('pdb').insertAdjacentHTML('afterbegin', '<div class="card" id="pdcf" style="border:2px solid #c0392b;margin-top:10px"><b style="color:#a12b1f">⚠️ 這 ' + hard.length + ' 項跟平常差很多，確定都重數過了？</b><div style="font-size:13px;margin:6px 0">・' + hard.map(esc).join('<br>・') + '</div><button class="btn" onclick="PDF=2;pdRender();window.scrollTo(0,0)">回去重數</button><button class="btn" style="background:#fff;color:var(--ac);border:1px solid var(--ac);margin-top:8px" onclick="pdGo(1)">確定送出（會通知幹部）</button></div>');
     window.scrollTo(0, 0); return;
   }
   var j = { v: PDV, i: PDI, f: flags };
