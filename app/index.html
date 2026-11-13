@@ -789,8 +789,8 @@ function pdSumR() {
     var need = P.order.filter(function (o) { return o.need; }), ok = P.order.filter(function (o) { return !o.need; });
     var amt = function (o) { return o.boxes ? o.boxes + (/多多/.test(o.n) ? ' 組' : ' 箱') : o.want + ' ' + (o.unit || ''); };
     var line = function (o) {
-      var sub = '剩 ' + o.q + '，一天用約 ' + o.avg + (o.when ? '' : '，到貨要 ' + o.lead + ' 天'), R;
-      if (o.when) R = (o.need ? '<span style="color:#c0392b">今天要叫</span><br>' : '<span style="color:var(--mu);font-weight:400">' + o.when + '</span><br>') + (o.want ? amt(o) : '不用叫');
+      var sub = '剩 ' + o.q + '，一天用約 ' + o.avg + (o.when ? (/琥珀/.test(o.n) ? '，一週只送一次（週三叫、週四到）' : '') : '，到貨要 ' + o.lead + ' 天'), R;
+      if (o.when) R = (o.need ? '<span style="color:#c0392b">今天要叫</span><br>' : '<span style="color:var(--mu);font-weight:400">' + o.when + '</span><br>') + (o.want ? amt(o) : (/琥珀/.test(o.n) ? '這週可不叫' : '不用叫'));
       else R = o.need ? '<span style="color:#c0392b">夠 ' + o.days + ' 天</span><br>叫 ' + amt(o) : '<span style="color:#2e7d32;font-weight:400">夠 ' + o.days + ' 天</span>';
       return '<div class="pl"><span>' + esc(o.n) + '<small style="display:block;color:var(--mu);font-size:11px">' + sub + '</small></span><b style="text-align:right">' + R + '</b></div>';
     };
