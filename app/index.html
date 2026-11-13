@@ -743,16 +743,57 @@ function pdKey() { return 'pd_' + U.s + '_' + (PD ? PD.day + PD.sh : ''); }
 function pdSave() { try { LS(pdKey(), JSON.stringify({ v: PDV, i: PDI })); } catch (e) { } }
 function pdLoad(sh) {
   PDSH = sh || PDSH || (new Date().getHours() < 16 ? '早班' : '晚班');
-  $('pdsh').innerHTML = ['早班', '晚班'].map(function (x) { return '<span class="' + (x === PDSH ? 'on' : '') + '" onclick="pdLoad(\'' + x + '\')">' + x + '盤點</span>'; }).join('');
+  var LD = BOSS() || !!(DATA && (DATA.lead || DATA.rsv));
+  $('pdsh').innerHTML = ['早班', '晚班'].concat(LD ? ['結果'] : []).map(function (x) { return '<span class="' + (x === PDSH ? 'on' : '') + '" onclick="pdLoad(\'' + x + '\')">' + (x === '結果' ? '📋 幹部' : x + '盤點') + '</span>'; }).join('');
+  if (PDSH === '結果') { pdSumLoad(); return; }
   $('pdtab').innerHTML = ''; $('pdb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
+  var want = PDSH;
   api('op=pdget&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&sh=' + encodeURIComponent(PDSH)).then(function (j) {
+    if (PDSH !== want) return;   // 已經切到別的分頁
     if (!j.ok) { $('pdb').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; }
     PD = j; PDV = {}; PDI = {}; PDF = 0; PDW = '';
     var dr = null; try { dr = JSON.parse(LS(pdKey()) || 'null'); } catch (e) { }
-    j.items.forEach(function (it) { if (it.inn) PDI[it.r] = it.inn; });
+    j.items.forEach(function (it) { if (it.inn) PDI[it.r] = it.inn; else if (it.arr) PDI[it.r] = String(it.arr.q); });   // 11/14 大群到貨自動帶入
     if (dr) { PDV = dr.v || {}; Object.keys(dr.i || {}).forEach(function (r) { PDI[r] = dr.i[r]; }); }
     pdRender();
-  }).catch(function () { $('pdb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+  }).catch(function () { if (PDSH === want) $('pdb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+}
+// ---------- 11/14 盤點結果（幹部版）：回報文中、叫貨建議、⚠️ ----------
+var PDS = null, PDST = 0;
+function pdSumLoad() {
+  $('pdtab').innerHTML = ''; $('pdb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
+  api('op=pdsum&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok).then(function (j) {
+    if (PDSH !== '結果') return;
+    if (!j.ok) { $('pdb').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; }
+    PDS = j; pdSumR();
+  }).catch(function () { if (PDSH === '結果') $('pdb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+}
+function pdWtLine(x) {
+  if (x.miss) return '<div class="pl"><span>' + esc(x.n) + '</span><span style="color:var(--mu)">庫存表找不到</span></div>';
+  var old = x.today ? '' : ' <small style="color:#b06000">（' + (x.d ? x.d + ' 號' : '上月') + '的）</small>';
+  return '<div class="pl"><span>' + esc(x.n) + old + '</span><b>' + (x.conv ? x.v + ' ' + x.u : '<span style="color:#b06000;font-weight:400;font-size:12px">庫存表 ' + x.raw + '，請自己換成' + x.u + '</span>') + '</b></div>';
+}
+function pdWtTxt(L) { return L.filter(function (x) { return !x.miss; }).map(function (x) { return x.n + ' ' + (x.conv ? x.v : '?(' + x.raw + ')'); }).join('\n'); }
+function pdSumR() {
+  var P = PDS; if (!P) return;
+  $('pds').textContent = (P.store === '鳳山中山' ? '鳳山中山' : '熱河') + '・' + P.day + '・幹部看';
+  var nf = P.flags.reduce(function (n, x) { return n + x.f.length; }, 0);
+  $('pdtab').innerHTML = ['回報文中', '叫貨建議', '⚠️ ' + nf].map(function (t, i) { return '<span class="' + (i === PDST ? 'on' : '') + '" onclick="PDST=' + i + ';pdSumR()">' + t + '</span>'; }).join('');
+  var st = ['早班', '晚班'].map(function (s) { var d = P.done[s]; return s + (d ? ' ✅ ' + esc(d.who) + ' ' + d.t : ' <span style="color:#c0392b">還沒盤</span>'); }).join('　');
+  var h = '<div class="card" style="margin-top:10px;font-size:13px">' + st + (P.live ? '' : '<br><span style="color:var(--mu)">（測試中：數字讀的是庫存表）</span>') + '</div>';
+  if (PDST === 0) {
+    h += '<div class="card"><div class="pdz">每日（日盤）・照文中順序、單位已換好</div>' + P.wday.map(pdWtLine).join('') + '</div><button class="btn" onclick="cp(pdWtTxt(PDS.wday))">📋 複製日盤</button>';
+    h += '<div class="card"><div class="pdz">週六（周盤）' + (P.sat ? '・今天要報' : '・今天不用報') + '</div>' + P.wweek.map(pdWtLine).join('') + '</div>' + (P.sat ? '<button class="btn" onclick="cp(pdWtTxt(PDS.wweek))">📋 複製周盤</button>' : '');
+    h += '<div class="card" style="font-size:12px;color:var(--mu)">橘字＝不確定一箱多少，先照庫存表數字自己換；告訴可樂一箱幾個，之後就會自動換</div>';
+  } else if (PDST === 1) {
+    var need = P.order.filter(function (o) { return o.need; }), ok = P.order.filter(function (o) { return !o.need; });
+    var line = function (o) { return '<div class="pl"><span>' + esc(o.n) + '<small style="display:block;color:var(--mu);font-size:11px">剩 ' + o.q + '，一天用約 ' + o.avg + '，到貨要 ' + o.lead + ' 天</small></span><b style="text-align:right">' + (o.need ? '<span style="color:#c0392b">夠 ' + o.days + ' 天</span><br>叫 ' + (o.boxes ? o.boxes + ' 箱' : o.want) : '<span style="color:#2e7d32;font-weight:400">夠 ' + o.days + ' 天</span>') + '</b></div>'; };
+    h += '<div class="card"><div class="pdz" style="color:#c0392b">該叫了（' + need.length + '）</div>' + (need.length ? need.map(line).join('') : '<span style="color:var(--mu);font-size:13px">都還夠</span>') + '</div>';
+    h += '<div class="card"><div class="pdz">還夠</div>' + ok.map(line).join('') + '</div><div class="card" style="font-size:12px;color:var(--mu)">建議量＝到貨天數＋7 天的用量 − 現在剩的；只是參考，請幹部自己判斷</div>';
+  } else {
+    h += P.flags.length ? P.flags.map(function (x) { return '<div class="card"><div class="pdz">' + x.sh + '・' + esc(x.who) + ' ' + x.t + '</div><div style="font-size:13px;line-height:1.7">・' + x.f.map(esc).join('<br>・') + '</div></div>'; }).join('') : '<div class="card" style="color:var(--mu)">今天沒有 ⚠️</div>';
+  }
+  $('pdb').innerHTML = h;
 }
 function pdUse(it) { var v = PDV[it.r]; if (v === undefined || v === '') return null; return (it.prev || 0) + (Number(PDI[it.r]) || 0) - Number(v); }
 // 11/13 前一天盤錯：昨天用太少、今天用太多（或反過來），兩天加起來正常 → 是昨天的人數錯，今天的數字沒問題（回傳 'P:' 開頭）
@@ -774,7 +815,7 @@ function pdChk(it) {
 }
 function pdNm(n) { var m = String(n).match(/^([^（(]+)(.*)$/); return m ? esc(m[1].trim()) + (m[2] ? '<small>' + esc(m[2]) + '</small>' : '') : esc(n); }
 function pdCls(w) { return w === null ? '' : !w ? 'ok' : w.indexOf('P:') === 0 ? 'prv' : 'bad'; }
-function pdNmH(it, w) { var p = w && w.indexOf('P:') === 0; return (w ? (p ? '🟠 ' : '⚠️ ') : '') + pdNm(it.n) + '<span class="wm"' + (p ? ' style="color:#b06000"' : '') + '>' + (w ? w.replace(/^P:/, '') : '') + '</span>'; }
+function pdNmH(it, w) { var p = w && w.indexOf('P:') === 0; return (w ? (p ? '🟠 ' : '⚠️ ') : '') + pdNm(it.n) + (it.arr && !it.inn ? '<span class="wm" style="color:#2e6b9e">📦 大群：' + esc(it.arr.t) + ' → 到貨 ' + it.arr.q + '（不對就改）</span>' : '') + '<span class="wm"' + (p ? ' style="color:#b06000"' : '') + '>' + (w ? w.replace(/^P:/, '') : '') + '</span>'; }
 function pdRow(it) {
   var w = pdChk(it), v = PDV[it.r], cls = pdCls(w);
   return '<div class="pdr ' + cls + '" id="pdr' + it.r + '"><span class="nm">' + pdNmH(it, w) + '</span>' +
