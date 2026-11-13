@@ -348,7 +348,7 @@ function teaEdHtml() {
   var h = '<div class="card"><b>🧊 更新冰箱：每款茶有幾桶、各是幾點煮的</b><div style="color:var(--mu);font-size:12px">看桶子上貼的時間；上次的已經帶出來，只改有變的</div>' +
     '<div style="display:flex;gap:6px;margin:10px 0;flex-wrap:wrap"><select id="tdT" style="margin:0;width:auto">' + TEA.night.map(function (x) { return '<option>' + x.t + '</option>'; }).join('') + '</select>' +
     '<select id="tdD" style="margin:0;width:auto"><option value="0">今天</option><option value="1">昨天</option></select><input id="tdH" type="time" value="' + teaNowHM() + '" style="margin:0;width:auto;font-size:16px"><select id="tdS" style="margin:0;width:auto"><option value="1">1 桶</option><option value="0.5">半桶</option></select>' +
-    '<span class="chip f" style="margin:0;padding:8px 12px" onclick="teaEdAdd()">＋ 加入</span></div>';
+    '<span class="chip f" style="margin:0;padding:8px 12px" onclick="teaEdAdd()">＋ 加入</span><span class="chip" style="margin:0;padding:8px 12px;color:#b3502e;border-color:#b3502e" onclick="teaEdClr()">🗑 一鍵清除</span></div>';
   TEA.night.forEach(function (x) {
     var L = TEAED[x.t] || [];
     h += '<div style="border-bottom:1px dashed #eadfce;padding:7px 0"><b>' + x.t + '</b>　' + (L.length ? L.map(function (b, k) { return '<span class="chip" style="margin:2px 4px 2px 0;font-size:13px;padding:3px 9px">' + (b.s === 0.5 ? '半桶 ' : '') + teaTL(b.t) + ' <span onclick="teaEdDel(\'' + x.t + '\',' + k + ')" style="color:#b3502e">✕</span></span>'; }).join('') : '<span style="color:var(--mu);font-size:12px">沒有</span>') + '</div>';
@@ -365,6 +365,8 @@ function teaEdAdd() {
   TEAED[t].push({ t: d.getTime(), s: Number($('tdS').value) }); TEAED[t].sort(function (a, b) { return a.t - b.t; });
   var keep = [$('tdT').value, $('tdD').value, $('tdH').value, $('tdS').value]; teaRender(); $('tdT').value = keep[0]; $('tdD').value = keep[1]; $('tdH').value = keep[2]; $('tdS').value = keep[3];
 }
+// 11/13 一鍵清除：全部桶子先清空（還沒按「更新」前都不會存，按「取消」可以還原）
+function teaEdClr() { Object.keys(TEAED).forEach(function (t) { TEAED[t] = []; }); teaRender(); bar('已全部清除，加好現在冰箱的桶子再按「更新」', 2500); }
 function teaEdDel(t, k) { TEAED[t].splice(k, 1); teaRender(); }
 function teaEdSave() {
   bar('更新中…');
