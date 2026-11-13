@@ -251,7 +251,7 @@ function teaB(cc) { var b = cc / 10000; return b <= 0 ? '0' : (b % 1 ? b.toFixed
 function teaHome() {
   var t = DATA && DATA.tea, el = $('c5'); if (!el) return;
   $('teat').style.display = BOSS() || teaCan() || DEV() ? '' : 'none';
-  $('pdt').style.display = '';   // 11/13 盤點：員工、幹部、可樂、公務機都有（公務機只有盤點、留茶湯、班表）
+  $('pdt').style.display = PD_ALL || BOSS() || DEV() ? '' : 'none';   // 11/13 盤點：員工、幹部、可樂、公務機都會有；可樂先測，PD_ALL 改 true 才開給大家
   var h = new Date().getHours();
   if (t && t.done) { el.textContent = t.who + ' ' + t.t + ' 填了'; $('b5').style.display = 'none'; }
   else { el.textContent = '今晚收店要留多少'; $('b5').style.display = 'none'; }
@@ -737,6 +737,7 @@ function devUI() {
   else $('td').parentNode.style.display = '';
 }
 // ---------- 11/13 盤點 ----------
+var PD_ALL = false;   // 可樂測完 → true
 var PD = null, PDV = {}, PDI = {}, PDF = 0, PDSH = '', PDW = '';
 function pdKey() { return 'pd_' + U.s + '_' + (PD ? PD.day + PD.sh : ''); }
 function pdSave() { try { LS(pdKey(), JSON.stringify({ v: PDV, i: PDI })); } catch (e) { } }
