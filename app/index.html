@@ -758,7 +758,7 @@ function pdLoad(sh) {
     pdRender();
   }).catch(function () { if (PDSH === want) $('pdb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
 }
-// ---------- 11/14 盤點結果（幹部版）：回報文中、叫貨建議、⚠️ ----------
+// ---------- 11/14 盤點結果（幹部版）：盤點回報系統、叫貨建議、⚠️ ----------
 var PDS = null, PDST = 0;
 function pdSumLoad() {
   $('pdtab').innerHTML = ''; $('pdb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
@@ -778,11 +778,11 @@ function pdSumR() {
   var P = PDS; if (!P) return;
   $('pds').textContent = (P.store === '鳳山中山' ? '鳳山中山' : '熱河') + '・' + P.day + '・幹部看';
   var nf = P.flags.reduce(function (n, x) { return n + x.f.length; }, 0);
-  $('pdtab').innerHTML = ['回報文中', '叫貨建議', '⚠️ ' + nf].map(function (t, i) { return '<span class="' + (i === PDST ? 'on' : '') + '" onclick="PDST=' + i + ';pdSumR()">' + t + '</span>'; }).join('');
+  $('pdtab').innerHTML = ['盤點回報系統', '叫貨建議', '⚠️ ' + nf].map(function (t, i) { return '<span class="' + (i === PDST ? 'on' : '') + '" onclick="PDST=' + i + ';pdSumR()">' + t + '</span>'; }).join('');
   var st = ['早班', '晚班'].map(function (s) { var d = P.done[s]; return s + (d ? ' ✅ ' + esc(d.who) + ' ' + d.t : ' <span style="color:#c0392b">還沒盤</span>'); }).join('　');
   var h = '<div class="card" style="margin-top:10px;font-size:13px">' + st + (P.live ? '' : '<br><span style="color:var(--mu)">（測試中：數字讀的是庫存表）</span>') + '</div>';
   if (PDST === 0) {
-    h += '<div class="card"><div class="pdz">每日（日盤）・照文中順序、單位已換好</div>' + P.wday.map(pdWtLine).join('') + '</div><button class="btn" onclick="cp(pdWtTxt(PDS.wday))">📋 複製日盤</button>';
+    h += '<div class="card"><div class="pdz">每日（日盤）・照盤點回報系統的順序、單位已換好</div>' + P.wday.map(pdWtLine).join('') + '</div><button class="btn" onclick="cp(pdWtTxt(PDS.wday))">📋 複製日盤</button>';
     h += '<div class="card"><div class="pdz">週六（周盤）' + (P.sat ? '・今天要報' : '・今天不用報') + '</div>' + P.wweek.map(pdWtLine).join('') + '</div>' + (P.sat ? '<button class="btn" onclick="cp(pdWtTxt(PDS.wweek))">📋 複製周盤</button>' : '');
     h += '<div class="card" style="font-size:12px;color:var(--mu)">橘字＝不確定一箱多少，先照庫存表數字自己換；告訴可樂一箱幾個，之後就會自動換</div>';
   } else if (PDST === 1) {
