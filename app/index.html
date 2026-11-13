@@ -127,7 +127,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 </div>
 
 <div class="scr" id="tea"><div class="hd"><div class="s" id="teas"></div><h2>🧊 留茶湯</h2><span class="rf" id="teasw" style="display:none" onclick="teaSw()"></span></div><div class="s2p" id="teatab"></div><div id="teab"></div><div style="height:20px"></div></div>
-<div class="scr" id="pd"><div class="hd"><div class="s" id="pds"></div><h2>📦 盤點</h2></div><div class="s2p" id="pdsh"></div><div class="s2p" id="pdtab"></div><div id="pdb"></div><div style="height:30px"></div></div>
+<div class="scr" id="pd"><div class="hd"><div class="s" id="pds"></div><h2>📦 盤點</h2><span class="rf" id="pdsw" style="display:none" onclick="pdSw()"></span></div><div class="s2p" id="pdsh"></div><div class="s2p" id="pdtab"></div><div id="pdb"></div><div style="height:30px"></div></div>
 <div class="scr" id="tl"><div class="hd"><div class="s">可樂常用</div><h2 id="tlh"></h2></div><div class="box" id="tlf"></div><div id="tlr"></div><div style="height:20px"></div></div>
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -741,7 +741,9 @@ var PD_ALL = false;   // 可樂測完 → true
 var PD = null, PDV = {}, PDI = {}, PDF = 0, PDSH = '', PDW = '';
 function pdKey() { return 'pd_' + U.s + '_' + (PD ? PD.day + PD.sh : ''); }
 function pdSave() { try { LS(pdKey(), JSON.stringify({ v: PDV, i: PDI })); } catch (e) { } }
+function pdSw() { $('sw').onclick(); PD = null; PDS = null; pdLoad(PDSH); }   // 11/14 可樂：盤點頁直接換店
 function pdLoad(sh) {
+  $('pdsw').style.display = BOSS() ? '' : 'none'; $('pdsw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
   PDSH = sh || PDSH || (new Date().getHours() < 16 ? '早班' : '晚班');
   var LD = BOSS() || !!(DATA && (DATA.lead || DATA.rsv));
   $('pdsh').innerHTML = ['早班', '晚班'].concat(LD ? ['結果'] : []).map(function (x) { return '<span class="' + (x === PDSH ? 'on' : '') + '" onclick="pdLoad(\'' + x + '\')">' + (x === '結果' ? '📋 幹部' : x + '盤點') + '</span>'; }).join('');
