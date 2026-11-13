@@ -74,6 +74,14 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 .bar2{height:8px;background:#f1e8dc;border-radius:4px;overflow:hidden;margin:4px 0}.bar2 i{display:block;height:100%;background:var(--hd)}
 .pl{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f1e8dc;font-size:14px}.pl:last-child{border:0}
 #tlf input[type=date]{min-width:0;flex:1;font-size:15px}
+.pdz{font-weight:800;color:var(--ac);font-size:13px;margin:2px 0 4px}
+.pdr{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px dashed #eadfce}.pdr:last-child{border:0}
+.pdr .nm{flex:1;min-width:0;color:#5c3d22;font-weight:700;font-size:14px;line-height:1.3}.pdr .nm small{display:block;font-weight:400;color:#b3a28e;font-size:11px}
+.pdr .pv{color:#998;font-size:11px;text-align:right;line-height:1.3;flex:0 0 auto}
+.pdr input{width:58px;margin:0;border:1.5px solid #c9b29a;border-radius:8px;font-size:16px;text-align:center;padding:5px 2px;font-weight:700;color:#5c3d22}
+.pdr input.in{width:44px;font-size:13px;font-weight:400;border-style:dashed}
+.pdr.ok input.q{border-color:#2e7d32}.pdr.bad input.q{border-color:#c0392b;background:#fdeaea}
+.pdr .wm{display:block;color:#a12b1f;font-size:11px;font-weight:400}
 .out{font-size:12px;color:var(--mu);text-align:center;margin:18px 0 24px}.out span{text-decoration:underline}
 </style>
 </head>
@@ -104,6 +112,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
     <div class="t" onclick="go('sc')"><span class="e">🗓️</span><b>我的班表</b><small id="c2">　</small></div>
     <div class="t" onclick="go('ex')"><span class="badge" id="b3" style="display:none">!</span><span class="e">📝</span><b>考試</b><small id="c3">沒有考試</small></div>
     <div class="t" onclick="go('sg')"><span class="badge" id="b4" style="display:none"></span><span class="e">✍️</span><b>公告簽名</b><small id="c4">沒有要簽的</small></div>
+    <div class="t" id="pdt" style="display:none" onclick="go('pd')"><span class="e">📦</span><b>盤點</b><small id="c6">　</small></div>
     <div class="t" id="teat" style="display:none" onclick="go('tea')"><span class="badge" id="b5" style="display:none">!</span><span class="e">🧊</span><b>留茶湯</b><small id="c5">　</small></div>
   </div>
   <div class="card"><b>今天</b><span id="td">　</span></div>
@@ -118,6 +127,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 </div>
 
 <div class="scr" id="tea"><div class="hd"><div class="s" id="teas"></div><h2>🧊 留茶湯</h2><span class="rf" id="teasw" style="display:none" onclick="teaSw()"></span></div><div class="s2p" id="teatab"></div><div id="teab"></div><div style="height:20px"></div></div>
+<div class="scr" id="pd"><div class="hd"><div class="s" id="pds"></div><h2>📦 盤點</h2></div><div class="s2p" id="pdsh"></div><div class="s2p" id="pdtab"></div><div id="pdb"></div><div style="height:30px"></div></div>
 <div class="scr" id="tl"><div class="hd"><div class="s">可樂常用</div><h2 id="tlh"></h2></div><div class="box" id="tlf"></div><div id="tlr"></div><div style="height:20px"></div></div>
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -180,6 +190,7 @@ function api(q) {
 function retry(fn, n) { return fn().catch(function (e) { if (n > 0) return new Promise(function (r) { setTimeout(r, 1200); }).then(function () { return retry(fn, n - 1); }); throw e; }); }
 function bar(t, ms, fn) { var b = $('bar'); b.textContent = t; b.style.display = 'block'; b.onclick = fn || null; clearTimeout(bar.t); if (ms) bar.t = setTimeout(function () { b.style.display = 'none'; }, ms); }
 function BOSS() { return U.n === '可樂'; }
+function DEV() { return U.n === '公務機'; }   // 11/13 公務機：盤點、留茶湯、班表
 function md(s) { var p = s.split('/'); return +p[1] + '/' + +p[2]; }
 function wk(s) { var p = s.split('/'); return WK[new Date(+p[0], p[1] - 1, +p[2]).getDay()]; }
 
@@ -196,6 +207,7 @@ $('ls').onchange = function () {
     n.disabled = false;
   }).catch(function () { n.innerHTML = '<option value="">網路不穩，請重選門市</option>'; });
 };
+$('ln').onchange = function () { $('lb').placeholder = this.value === '公務機' ? '公務機密碼 4 碼' : '生日 4 碼（例：3 月 15 日 → 0315）'; };
 $('lgo').onclick = function () {
   var s = $('ls').value, n = $('ln').value, b = $('lb').value.replace(/\D/g, '');
   if (!s || !n) { $('le').textContent = '請選門市和名字'; return; }
@@ -215,7 +227,7 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 function show(v) {
   if (v === 'sc' && BOSS()) v = 's2';   // 11/10 可樂：兩店班表一起看
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
@@ -225,6 +237,7 @@ function show(v) {
   [].forEach.call(document.querySelectorAll('.nav div'), function (d) { d.classList.toggle('on', d.getAttribute('data-v') === (v === 'say' || v === 'mt' || v === 'tl' ? 'home' : v === 's2' ? 'sc' : v)); });
   if (v === 's2') { s2Render(); window.scrollTo(0, 0); }
   if (v === 'tea') { teaLoad(); window.scrollTo(0, 0); }
+  if (v === 'pd') { pdLoad(); window.scrollTo(0, 0); }
   if (v === 'lv' || v === 'sc') frame();
   if (v === 'home') { load(0); if (DATA) mtRender(); }
   if (v === 'mt') { MTI = 0; mtRender(); window.scrollTo(0, 0); }
@@ -237,7 +250,8 @@ function teaCan() { return BOSS() || (TEA_OPEN && (!!(DATA && DATA.lead) || ['�
 function teaB(cc) { var b = cc / 10000; return b <= 0 ? '0' : (b % 1 ? b.toFixed(1) : String(b)); }
 function teaHome() {
   var t = DATA && DATA.tea, el = $('c5'); if (!el) return;
-  $('teat').style.display = BOSS() || teaCan() ? '' : 'none';
+  $('teat').style.display = BOSS() || teaCan() || DEV() ? '' : 'none';
+  $('pdt').style.display = BOSS() || DEV() ? '' : 'none';   // 11/13 盤點：測試期間只給可樂、公務機
   var h = new Date().getHours();
   if (t && t.done) { el.textContent = t.who + ' ' + t.t + ' 填了'; $('b5').style.display = 'none'; }
   else { el.textContent = '今晚收店要留多少'; $('b5').style.display = 'none'; }
@@ -474,6 +488,7 @@ function render() {
   bossRender();
   leadRender();
   teaHome();
+  devUI();
   var hr = d.hr;
   $('hrc').style.display = hr ? '' : 'none';
   if (hr) $('hrc').innerHTML = '<b>🔑 風行人資系統</b><div class="hrk"><span>網域</span><b>' + hr.dom + '<i onclick="cp(\'' + hr.dom + '\')">複製</i></b></div><div class="hrk"><span>帳號</span><b>' + esc(hr.id) + '<i onclick="cp(\'' + esc(hr.id) + '\')">複製</i></b></div><div class="hrk"><span>預設密碼</span><b>' + hr.pw + '</b></div>';
@@ -713,6 +728,97 @@ function leadRender() {
 }
 function sgClose() { $('sgf').style.display = 'none'; var o = $('sgf').querySelector('iframe'); if (o) o.remove(); LAST = 0; load(0); }   // 關掉就更新進度
 window.addEventListener('message', function (e) { if (e.data && e.data.annSigned) { bar('簽好了 👍', 2000); setTimeout(function () { LAST = 0; load(0); }, 1500); } });
+// ---------- 11/13 公務機畫面：只留盤點、留茶湯、班表 ----------
+function devUI() {
+  var D = DEV();
+  [].forEach.call(document.querySelectorAll('#home .grid .t'), function (t) { if (/go\('(lv|ex|sg)'\)/.test(t.getAttribute('onclick') || '')) t.style.display = D ? 'none' : ''; });
+  [].forEach.call(document.querySelectorAll('.nav div'), function (n) { if (/^(lv|ex|sg)$/.test(n.getAttribute('data-v'))) n.style.display = D ? 'none' : ''; });
+  if (D) { $('sayb').style.display = 'none'; $('rmc').style.display = 'none'; $('td').parentNode.style.display = 'none'; $('hn').textContent = '公務機'; $('c2').textContent = '看今天誰上班'; }
+  else $('td').parentNode.style.display = '';
+}
+// ---------- 11/13 盤點 ----------
+var PD = null, PDV = {}, PDI = {}, PDF = 0, PDSH = '', PDW = '';
+function pdKey() { return 'pd_' + U.s + '_' + (PD ? PD.day + PD.sh : ''); }
+function pdSave() { try { LS(pdKey(), JSON.stringify({ v: PDV, i: PDI })); } catch (e) { } }
+function pdLoad(sh) {
+  PDSH = sh || PDSH || (new Date().getHours() < 16 ? '早班' : '晚班');
+  $('pdsh').innerHTML = ['早班', '晚班'].map(function (x) { return '<span class="' + (x === PDSH ? 'on' : '') + '" onclick="pdLoad(\'' + x + '\')">' + x + '盤點</span>'; }).join('');
+  $('pdtab').innerHTML = ''; $('pdb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
+  api('op=pdget&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&sh=' + encodeURIComponent(PDSH)).then(function (j) {
+    if (!j.ok) { $('pdb').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; }
+    PD = j; PDV = {}; PDI = {}; PDF = 0; PDW = '';
+    var dr = null; try { dr = JSON.parse(LS(pdKey()) || 'null'); } catch (e) { }
+    j.items.forEach(function (it) { if (it.inn) PDI[it.r] = it.inn; });
+    if (dr) { PDV = dr.v || {}; Object.keys(dr.i || {}).forEach(function (r) { PDI[r] = dr.i[r]; }); }
+    pdRender();
+  }).catch(function () { $('pdb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+}
+function pdUse(it) { var v = PDV[it.r]; if (v === undefined || v === '') return null; return (it.prev || 0) + (Number(PDI[it.r]) || 0) - Number(v); }
+function pdChk(it) {
+  var u = pdUse(it); if (u === null) return null;
+  if (u < 0) return '比上次多 ' + (-u) + (PDI[it.r] ? '' : '，今天沒填到貨') + '，再數一次';
+  if (u > it.hi) return '用了 ' + u + '，平常這班 ' + (it.lo === it.hi80 ? '約 ' + it.med : it.lo + '–' + it.hi80) + '，再數一次';
+  if (it.med >= 5 && u < it.med * 0.3) return '只用了 ' + u + '，平常約 ' + it.med + '，再數一次';
+  return '';
+}
+function pdNm(n) { var m = String(n).match(/^([^（(]+)(.*)$/); return m ? esc(m[1].trim()) + (m[2] ? '<small>' + esc(m[2]) + '</small>' : '') : esc(n); }
+function pdRow(it) {
+  var w = pdChk(it), v = PDV[it.r], cls = w === null ? '' : w ? 'bad' : 'ok';
+  return '<div class="pdr ' + cls + '" id="pdr' + it.r + '"><span class="nm">' + (w ? '⚠️ ' : '') + pdNm(it.n) + '<span class="wm">' + (w || '') + '</span></span>' +
+    '<span class="pv">昨 ' + (it.prev == null ? '–' : it.prev) + '</span>' +
+    '<input class="in" inputmode="numeric" placeholder="到貨" value="' + (PDI[it.r] || '') + '" oninput="pdIn(' + it.r + ',this.value)">' +
+    '<input class="q" inputmode="decimal" value="' + (v === undefined ? '' : v) + '" oninput="pdV(' + it.r + ',this.value)"></div>';
+}
+function pdIt(r) { return PD.items.filter(function (x) { return x.r === r; })[0]; }
+function pdUpd(r) {
+  var it = pdIt(r), el = $('pdr' + r); if (!el) return;
+  var w = pdChk(it); el.className = 'pdr ' + (w === null ? '' : w ? 'bad' : 'ok');
+  el.querySelector('.nm').innerHTML = (w ? '⚠️ ' : '') + pdNm(it.n) + '<span class="wm">' + (w || '') + '</span>';
+  pdCount(); pdSave();
+}
+function pdV(r, x) { x = String(x).replace(/[^\d.]/g, ''); if (x === '') delete PDV[r]; else PDV[r] = x; pdUpd(r); }
+function pdIn(r, x) { x = String(x).replace(/\D/g, ''); if (x === '') delete PDI[r]; else PDI[r] = x; pdUpd(r); }
+function pdCount() {
+  var left = 0, bad = 0; PD.items.forEach(function (it) { var w = pdChk(it); if (w === null) left++; else if (w) bad++; });
+  $('pdtab').innerHTML = ['全部 ' + PD.items.length, '還沒填 ' + left, '⚠️ ' + bad].map(function (t, i) { return '<span class="' + (i === PDF ? 'on' : '') + '" onclick="PDF=' + i + ';pdRender()">' + t + '</span>'; }).join('');
+  var b = $('pdgo'); if (b) b.textContent = left ? '還有 ' + left + ' 項沒填' : '送出';
+  return { left: left, bad: bad };
+}
+function pdRender() {
+  var P = PD; if (!P) return;
+  $('pds').textContent = (P.store === '鳳山中山' ? '鳳山中山' : '熱河') + '・' + P.day + '・' + P.tab;
+  var h = '';
+  if (!P.live) h += '<div class="card" style="background:#fff4e0;margin-top:10px;font-size:13px">🧪 測試中：送出只會記錄、通知可樂，<b>不會寫進庫存表</b></div>';
+  if (P.done) h += '<div class="card" style="margin-top:10px;font-size:13px;color:#2e7d32">✅ 今天' + P.sh + '已由 ' + esc(P.done.who) + ' ' + P.done.t + ' 送出過，再送會蓋掉</div>';
+  h += '<div class="card" style="font-size:12px;color:var(--mu);margin-top:10px">填「現在整包／整罐有幾個」，開過的不算；灰字是上次盤的數字，有到貨填在虛線格</div>';
+  P.zones.forEach(function (z) {
+    var L = P.items.filter(function (it) { if (it.z !== z) return false; var w = pdChk(it); return PDF === 0 || (PDF === 1 && w === null) || (PDF === 2 && w); });
+    if (L.length) h += '<div class="card"><div class="pdz">' + z + '</div>' + L.map(pdRow).join('') + '</div>';
+  });
+  h += '<div class="card"><div class="pdz">盤點人</div>' + (P.who.length ? P.who : []).map(function (n) { return '<span class="chip' + (PDW === n ? ' f' : '') + '" onclick="PDW=\'' + n + '\';pdRender()">' + esc(n) + '</span>'; }).join('') +
+    '<input id="pdwho" placeholder="不在上面就打名字" value="' + (P.who.indexOf(PDW) < 0 ? esc(PDW) : '') + '" oninput="PDW=this.value.trim()" style="margin-top:8px"></div>' +
+    '<button class="btn" id="pdgo" onclick="pdGo()">送出</button>';
+  $('pdb').innerHTML = h; pdCount();
+}
+function pdGo(force) {
+  var c = pdCount();
+  if (c.left) { PDF = 1; pdRender(); bar('還有 ' + c.left + ' 項沒填', 2000); return; }
+  if (!PDW) { bar('請選盤點人', 2000); return; }
+  var flags = PD.items.map(function (it) { var w = pdChk(it); return w ? it.n.replace(/[（(].*$/, '') + '：' + w.replace('，再數一次', '') : ''; }).filter(Boolean);
+  if (flags.length && !force) {
+    $('pdb').insertAdjacentHTML('afterbegin', '<div class="card" id="pdcf" style="border:2px solid #c0392b;margin-top:10px"><b style="color:#a12b1f">⚠️ 這 ' + flags.length + ' 項跟平常差很多，確定都重數過了？</b><div style="font-size:13px;margin:6px 0">・' + flags.map(esc).join('<br>・') + '</div><button class="btn" onclick="PDF=2;pdRender();window.scrollTo(0,0)">回去重數</button><button class="btn" style="background:#fff;color:var(--ac);border:1px solid var(--ac);margin-top:8px" onclick="pdGo(1)">確定送出（會通知幹部）</button></div>');
+    window.scrollTo(0, 0); return;
+  }
+  var j = { v: PDV, i: PDI, f: flags };
+  bar('送出中…');
+  api('op=pdset&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&sh=' + encodeURIComponent(PD.sh) + '&who=' + encodeURIComponent(PDW) + '&j=' + encodeURIComponent(JSON.stringify(j))).then(function (r) {
+    if (!r.ok) { bar(r.err || '沒送出去，請再按一次', 3000); return; }
+    try { LS(pdKey(), null); } catch (e) { }
+    bar(r.live ? '已寫進庫存表' : '已送出（測試：沒寫進庫存表）', 2500);
+    $('pdb').innerHTML = '<div class="card" style="margin-top:12px"><b style="color:#2e7d32">✅ ' + PD.sh + '盤點送出了</b><div style="font-size:13px;margin-top:6px">盤點人：' + esc(PDW) + '｜' + r.n + ' 項' + (r.flags ? '｜⚠️ ' + r.flags + ' 項已通知' + (r.live ? '幹部' : '可樂') : '') + (r.live ? '' : '<br>測試中，沒有寫進庫存表') + '</div></div><button class="btn" onclick="go(\'home\')">回首頁</button>';
+    $('pdtab').innerHTML = '';
+  }).catch(function () { bar('網路不穩，請再按一次', 3000); });
+}
 function esc(x) { return String(x).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
 function hist(a) { $('sayh').innerHTML = a && a.length ? '<b>之前說過的</b>' + a.map(function (x) { return '<div>' + esc(x.x) + '<br><small>' + x.t + ' 送出</small></div>'; }).join('') : ''; }
 $('sayg').onclick = function () {
@@ -736,10 +842,10 @@ function frame() {
     ifr = document.createElement('iframe'); FRV = DATA.html;
     ifr.onload = function () {
       tune(ifr);
-      try { var w = ifr.contentWindow; if (w.setMe && !(w.D && w.D.grant)) w.setMe(BOSS() ? '__view' : U.n); } catch (e) { }   // 11/11 一定用登入的人（避免沿用之前測試記住的人）
+      try { var w = ifr.contentWindow; if (w.setMe && !(w.D && w.D.grant)) w.setMe(BOSS() || DEV() ? '__view' : U.n); } catch (e) { }   // 11/11 一定用登入的人（避免沿用之前測試記住的人）
       setMode(ifr, CUR === 'sc' ? 1 : 0);
     };
-    LS('lvMe' + U.s, BOSS() ? '__view' : U.n);   // 可樂＝只看模式（看得到全部人）
+    LS('lvMe' + U.s, BOSS() || DEV() ? '__view' : U.n);   // 可樂＝只看模式（看得到全部人）
     ifr.srcdoc = DATA.html; f.appendChild(ifr); $('frm').style.display = 'none';
   } else setMode(ifr, want);
 }
