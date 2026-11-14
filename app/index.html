@@ -68,6 +68,10 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 .tq{display:grid;grid-template-columns:54px 1fr auto;gap:6px;align-items:center;padding:7px 0;border-bottom:1px dashed #eadfce}.tq:last-child{border:0}.tq b.n{font-size:20px;color:#b3502e}
 .tst{display:flex;align-items:center;gap:6px}.tst span{width:30px;height:30px;border-radius:50%;border:1px solid var(--ac);color:var(--ac);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}.tst b{min-width:36px;text-align:center;font-size:16px}
 .tq select{margin:0;padding:5px 6px;font-size:13px;width:auto}
+.gwr{display:grid;grid-template-columns:48px 1fr;gap:6px;padding:6px 0;border-bottom:1px dashed var(--ln)}.gwr:last-child{border:0}.gwr .k{font-weight:700;color:var(--ac)}.gwr .m{background:#fff4d6;border-radius:6px;padding:0 4px;font-weight:700}.gwl{color:#b06000;font-size:12px}
+.gwt{font-weight:800;color:var(--tx);margin:6px 0 2px}.gwc{display:inline-block;font-size:12px;border-radius:20px;padding:2px 10px;background:#fff1c9;color:#9a6a00;font-weight:700}.gwc.ok{background:#dff3e2;color:#2d7a3a}
+.gwb{display:flex;gap:8px;margin:0 16px 8px}.gwb a,.gwb span{flex:1;text-align:center;padding:12px 0;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none}.gwb .b1{background:#fff;color:var(--ac);border:1.5px solid var(--ac)}.gwb .b2{background:#2d7a3a;color:#fff}.gwb .b3{background:#ddd;color:#888}
+.gwme{display:flex;gap:8px;margin-top:6px}.gwme div{flex:1;border-radius:10px;padding:8px;text-align:center;background:#f6ece0;line-height:1.4}.gwme b{display:block;font-size:20px;color:var(--tx);margin:0}.gwme small{color:var(--mu);font-size:11px}
 .s2p{display:flex;gap:8px;margin:12px 16px 0}.s2p span{flex:1;text-align:center;border:1px solid var(--ac);color:var(--ac);background:#fff;border-radius:20px;padding:7px 0;font-size:14px}.s2p span.on{background:var(--ac);color:#fff}
 .s2d{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;-webkit-overflow-scrolling:touch}.s2d span{flex:0 0 46px;text-align:center;background:#fff;border:1px solid var(--ln);border-radius:10px;padding:5px 0;font-size:12px;line-height:1.4}.s2d span.on{background:var(--ac);color:#fff;border-color:var(--ac)}.s2d span.we{color:#c0392b}.s2d span.on.we{color:#fff}
 .s2c h3{margin:0 0 4px;font-size:16px;display:flex;justify-content:space-between;align-items:baseline}.s2c h3 small{font-weight:400;color:var(--mu);font-size:12px}.s2c .t2{font-size:12px;color:var(--mu);margin:6px 0 0}.s2c .r{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed var(--ln)}.s2c .of{font-size:12px;color:var(--mu);margin-top:6px}
@@ -113,8 +117,10 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
     <div class="t" onclick="go('ex')"><span class="badge" id="b3" style="display:none">!</span><span class="e">📝</span><b>考試</b><small id="c3">沒有考試</small></div>
     <div class="t" onclick="go('sg')"><span class="badge" id="b4" style="display:none"></span><span class="e">✍️</span><b>公告簽名</b><small id="c4">沒有要簽的</small></div>
     <div class="t" id="pdt" style="display:none" onclick="go('pd')"><span class="e">📦</span><b>盤點</b><small id="c6">　</small></div>
+    <div class="t" id="gwtl" style="display:none" onclick="go('gw')"><span class="e">🧭</span><b>晚班崗位</b><small id="c7">　</small></div>
     <div class="t" id="teat" style="display:none" onclick="go('tea')"><span class="badge" id="b5" style="display:none">!</span><span class="e">🧊</span><b>留茶湯</b><small id="c5">　</small></div>
   </div>
+  <div class="card" id="gwhc" style="display:none" onclick="go('gw')"></div>
   <div class="card"><b>今天</b><span id="td">　</span></div>
   <div class="card" id="prc" style="display:none"></div>
   <div class="card" id="hcc" style="display:none"></div>
@@ -128,6 +134,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 
 <div class="scr" id="tea"><div class="hd"><div class="s" id="teas"></div><h2>🧊 留茶湯</h2><span class="rf" id="teasw" style="display:none" onclick="teaSw()"></span></div><div class="s2p" id="teatab"></div><div id="teab"></div><div style="height:20px"></div></div>
 <div class="scr" id="pd"><div class="hd"><div class="s" id="pds"></div><h2>📦 盤點</h2><span class="rf" id="pdsw" style="display:none" onclick="pdSw()"></span></div><div class="s2p" id="pdsh"></div><div class="s2p" id="pdtab"></div><div id="pdb"></div><div style="height:30px"></div></div>
+<div class="scr" id="gw"><div class="hd"><div class="s" id="gws"></div><h2>🧭 晚班崗位</h2><span class="rf" id="gwsw" style="display:none" onclick="gwSw()"></span></div><div class="s2p" id="gwtab"></div><div id="gwb"></div><div style="height:30px"></div></div>
 <div class="scr" id="tl"><div class="hd"><div class="s">可樂常用</div><h2 id="tlh"></h2></div><div class="box" id="tlf"></div><div id="tlr"></div><div style="height:20px"></div></div>
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -227,7 +234,7 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 function show(v) {
   if (v === 'sc' && BOSS()) v = 's2';   // 11/10 可樂：兩店班表一起看
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
@@ -238,11 +245,85 @@ function show(v) {
   if (v === 's2') { s2Render(); window.scrollTo(0, 0); }
   if (v === 'tea') { teaLoad(); window.scrollTo(0, 0); }
   if (v === 'pd') { pdLoad(); window.scrollTo(0, 0); }
+  if (v === 'gw') { gwLoad(); window.scrollTo(0, 0); }
   if (v === 'lv' || v === 'sc') frame();
   if (v === 'home') { load(0); if (DATA) mtRender(); }
   if (v === 'mt') { MTI = 0; mtRender(); window.scrollTo(0, 0); }
 }
 function go(v) { show(v); }
+// ---------- 11/14 晚班崗位 ----------
+// 幹部／儲備／可樂：今天、明天隨時看，可換人、提早發大群；員工：發了才看得到
+var GW = {}, GWK = 0, GWW = 0;
+function gwLead() { return BOSS() || !!(DATA && (DATA.lead || DATA.rsv)); }
+function gwQ(k) { return 'op=gw&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&d=' + k; }
+function gwMine(P) {   // 我今晚各段的崗位
+  var o = []; (P.blocks || []).forEach(function (b) { b.rows.forEach(function (r) { r.who.forEach(function (w) { if (w.name === U.n) o.push({ t: b.t, st: r.st, learn: w.learn, by: w.by }); }); }); }); return o;
+}
+function gwHome() {
+  var L = gwLead(), want = U.s + U.n;
+  $('gwtl').style.display = L ? '' : 'none'; if (!L) $('gwhc').style.display = 'none';
+  if (DEV() && !L) return;
+  api(gwQ(0)).then(function (j) {
+    if (want !== U.s + U.n || !j.ok) return;
+    if (!j.blocks && !j.none) j = { ok: true, none: 1 };   // 後端還沒更新
+    GW[U.s + 0] = j;
+    if (L) { $('c7').textContent = j.none ? (j.err2 || '還排不出來') : j.status === '已發' ? '✅ 已發 ' + (j.at || '') : '🤖 還沒發，可先看'; return; }
+    if (j.none) { $('gwhc').style.display = 'none'; $('gwtl').style.display = 'none'; return; }
+    $('gwtl').style.display = ''; $('c7').textContent = '點開看全部人';
+    var m = gwMine(j); if (!m.length) { $('gwhc').style.display = 'none'; return; }
+    $('gwhc').style.display = '';
+    $('gwhc').innerHTML = '<b>🧭 今天晚班崗位</b><div class="gwme">' + m.map(function (x) { return '<div><small>' + esc(x.t) + '</small><b>' + esc(x.st) + '</b><small>' + (x.learn ? '學習中' + (x.by ? '・' + esc(x.by) + '帶' : '') : '&nbsp;') + '</small></div>'; }).join('') + '</div>' +
+      (j.pd === U.n ? '<div class="gwl" style="margin-top:6px">📦 今晚盤點是你</div>' : '');
+  }).catch(function () {});
+}
+function gwSw() { $('sw').onclick(); GW = {}; gwLoad(); }
+function gwLoad() {
+  var L = gwLead(), k = L ? GWK : 0, want = U.s + k;
+  $('gwsw').style.display = BOSS() ? '' : 'none'; $('gwsw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
+  $('gwtab').style.display = L ? '' : 'none';
+  $('gwtab').innerHTML = ['今天', '明天'].map(function (t, i) { return '<span class="' + (i === k ? 'on' : '') + '" onclick="GWK=' + i + ';gwLoad()">' + t + '</span>'; }).join('');
+  if (GW[want]) gwRender(GW[want]); else $('gwb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">' + (L ? '排崗位中，約 5 秒…' : '載入中…') + '</div>';
+  api(gwQ(k)).then(function (j) {
+    if (CUR !== 'gw' || want !== U.s + (gwLead() ? GWK : 0)) return;
+    if (!j.ok) { $('gwb').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; }
+    GW[want] = j; gwRender(j);
+  }).catch(function () { if (!GW[want]) $('gwb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+}
+function gwRender(P) {
+  var st = U.s === 'fs' ? '鳳山中山' : '熱河', d = P.d || '';
+  $('gws').textContent = st + (d ? '・' + (+d.slice(4, 6)) + '/' + (+d.slice(6)) + '（' + WK[new Date(+d.slice(0, 4), d.slice(4, 6) - 1, +d.slice(6)).getDay()] + '）' : '');
+  if (P.none) { $('gwb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">' + (P.err2 ? esc(P.err2) : '今天的崗位還沒發，發了這裡就看得到') + '</div>'; return; }
+  var sent = P.status === '已發', chip = sent ? '<span class="gwc ok">✅ 已發大群' + (P.at ? '・' + esc(P.at) : '') + (P.by ? ' ' + esc(P.by) : '') + '</span>'
+    : P.status === '幹部改過' ? '<span class="gwc">✏️ 幹部改過・還沒發</span>' : '<span class="gwc">🤖 ' + (P.tm ? '依明天班表先排・可改' : '機器人建議・還沒發') + '</span>';
+  var h = '<div class="card" style="margin-top:12px">' + (P.lead ? chip : '');
+  (P.blocks || []).forEach(function (b) {
+    h += '<div class="gwt">⏰ ' + esc(b.t) + '</div>' + b.rows.map(function (r) {
+      return '<div class="gwr"><span class="k">' + esc(r.st) + '</span><span>' + (r.who.length ? r.who.map(function (w) {
+        return '<span class="' + (w.name === U.n ? 'm' : '') + '">' + esc(w.name) + '</span>' + (w.learn ? ' <span class="gwl">學習中' + (w.by ? '・' + esc(w.by) + '帶' : '') + '</span>' : '');
+      }).join('、') : '<span style="color:#c0392b">沒人</span>') + '</span></div>';
+    }).join('');
+  });
+  if (P.pd) h += '<div class="gwl" style="margin-top:6px">📦 盤點：' + esc(P.pd) + (P.lead && P.pdWhy ? '（' + esc(P.pdWhy) + '）' : '') + '</div>';
+  if (P.lead && (P.warn || []).length) h += '<div style="margin-top:6px;font-size:12px;color:#b06000">' + P.warn.map(function (w) { return '⚠️ ' + esc(w); }).join('<br>') + '</div>';
+  if (P.lead && (P.unknown || []).length) h += '<div style="margin-top:4px;font-size:12px;color:#b06000">⚠️ 職能表還沒有：' + P.unknown.map(esc).join('、') + '</div>';
+  h += '</div>';
+  if (P.lead) {
+    if (sent) h += '<div style="color:var(--mu);font-size:12px;margin:0 18px">已發到大群，員工 App 首頁看得到自己的崗位。</div>';
+    else {
+      h += '<div class="gwb"><a class="b1" href="' + P.url + '" target="_blank">✏️ 換人</a>' + (P.tm ? '<span class="b3">明天才能發</span>' : '<span class="b2" onclick="gwPost(this)">✅ 確認發大群</span>') + '</div>';
+      h += '<div style="color:var(--mu);font-size:12px;margin:0 18px;line-height:1.6">' + (P.tm ? '改過的會留著，明天 16:00 就用你改的版本。' : '按「確認發大群」就提早發，不用等 16:00。<br>沒人按：16:00 照舊傳幹部群、17:00 自動發。') + '<br>換人改完回到 App 會自動更新。</div>';
+    }
+  }
+  $('gwb').innerHTML = h;
+}
+function gwPost(el) {
+  if (GWW) return; GWW = 1; el.textContent = '發送中…';
+  api('op=gwpost&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok).then(function (j) {
+    GWW = 0;
+    if (!j.ok) { bar(j.err || '沒發出去，請再按一次', 3500); el.textContent = '✅ 確認發大群'; return; }
+    bar(j.msg || '已發', 3000); GW = {}; gwLoad(); gwHome();
+  }).catch(function () { GWW = 0; el.textContent = '✅ 確認發大群'; bar('網路不穩，請再按一次', 3000); });
+}
 // ---------- 11/11 留茶湯 ----------
 var TEA = null, TEAK = 0, TEAF = null;
 var TEA_OPEN = true;   // 11/12 開放幹部、儲備幹部（員工看不到）；原 11/11 先只給可樂用；之後開放幹部、儲備幹部（員工只看）→ 改 true，後端 TEA_OPEN 也要改
@@ -488,6 +569,7 @@ function render() {
   bossRender();
   leadRender();
   teaHome();
+  gwHome();
   devUI();
   var hr = d.hr;
   $('hrc').style.display = hr ? '' : 'none';
@@ -946,7 +1028,7 @@ $('sw').onclick = function () {   // 可樂切換門市
   U.s = U.s === 'rh' ? 'fs' : 'rh'; LS('app_s', U.s); DATA = null; FRV = ''; var f = $('fr').querySelector('iframe'); if (f) f.remove();
   $('hs').textContent = '載入中…'; $('frm').style.display = 'block'; LAST = 0; load(1);
 };
-document.addEventListener('visibilitychange', function () { if (!document.hidden) load(0); });
+document.addEventListener('visibilitychange', function () { if (!document.hidden) { load(0); if (CUR === 'gw') { GW = {}; gwLoad(); } } });
 
 function start() {
   if (!U.tok) { show('login'); return; }
