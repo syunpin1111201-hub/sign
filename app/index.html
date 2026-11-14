@@ -68,6 +68,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 .tq{display:grid;grid-template-columns:54px 1fr auto;gap:6px;align-items:center;padding:7px 0;border-bottom:1px dashed #eadfce}.tq:last-child{border:0}.tq b.n{font-size:20px;color:#b3502e}
 .tst{display:flex;align-items:center;gap:6px}.tst span{width:30px;height:30px;border-radius:50%;border:1px solid var(--ac);color:var(--ac);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}.tst b{min-width:36px;text-align:center;font-size:16px}
 .tq select{margin:0;padding:5px 6px;font-size:13px;width:auto}
+.gwx{padding:6px 0;font-size:15px}.gws{font-size:15px;padding:4px 6px;border:1.5px solid var(--ac);border-radius:8px;color:var(--ac);background:#fff;font-weight:700}
 .gwr{display:grid;grid-template-columns:48px 1fr;gap:6px;padding:6px 0;border-bottom:1px dashed var(--ln)}.gwr:last-child{border:0}.gwr .k{font-weight:700;color:var(--ac)}.gwr .m{background:#fff4d6;border-radius:6px;padding:0 4px;font-weight:700}.gwl{color:#b06000;font-size:12px}
 .gwt{font-weight:800;color:var(--tx);margin:6px 0 2px}.gwc{display:inline-block;font-size:12px;border-radius:20px;padding:2px 10px;background:#fff1c9;color:#9a6a00;font-weight:700}.gwc.ok{background:#dff3e2;color:#2d7a3a}
 .gwb{display:flex;gap:8px;margin:0 16px 8px}.gwb a,.gwb span{flex:1;text-align:center;padding:12px 0;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none}.gwb .b1{background:#fff;color:var(--ac);border:1.5px solid var(--ac)}.gwb .b2{background:#2d7a3a;color:#fff}.gwb .b3{background:#ddd;color:#888}
@@ -117,7 +118,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
     <div class="t" onclick="go('ex')"><span class="badge" id="b3" style="display:none">!</span><span class="e">📝</span><b>考試</b><small id="c3">沒有考試</small></div>
     <div class="t" onclick="go('sg')"><span class="badge" id="b4" style="display:none"></span><span class="e">✍️</span><b>公告簽名</b><small id="c4">沒有要簽的</small></div>
     <div class="t" id="pdt" style="display:none" onclick="go('pd')"><span class="e">📦</span><b>盤點</b><small id="c6">　</small></div>
-    <div class="t" id="gwtl" style="display:none" onclick="go('gw')"><span class="e">🧭</span><b>晚班崗位</b><small id="c7">　</small></div>
+    <div class="t" id="gwtl" style="display:none" onclick="go('gw')"><span class="e">🧭</span><b>崗位・拜訪・盤點</b><small id="c7">　</small></div>
     <div class="t" id="teat" style="display:none" onclick="go('tea')"><span class="badge" id="b5" style="display:none">!</span><span class="e">🧊</span><b>留茶湯</b><small id="c5">　</small></div>
   </div>
   <div class="card" id="gwhc" style="display:none" onclick="go('gw')"></div>
@@ -134,7 +135,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 
 <div class="scr" id="tea"><div class="hd"><div class="s" id="teas"></div><h2>🧊 留茶湯</h2><span class="rf" id="teasw" style="display:none" onclick="teaSw()"></span></div><div class="s2p" id="teatab"></div><div id="teab"></div><div style="height:20px"></div></div>
 <div class="scr" id="pd"><div class="hd"><div class="s" id="pds"></div><h2>📦 盤點</h2><span class="rf" id="pdsw" style="display:none" onclick="pdSw()"></span></div><div class="s2p" id="pdsh"></div><div class="s2p" id="pdtab"></div><div id="pdb"></div><div style="height:30px"></div></div>
-<div class="scr" id="gw"><div class="hd"><div class="s" id="gws"></div><h2>🧭 晚班崗位</h2><span class="rf" id="gwsw" style="display:none" onclick="gwSw()"></span></div><div class="s2p" id="gwtab"></div><div id="gwb"></div><div style="height:30px"></div></div>
+<div class="scr" id="gw"><div class="hd"><div class="s" id="gws"></div><h2 id="gwh">🧭 崗位</h2><span class="rf" id="gwsw" style="display:none" onclick="gwSw()"></span></div><div class="s2p" id="gwtab"></div><div class="s2p" id="gwtab2"></div><div id="gwb"></div><div style="height:30px"></div></div>
 <div class="scr" id="tl"><div class="hd"><div class="s">可樂常用</div><h2 id="tlh"></h2></div><div class="box" id="tlf"></div><div id="tlr"></div><div style="height:20px"></div></div>
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -251,74 +252,102 @@ function show(v) {
   if (v === 'mt') { MTI = 0; mtRender(); window.scrollTo(0, 0); }
 }
 function go(v) { show(v); }
-// ---------- 11/14 晚班崗位 ----------
+// ---------- 11/14 崗位：晚班崗位＋早晚班拜訪、盤點 ----------
 // 幹部／儲備／可樂：今天、明天隨時看，可換人、提早發大群；員工：發了才看得到
-var GW = {}, GWK = 0, GWW = 0;
+var GW = {}, GWK = 0, GWA = new Date().getHours() < 14 ? 1 : 0, GWW = 0;
 function gwLead() { return BOSS() || !!(DATA && (DATA.lead || DATA.rsv)); }
-function gwQ(k) { return 'op=gw&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&d=' + k; }
+function gwQ(k, a) { return 'op=gw&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&d=' + k + '&am=' + a; }
 function gwMine(P) {   // 我今晚各段的崗位
   var o = []; (P.blocks || []).forEach(function (b) { b.rows.forEach(function (r) { r.who.forEach(function (w) { if (w.name === U.n) o.push({ t: b.t, st: r.st, learn: w.learn, by: w.by }); }); }); }); return o;
 }
+function gwOk(j) { return j && j.ok && (j.none || j.blocks || j.people); }
 function gwHome() {
   var L = gwLead(), want = U.s + U.n;
   $('gwtl').style.display = L ? '' : 'none'; if (!L) $('gwhc').style.display = 'none';
   if (DEV() && !L) return;
-  api(gwQ(0)).then(function (j) {
-    if (want !== U.s + U.n || !j.ok) return;
-    if (!j.blocks && !j.none) j = { ok: true, none: 1 };   // 後端還沒更新
-    GW[U.s + 0] = j;
-    if (L) { $('c7').textContent = j.none ? (j.err2 || '還排不出來') : j.status === '已發' ? '✅ 已發 ' + (j.at || '') : '🤖 還沒發，可先看'; return; }
-    if (j.none) { $('gwhc').style.display = 'none'; $('gwtl').style.display = 'none'; return; }
+  Promise.all([api(gwQ(0, 1)), api(gwQ(0, 0))]).then(function (r) {
+    if (want !== U.s + U.n) return;
+    var A = gwOk(r[0]) ? r[0] : { ok: true, none: 1 }, P = gwOk(r[1]) ? r[1] : { ok: true, none: 1 };
+    GW[U.s + '01'] = A; GW[U.s + '00'] = P;
+    var stt = function (j) { return j.none ? '—' : j.status === '已發' ? '✅' : '🤖'; };
+    if (L) { $('c7').textContent = '早班 ' + stt(A) + '　晚班 ' + stt(P); return; }
+    if (A.none && P.none) { $('gwhc').style.display = 'none'; $('gwtl').style.display = 'none'; return; }
     $('gwtl').style.display = ''; $('c7').textContent = '點開看全部人';
-    var m = gwMine(j); if (!m.length) { $('gwhc').style.display = 'none'; return; }
-    $('gwhc').style.display = '';
-    $('gwhc').innerHTML = '<b>🧭 今天晚班崗位</b><div class="gwme">' + m.map(function (x) { return '<div><small>' + esc(x.t) + '</small><b>' + esc(x.st) + '</b><small>' + (x.learn ? '學習中' + (x.by ? '・' + esc(x.by) + '帶' : '') : '&nbsp;') + '</small></div>'; }).join('') + '</div>' +
-      (j.pd === U.n ? '<div class="gwl" style="margin-top:6px">📦 今晚盤點是你</div>' : '');
+    var h = '', m = P.none ? [] : gwMine(P);
+    if (!A.none && A.visit && A.visit.name === U.n) h += '<div class="gwl" style="font-size:14px;margin-top:4px">🚶 今天你去拜訪：' + esc(A.visit.loc) + '（' + esc(A.visit.t) + '）</div>';
+    if (!A.none && A.pd === U.n) h += '<div class="gwl" style="font-size:14px;margin-top:4px">📦 今天早班盤點是你</div>';
+    if (m.length) h += '<div class="gwme">' + m.map(function (x) { return '<div><small>' + esc(x.t) + '</small><b>' + esc(x.st) + '</b><small>' + (x.learn ? '學習中' + (x.by ? '・' + esc(x.by) + '帶' : '') : '&nbsp;') + '</small></div>'; }).join('') + '</div>';
+    if (!P.none && P.visit && P.visit.name === U.n) h += '<div class="gwl" style="font-size:14px;margin-top:6px">🚶 今晚你去拜訪：' + esc(P.visit.loc) + '（' + esc(P.visit.t) + '）</div>';
+    if (!P.none && P.pd === U.n) h += '<div class="gwl" style="font-size:14px;margin-top:4px">📦 今晚盤點是你</div>';
+    if (!h) { $('gwhc').style.display = 'none'; return; }
+    $('gwhc').style.display = ''; $('gwhc').innerHTML = '<b>🧭 今天你的工作</b>' + h;
   }).catch(function () {});
 }
 function gwSw() { $('sw').onclick(); GW = {}; gwLoad(); }
+function gwKey() { return U.s + (gwLead() ? GWK : 0) + GWA; }
 function gwLoad() {
-  var L = gwLead(), k = L ? GWK : 0, want = U.s + k;
+  var L = gwLead(), k = L ? GWK : 0, want = gwKey();
   $('gwsw').style.display = BOSS() ? '' : 'none'; $('gwsw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
-  $('gwtab').style.display = L ? '' : 'none';
-  $('gwtab').innerHTML = ['今天', '明天'].map(function (t, i) { return '<span class="' + (i === k ? 'on' : '') + '" onclick="GWK=' + i + ';gwLoad()">' + t + '</span>'; }).join('');
-  if (GW[want]) gwRender(GW[want]); else $('gwb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">' + (L ? '排崗位中，約 5 秒…' : '載入中…') + '</div>';
-  api(gwQ(k)).then(function (j) {
-    if (CUR !== 'gw' || want !== U.s + (gwLead() ? GWK : 0)) return;
+  $('gwtab').innerHTML = ['🌅 早班', '🌙 晚班'].map(function (t, i) { var a = 1 - i; return '<span class="' + (a === GWA ? 'on' : '') + '" onclick="GWA=' + a + ';gwLoad()">' + t + '</span>'; }).join('');
+  $('gwtab2').style.display = L ? '' : 'none';
+  $('gwtab2').innerHTML = ['今天', '明天'].map(function (t, i) { return '<span class="' + (i === k ? 'on' : '') + '" onclick="GWK=' + i + ';gwLoad()">' + t + '</span>'; }).join('');
+  if (GW[want]) gwRender(GW[want]); else $('gwb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">' + (L && !GWA ? '排崗位中，約 5 秒…' : '載入中…') + '</div>';
+  api(gwQ(k, GWA)).then(function (j) {
+    if (CUR !== 'gw' || want !== gwKey()) return;
     if (!j.ok) { $('gwb').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; }
+    if (!gwOk(j)) j = { ok: true, none: 1 };
     GW[want] = j; gwRender(j);
   }).catch(function () { if (!GW[want]) $('gwb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
 }
+function gwSel(P, k, cur, cand) {   // 幹部換拜訪／盤點的人
+  if (!P.lead || P.status === '已發' || !cand || !cand.length) return '<b style="color:var(--tx)">' + esc(cur || '—') + '</b>';
+  if (cur && cand.indexOf(cur) < 0) cand = [cur].concat(cand);
+  return '<select class="gws" onchange="gwSet(\'' + k + '\',this.value)">' + cand.map(function (n) { return '<option' + (n === cur ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select>';
+}
+function gwSet(k, v) {
+  bar('改好了，存檔中…');
+  api('op=gwset&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&d=' + GWK + '&am=' + GWA + '&k=' + k + '&v=' + encodeURIComponent(v)).then(function (j) {
+    if (!j.ok) { bar(j.err || '沒改到，請再選一次', 3000); return; }
+    bar('已改（' + v + '）', 1500); delete GW[gwKey()]; gwLoad(); gwHome();
+  }).catch(function () { bar('網路不穩，請再選一次', 3000); });
+}
 function gwRender(P) {
-  var st = U.s === 'fs' ? '鳳山中山' : '熱河', d = P.d || '';
+  var st = U.s === 'fs' ? '鳳山中山' : '熱河', d = P.d || '', am = GWA === 1;
   $('gws').textContent = st + (d ? '・' + (+d.slice(4, 6)) + '/' + (+d.slice(6)) + '（' + WK[new Date(+d.slice(0, 4), d.slice(4, 6) - 1, +d.slice(6)).getDay()] + '）' : '');
-  if (P.none) { $('gwb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">' + (P.err2 ? esc(P.err2) : '今天的崗位還沒發，發了這裡就看得到') + '</div>'; return; }
+  $('gwh').textContent = am ? '🌅 早班拜訪／盤點' : '🧭 晚班崗位';
+  if (P.none) { $('gwb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">' + (P.err2 ? esc(P.err2) : (am ? '今天早班' : '今天晚班') + '的安排還沒發，發了這裡就看得到') + '</div>'; return; }
   var sent = P.status === '已發', chip = sent ? '<span class="gwc ok">✅ 已發大群' + (P.at ? '・' + esc(P.at) : '') + (P.by ? ' ' + esc(P.by) : '') + '</span>'
     : P.status === '幹部改過' ? '<span class="gwc">✏️ 幹部改過・還沒發</span>' : '<span class="gwc">🤖 ' + (P.tm ? '依明天班表先排・可改' : '機器人建議・還沒發') + '</span>';
   var h = '<div class="card" style="margin-top:12px">' + (P.lead ? chip : '');
-  (P.blocks || []).forEach(function (b) {
+  if (am) {
+    h += '<div class="gwt">👥 早班</div>' + (P.people || []).map(function (x) { return '<div class="gwr" style="grid-template-columns:96px 1fr"><span class="k" style="font-weight:400;color:var(--mu);font-size:13px">' + esc(String(x.t).replace(/(\d{1,2})(\d\d)-(\d{1,2})(\d\d)/, '$1:$2–$3:$4')) + '</span><span class="' + (x.name === U.n ? 'm' : '') + '">' + esc(x.name) + '</span></div>'; }).join('');
+  } else (P.blocks || []).forEach(function (b) {
     h += '<div class="gwt">⏰ ' + esc(b.t) + '</div>' + b.rows.map(function (r) {
       return '<div class="gwr"><span class="k">' + esc(r.st) + '</span><span>' + (r.who.length ? r.who.map(function (w) {
-        return '<span class="' + (w.name === U.n ? 'm' : '') + '">' + esc(w.name) + '</span>' + (w.learn ? ' <span class="gwl">學習中' + (w.by ? '・' + esc(w.by) + '帶' : '') + '</span>' : '');
+        var go = P.visit && P.visit.name === w.name && P.visit.t === b.t;
+        return '<span class="' + (w.name === U.n ? 'm' : '') + '">' + esc(w.name) + '</span>' + (go ? ' <span class="gwl">🚶 出去拜訪</span>' : w.learn ? ' <span class="gwl">學習中' + (w.by ? '・' + esc(w.by) + '帶' : '') + '</span>' : '');
       }).join('、') : '<span style="color:#c0392b">沒人</span>') + '</span></div>';
     }).join('');
   });
-  if (P.pd) h += '<div class="gwl" style="margin-top:6px">📦 盤點：' + esc(P.pd) + (P.lead && P.pdWhy ? '（' + esc(P.pdWhy) + '）' : '') + '</div>';
+  h += '</div><div class="card">';
+  if (P.visit) h += '<div class="gwx">🚶 拜訪　' + gwSel(P, 'visit', P.visit.name, P.visit.cand) + '<div class="gwl" style="font-size:13px">📍 ' + esc(P.visit.loc) + (P.visit.route ? '（' + esc(P.visit.route) + '）' : '') + '　⏰ ' + esc(P.visit.t) + '</div></div>';
+  else h += '<div class="gwx" style="color:var(--mu)">🚶 ' + (am ? '今天早班' : '今天晚班') + '沒有排拜訪</div>';
+  h += '<div class="gwx">📦 盤點　' + gwSel(P, 'pd', P.pd, P.pdCand) + (P.lead && P.pdWhy ? '<div class="gwl">' + esc(P.pdWhy) + '</div>' : '') + '</div>';
   if (P.lead && (P.warn || []).length) h += '<div style="margin-top:6px;font-size:12px;color:#b06000">' + P.warn.map(function (w) { return '⚠️ ' + esc(w); }).join('<br>') + '</div>';
   if (P.lead && (P.unknown || []).length) h += '<div style="margin-top:4px;font-size:12px;color:#b06000">⚠️ 職能表還沒有：' + P.unknown.map(esc).join('、') + '</div>';
   h += '</div>';
   if (P.lead) {
-    if (sent) h += '<div style="color:var(--mu);font-size:12px;margin:0 18px">已發到大群，員工 App 首頁看得到自己的崗位。</div>';
+    if (sent) h += '<div style="color:var(--mu);font-size:12px;margin:0 18px">已發到大群，員工 App 首頁看得到自己的工作。</div>';
     else {
-      h += '<div class="gwb"><a class="b1" href="' + P.url + '" target="_blank">✏️ 換人</a>' + (P.tm ? '<span class="b3">明天才能發</span>' : '<span class="b2" onclick="gwPost(this)">✅ 確認發大群</span>') + '</div>';
-      h += '<div style="color:var(--mu);font-size:12px;margin:0 18px;line-height:1.6">' + (P.tm ? '改過的會留著，明天 16:00 就用你改的版本。' : '按「確認發大群」就提早發，不用等 16:00。<br>沒人按：16:00 照舊傳幹部群、17:00 自動發。') + '<br>換人改完回到 App 會自動更新。</div>';
+      h += '<div class="gwb">' + (am ? '' : '<a class="b1" href="' + P.url + '" target="_blank">✏️ 換崗位</a>') + (P.tm ? '<span class="b3">明天才能發</span>' : '<span class="b2" onclick="gwPost(this)">✅ 確認發大群</span>') + '</div>';
+      h += '<div style="color:var(--mu);font-size:12px;margin:0 18px;line-height:1.6">拜訪、盤點的人直接點名字換。' + (P.tm ? '<br>改過的會留著，明天就用你改的版本。' : am ? '<br>沒人按：9:30 傳幹部群、10:30 自動發。' : '<br>沒人按：16:00 傳幹部群、17:00 自動發。') + '</div>';
     }
   }
   $('gwb').innerHTML = h;
 }
 function gwPost(el) {
   if (GWW) return; GWW = 1; el.textContent = '發送中…';
-  api('op=gwpost&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok).then(function (j) {
+  api('op=gwpost&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&am=' + GWA).then(function (j) {
     GWW = 0;
     if (!j.ok) { bar(j.err || '沒發出去，請再按一次', 3500); el.textContent = '✅ 確認發大群'; return; }
     bar(j.msg || '已發', 3000); GW = {}; gwLoad(); gwHome();
