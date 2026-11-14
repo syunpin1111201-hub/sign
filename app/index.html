@@ -118,7 +118,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
     <div class="t" onclick="go('ex')"><span class="badge" id="b3" style="display:none">!</span><span class="e">📝</span><b>考試</b><small id="c3">沒有考試</small></div>
     <div class="t" onclick="go('sg')"><span class="badge" id="b4" style="display:none"></span><span class="e">✍️</span><b>公告簽名</b><small id="c4">沒有要簽的</small></div>
     <div class="t" id="pdt" style="display:none" onclick="go('pd')"><span class="e">📦</span><b>盤點</b><small id="c6">　</small></div>
-    <div class="t" id="gwtl" style="display:none" onclick="go('gw')"><span class="e">🧭</span><b>崗位・拜訪・盤點</b><small id="c7">　</small></div>
+    <div class="t" id="gwtl" style="display:none" onclick="go('gw')"><span class="e">🧭</span><b>崗位・拜訪</b><small id="c7">　</small></div>
     <div class="t" id="teat" style="display:none" onclick="go('tea')"><span class="badge" id="b5" style="display:none">!</span><span class="e">🧊</span><b>留茶湯</b><small id="c5">　</small></div>
   </div>
   <div class="card" id="gwhc" style="display:none" onclick="go('gw')"></div>
@@ -361,7 +361,7 @@ function teaB(cc) { var b = cc / 10000; return b <= 0 ? '0' : (b % 1 ? b.toFixed
 function teaHome() {
   var t = DATA && DATA.tea, el = $('c5'); if (!el) return;
   $('teat').style.display = BOSS() || teaCan() || DEV() ? '' : 'none';
-  $('pdt').style.display = PD_ALL || BOSS() || DEV() ? '' : 'none';   // 11/13 盤點：員工、幹部、可樂、公務機都會有；可樂先測，PD_ALL 改 true 才開給大家
+  $('pdt').style.display = PD_ALL || BOSS() || DEV() || gwLead() ? '' : 'none';   // 11/14 幹部、儲備也先打開（在崗位旁邊）   // 11/13 盤點：員工、幹部、可樂、公務機都會有；可樂先測，PD_ALL 改 true 才開給大家
   var h = new Date().getHours();
   if (t && t.done) { el.textContent = t.who + ' ' + t.t + ' 填了'; $('b5').style.display = 'none'; }
   else { el.textContent = '今晚收店要留多少'; $('b5').style.display = 'none'; }
