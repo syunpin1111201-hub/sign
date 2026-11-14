@@ -254,6 +254,7 @@ function show(v) {
 function go(v) { show(v); }
 // ---------- 11/14 崗位：晚班崗位＋早晚班拜訪、盤點 ----------
 // 幹部／儲備／可樂：今天、明天隨時看，可換人、提早發大群；員工：發了才看得到
+var GW_ALL = false;   // 11/14 崗位・拜訪先只給可樂、幹部、儲備測；可樂說「開給大家」→ true
 var GW = {}, GWK = 0, GWA = new Date().getHours() < 14 ? 1 : 0, GWW = 0;
 function gwLead() { return BOSS() || !!(DATA && (DATA.lead || DATA.rsv)); }
 function gwQ(k, a) { return 'op=gw&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&d=' + k + '&am=' + a; }
@@ -264,7 +265,7 @@ function gwOk(j) { return j && j.ok && (j.none || j.blocks || j.people); }
 function gwHome() {
   var L = gwLead(), want = U.s + U.n;
   $('gwtl').style.display = L ? '' : 'none'; if (!L) $('gwhc').style.display = 'none';
-  if (DEV() && !L) return;
+  if (!L && !GW_ALL) return;
   Promise.all([api(gwQ(0, 1)), api(gwQ(0, 0))]).then(function (r) {
     if (want !== U.s + U.n) return;
     var A = gwOk(r[0]) ? r[0] : { ok: true, none: 1 }, P = gwOk(r[1]) ? r[1] : { ok: true, none: 1 };
@@ -361,7 +362,7 @@ function teaB(cc) { var b = cc / 10000; return b <= 0 ? '0' : (b % 1 ? b.toFixed
 function teaHome() {
   var t = DATA && DATA.tea, el = $('c5'); if (!el) return;
   $('teat').style.display = BOSS() || teaCan() || DEV() ? '' : 'none';
-  $('pdt').style.display = PD_ALL || BOSS() || DEV() || gwLead() ? '' : 'none';   // 11/14 幹部、儲備也先打開（在崗位旁邊）   // 11/13 盤點：員工、幹部、可樂、公務機都會有；可樂先測，PD_ALL 改 true 才開給大家
+  $('pdt').style.display = PD_ALL || gwLead() ? '' : 'none';   // 11/14 幹部、儲備也先打開（在崗位旁邊）   // 11/13 盤點：員工、幹部、可樂、公務機都會有；可樂先測，PD_ALL 改 true 才開給大家
   var h = new Date().getHours();
   if (t && t.done) { el.textContent = t.who + ' ' + t.t + ' 填了'; $('b5').style.display = 'none'; }
   else { el.textContent = '今晚收店要留多少'; $('b5').style.display = 'none'; }
