@@ -301,9 +301,35 @@ function gwLoad() {
   }).catch(function () { if (!GW[want]) $('gwb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
 }
 function gwSel(P, k, cur, cand) {   // 幹部換拜訪／盤點的人
-  if (!P.lead || P.status === '已發' || !cand || !cand.length) return '<b style="color:var(--tx)">' + esc(cur || '—') + '</b>';
+  if (!P.lead || !cand || !cand.length) return '<b style="color:var(--tx)">' + esc(cur || '—') + '</b>';
   if (cur && cand.indexOf(cur) < 0) cand = [cur].concat(cand);
   return '<select class="gws" onchange="gwSet(\'' + k + '\',this.value)">' + cand.map(function (n) { return '<option' + (n === cur ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select>';
+}
+function gwFt(t) { return String(t || '').replace(/^(\d{1,2})(\d\d)-(\d{1,2})(\d\d)$/, '$1:$2–$3:$4'); }
+function gwPpl(P, am) {   // 11/14 請假／代班：直接在 App 改今天的人
+  var ov = P.ov || { del: [], add: [] }, ppl = (P.people || []).slice();
+  if (!ppl.length) (P.blocks || []).forEach(function (b) { (b.people || []).forEach(function (n) { if (!ppl.some(function (x) { return x.name === n; })) ppl.push({ name: n, t: '' }); }); });
+  var addN = ov.add.map(function (x) { return x.name; });
+  var h = '<div class="card" style="margin-top:12px"><div class="gwt">👥 ' + (am ? '早班' : '晚班') + '的人（' + ppl.length + ' 人）</div>';
+  h += ppl.map(function (x) {
+    var sub = addN.indexOf(x.name) >= 0;
+    return '<div class="gwr" style="grid-template-columns:1fr auto;align-items:center"><span><b style="color:var(--tx)">' + esc(x.name) + '</b> <small style="color:var(--mu)">' + esc(gwFt(x.t)) + '</small>' + (sub ? ' <span class="gwc">代班</span>' : '') + '</span>' +
+      '<span class="chip" style="margin:0" onclick="gwPp(\'del\',\'' + esc(x.name) + '\')">' + (sub ? '✕ 拿掉' : '✕ 請假') + '</span></div>';
+  }).join('');
+  h += ov.del.map(function (n) { return '<div class="gwr" style="grid-template-columns:1fr auto;align-items:center"><span style="color:var(--mu);text-decoration:line-through">' + esc(n) + '</span><span class="chip" style="margin:0" onclick="gwPp(\'undo\',\'' + esc(n) + '\')">↺ 回來上班</span></div>'; }).join('');
+  var have = ppl.map(function (x) { return x.name; }).concat(ov.del), opt = (P.staff || []).filter(function (n) { return have.indexOf(n) < 0; });
+  h += '<div style="display:flex;gap:6px;margin-top:8px;align-items:center"><select id="gwan" class="gws" style="flex:1"><option value="">＋ 代班／加人</option>' + opt.map(function (n) { return '<option>' + esc(n) + '</option>'; }).join('') + '</select>' +
+    '<input id="gwat" class="gws" style="width:96px" inputmode="numeric" value="' + (am ? '0930-1800' : '1800-2300') + '"><span class="chip f" style="margin:0" onclick="gwPp(\'add\',$(\'gwan\').value,$(\'gwat\').value)">加</span></div>';
+  h += '<div style="font-size:12px;color:var(--mu);margin-top:6px">改了會自動重排崗位' + (am ? '、拜訪、盤點' : '') + '　<span style="color:var(--ac);text-decoration:underline" onclick="gwPp(\'redo\',\'\')">🔄 照班表重排</span></div></div>';
+  return h;
+}
+function gwPp(k, v, t) {
+  if (k === 'add' && !v) { bar('先選要加的人', 2000); return; }
+  bar(k === 'redo' ? '照班表重排中…' : '改好了，重排中…');
+  api('op=gwppl&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&d=' + GWK + '&am=' + GWA + '&k=' + k + '&v=' + encodeURIComponent(v || '') + '&t=' + encodeURIComponent(t || '')).then(function (j) {
+    if (!j.ok) { bar(j.err || '沒改到，請再按一次', 3000); return; }
+    bar('重排好了', 1500); delete GW[gwKey()]; gwLoad(); gwHome();
+  }).catch(function () { bar('網路不穩，請再按一次', 3000); });
 }
 function gwSet(k, v) {
   bar('改好了，存檔中…');
@@ -319,7 +345,7 @@ function gwRender(P) {
   if (P.none) { $('gwb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">' + (P.err2 ? esc(P.err2) : (am ? '今天早班' : '今天晚班') + '的安排還沒發，發了這裡就看得到') + '</div>'; return; }
   var sent = P.status === '已發', chip = sent ? '<span class="gwc ok">✅ 已發大群' + (P.at ? '・' + esc(P.at) : '') + (P.by ? ' ' + esc(P.by) : '') + '</span>'
     : P.status === '幹部改過' ? '<span class="gwc">✏️ 幹部改過・還沒發</span>' : '<span class="gwc">🤖 ' + (P.tm ? '依明天班表先排・可改' : '機器人建議・還沒發') + '</span>';
-  var h = '<div class="card" style="margin-top:12px">' + (P.lead ? chip : '');
+  var h = (P.lead ? gwPpl(P, am) : '') + '<div class="card" style="margin-top:12px">' + (P.lead ? chip : '');
   if (am) {
     h += '<div class="gwt">👥 早班</div>' + (P.people || []).map(function (x) { return '<div class="gwr" style="grid-template-columns:96px 1fr"><span class="k" style="font-weight:400;color:var(--mu);font-size:13px">' + esc(String(x.t).replace(/(\d{1,2})(\d\d)-(\d{1,2})(\d\d)/, '$1:$2–$3:$4')) + '</span><span class="' + (x.name === U.n ? 'm' : '') + '">' + esc(x.name) + '</span></div>'; }).join('');
   } else (P.blocks || []).forEach(function (b) {
@@ -338,7 +364,7 @@ function gwRender(P) {
   if (P.lead && (P.unknown || []).length) h += '<div style="margin-top:4px;font-size:12px;color:#b06000">⚠️ 職能表還沒有：' + P.unknown.map(esc).join('、') + '</div>';
   h += '</div>';
   if (P.lead) {
-    if (sent) h += '<div style="color:var(--mu);font-size:12px;margin:0 18px">已發到大群，員工 App 首頁看得到自己的工作。</div>';
+    if (sent) h += '<div style="color:var(--mu);font-size:12px;margin:0 18px">已發到大群。有人請假、代班照樣可以改，改完會出現「確認發大群」再發一次。</div>';
     else {
       h += '<div class="gwb">' + (am ? '' : '<a class="b1" href="' + P.url + '" target="_blank">✏️ 換崗位</a>') + (P.tm ? '<span class="b3">明天才能發</span>' : '<span class="b2" onclick="gwPost(this)">✅ 確認發大群</span>') + '</div>';
       h += '<div style="color:var(--mu);font-size:12px;margin:0 18px;line-height:1.6">拜訪、盤點的人直接點名字換。' + (P.tm ? '<br>改過的會留著，明天就用你改的版本。' : am ? '<br>沒人按：9:30 傳幹部群、10:30 自動發。' : '<br>沒人按：16:00 傳幹部群、17:00 自動發。') + '</div>';
