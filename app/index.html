@@ -901,9 +901,7 @@ function khRender() {
   h += '<b style="color:var(--tx)">幹部考核</b>　<span class="st ' + (cd === (B.cad || []).length && cd ? 'ok' : 'soon') + '">' + cd + '／' + (B.cad || []).length + '</span>' +
     ((B.cad || []).length ? (B.cad || []).map(function (x) { return '<div class="pl"><span>' + esc(x.n) + ' <small style="color:var(--mu)">' + esc(x.s) + (x.t !== '幹部' ? '・' + esc(x.t) : '') + '・' + esc(x.st) + '</small></span><span><a class="chip f" href="' + x.url + '" target="_blank">打分</a><a class="chip" href="' + x.talk + '" target="_blank">面談</a></span></div>'; }).join('')
       : '<div style="font-size:13px;color:var(--mu);margin-top:6px">這期連結還沒產生：老闆機器人打一次 #幹部考核 就會出現</div>');
-  var rd = (B.rsv || []).filter(function (x) { return x.st !== '未打' && x.st !== '草稿'; }).length;
-  h += '<div style="height:10px"></div><b style="color:var(--tx)">儲備考核</b>　<span class="st ' + (rd === (B.rsv || []).length ? 'ok' : 'soon') + '">' + rd + '／' + (B.rsv || []).length + '</span>' +
-    (B.rsv || []).map(function (x) { return '<div class="pl"><span>' + esc(x.n) + ' <small style="color:var(--mu)">' + esc(x.st) + '</small></span><span><a class="chip f" href="' + x.url + '" target="_blank">打分</a><a class="chip" href="' + x.talk + '" target="_blank">面談</a></span></div>'; }).join('') + '</div>';
+  // 11/15 可樂：沒有另外的儲備考核（儲備＝員工考核＋幹部考核），App 不列
   var tk = [], tn = 0; (B.kh || []).forEach(function (k) { k.talk.forEach(function (t) { tk.push(t); if (t.ok) tn++; }); });
   h += '<div class="sec2">員工面談（25 號～5 號）已簽 ' + tn + '／' + tk.length + '</div><div class="card">' + tk.map(function (t) { return '<div class="pl"><span>' + (t.ok ? '✅ ' : '') + esc(t.n) + '</span><a class="chip" href="' + t.url + '" target="_blank">面談頁 ›</a></div>'; }).join('') + '</div>';
   $('khb').innerHTML = h;
