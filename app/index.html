@@ -400,7 +400,7 @@ function sqStat(P) {
     s.emp++; if (x.st === '過') s.ok++; else if (x.st === '退回') s.bad++; else if (x.by) s.wait++; else s.todo++; if (x.by === U.n) s.mine++; });
   return s;
 }
-function sqDay(P) { var d = P.d; return (+d.slice(4, 6)) + '/' + (+d.slice(6)) + '（' + WK[new Date(+d.slice(0, 4), d.slice(4, 6) - 1, +d.slice(6)).getDay()] + '）' + (P.slot || ''); }
+function sqDay(P) { var d = P.d; return (+d.slice(4, 6)) + '/' + (+d.slice(6)) + '（' + WK[new Date(+d.slice(0, 4), d.slice(4, 6) - 1, +d.slice(6)).getDay()] + '）'; }   // 11/15 上午／下午不給員工看
 function sqHome() {
   var want = U.s + U.n;
   api('op=sgs&' + sqQ()).then(function (j) {
