@@ -68,6 +68,11 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 .tq{display:grid;grid-template-columns:54px 1fr auto;gap:6px;align-items:center;padding:7px 0;border-bottom:1px dashed #eadfce}.tq:last-child{border:0}.tq b.n{font-size:20px;color:#b3502e}
 .tst{display:flex;align-items:center;gap:6px}.tst span{width:30px;height:30px;border-radius:50%;border:1px solid var(--ac);color:var(--ac);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}.tst b{min-width:36px;text-align:center;font-size:16px}
 .tq select{margin:0;padding:5px 6px;font-size:13px;width:auto}
+.sqi{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px dashed var(--ln)}.sqi:last-child{border:0}.sqi .bx{width:24px;height:24px;border:2px solid var(--hd);border-radius:7px;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;margin-top:1px}
+.sqi.d .bx{background:var(--ac);border-color:var(--ac)}.sqi.k .bx{background:#2d7a3a;border-color:#2d7a3a}.sqi.x .bx{background:#c0392b;border-color:#c0392b}.sqi span{flex:1;line-height:1.45}.sqi small{display:block;color:var(--mu);font-size:12px}.sqi .why{color:#c0392b}
+.sqbtn{font-size:13px;border-radius:8px;padding:5px 9px;font-weight:700;flex:none}.sqbtn.o{background:#2d7a3a;color:#fff}.sqbtn.n{border:1px solid #c0392b;color:#c0392b}.sqi .sqbtn{flex:0 0 auto;line-height:1.2}
+.sqz{font-weight:800;color:var(--ac);margin:8px 0 2px;display:flex;justify-content:space-between}.sqz small{color:var(--mu);font-weight:400}
+.sqbar{height:8px;background:#eee;border-radius:6px;overflow:hidden;margin:6px 0}.sqbar i{display:block;height:100%;background:#2d7a3a}
 .gwx{padding:6px 0;font-size:15px}.gws{font-size:15px;padding:4px 6px;border:1.5px solid var(--ac);border-radius:8px;color:var(--ac);background:#fff;font-weight:700}
 .gwr{display:grid;grid-template-columns:48px 1fr;gap:6px;padding:6px 0;border-bottom:1px dashed var(--ln)}.gwr:last-child{border:0}.gwr .k{font-weight:700;color:var(--ac)}.gwr .m{background:#fff4d6;border-radius:6px;padding:0 4px;font-weight:700}.gwl{color:#b06000;font-size:12px}
 .gwt{font-weight:800;color:var(--tx);margin:6px 0 2px}.gwc{display:inline-block;font-size:12px;border-radius:20px;padding:2px 10px;background:#fff1c9;color:#9a6a00;font-weight:700}.gwc.ok{background:#dff3e2;color:#2d7a3a}
@@ -119,8 +124,10 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
     <div class="t" onclick="go('sg')"><span class="badge" id="b4" style="display:none"></span><span class="e">✍️</span><b>公告簽名</b><small id="c4">沒有要簽的</small></div>
     <div class="t" id="pdt" style="display:none" onclick="go('pd')"><span class="e">📦</span><b>盤點</b><small id="c6">　</small></div>
     <div class="t" id="gwtl" style="display:none" onclick="go('gw')"><span class="e">🧭</span><b>崗位・拜訪</b><small id="c7">　</small></div>
+    <div class="t" id="sqt" style="display:none" onclick="go('sgs')"><span class="badge" id="b8" style="display:none"></span><span class="e">🧽</span><b>SGS 準備</b><small id="c8">　</small></div>
     <div class="t" id="teat" style="display:none" onclick="go('tea')"><span class="badge" id="b5" style="display:none">!</span><span class="e">🧊</span><b>留茶湯</b><small id="c5">　</small></div>
   </div>
+  <div class="card" id="sqhc" style="display:none;background:#fff4e0" onclick="go('sgs')"></div>
   <div class="card" id="gwhc" style="display:none" onclick="go('gw')"></div>
   <div class="card"><b>今天</b><span id="td">　</span></div>
   <div class="card" id="prc" style="display:none"></div>
@@ -136,6 +143,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div class="scr" id="tea"><div class="hd"><div class="s" id="teas"></div><h2>🧊 留茶湯</h2><span class="rf" id="teasw" style="display:none" onclick="teaSw()"></span></div><div class="s2p" id="teatab"></div><div id="teab"></div><div style="height:20px"></div></div>
 <div class="scr" id="pd"><div class="hd"><div class="s" id="pds"></div><h2>📦 盤點</h2><span class="rf" id="pdsw" style="display:none" onclick="pdSw()"></span></div><div class="s2p" id="pdsh"></div><div class="s2p" id="pdtab"></div><div id="pdb"></div><div style="height:30px"></div></div>
 <div class="scr" id="gw"><div class="hd"><div class="s" id="gws"></div><h2 id="gwh">🧭 崗位</h2><span class="rf" id="gwsw" style="display:none" onclick="gwSw()"></span></div><div class="s2p" id="gwtab"></div><div class="s2p" id="gwtab2"></div><div id="gwb"></div><div style="height:30px"></div></div>
+<div class="scr" id="sgs"><div class="hd"><div class="s" id="sqss"></div><h2>🧽 SGS 稽核準備</h2><span class="rf" id="sqsw" style="display:none" onclick="sqSw()"></span></div><div class="s2p" id="sqtab" style="flex-wrap:wrap"></div><div id="sqb"></div><div style="height:30px"></div></div>
 <div class="scr" id="tl"><div class="hd"><div class="s">可樂常用</div><h2 id="tlh"></h2></div><div class="box" id="tlf"></div><div id="tlr"></div><div style="height:20px"></div></div>
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -150,6 +158,8 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div class="sec2">🗓️ 班表・飲品</div><div class="card"><div style="display:flex;gap:8px"><select id="qSt" style="margin:0"><option>熱河</option><option>鳳山</option></select><input id="qDay" type="date" style="margin:0;min-width:0"></div>
     <span class="chip" onclick="qRun('#今日班表\n'+$('qSt').value,$('qSt').value+'今日班表')">今日班表</span><span class="chip" onclick="qSched()">查那天班表</span>
     <div style="display:flex;gap:8px;margin-top:10px"><input id="qDrink" placeholder="飲品名，例：覺醒奶茶" style="margin:0"><span class="chip" style="flex:0 0 auto;margin:0;padding:10px" onclick="qDrink('#查飲品比例','比例')">比例</span><span class="chip" style="flex:0 0 auto;margin:0;padding:10px" onclick="qDrink('#飲品成本','成本')">成本</span></div></div>
+  <div class="sec2">🧽 SGS 稽核</div><div class="card"><div style="display:flex;gap:8px"><select id="sqSt" style="margin:0"><option>熱河</option><option>鳳山</option></select><input id="sqD" type="date" style="margin:0;min-width:0"><select id="sqSl" style="margin:0;width:auto"><option>上午</option><option selected>下午</option></select></div>
+    <span class="chip f" onclick="sqOpen()">開新一輪 SGS</span><span style="font-size:12px;color:var(--mu)">　開了會通知那間店的幹部群，員工 App 首頁就會出現清單</span></div>
   <div class="sec2" id="qhh"></div><div class="card" id="qh" style="display:none"></div>
   <div style="height:20px"></div></div>
 <div class="scr" id="s2"><div class="hd"><div class="s">老闆・點日期兩間一起換</div><h2>🗓️ 兩店班表</h2></div><div id="s2b"></div><div style="height:20px"></div></div>
@@ -235,7 +245,7 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 function show(v) {
   if (v === 'sc' && BOSS()) v = 's2';   // 11/10 可樂：兩店班表一起看
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
@@ -247,6 +257,7 @@ function show(v) {
   if (v === 'tea') { teaLoad(); window.scrollTo(0, 0); }
   if (v === 'pd') { pdLoad(); window.scrollTo(0, 0); }
   if (v === 'gw') { gwLoad(); window.scrollTo(0, 0); }
+  if (v === 'sgs') { sqLoad(); window.scrollTo(0, 0); }
   if (v === 'lv' || v === 'sc') frame();
   if (v === 'home') { load(0); if (DATA) mtRender(); }
   if (v === 'mt') { MTI = 0; mtRender(); window.scrollTo(0, 0); }
@@ -379,6 +390,101 @@ function gwPost(el) {
     if (!j.ok) { bar(j.err || '沒發出去，請再按一次', 3500); el.textContent = '✅ 確認發大群'; return; }
     bar(j.msg || '已發', 3000); GW = {}; gwLoad(); gwHome();
   }).catch(function () { GWW = 0; el.textContent = '✅ 確認發大群'; bar('網路不穩，請再按一次', 3000); });
+}
+// ---------- 11/15 SGS 稽核準備 ----------
+var SQ = null, SQK = '', SQW = 0;
+function sqQ() { return 's=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok; }
+function sqStat(P) {
+  var s = { emp: 0, ok: 0, wait: 0, bad: 0, todo: 0, day: 0, dayOk: 0, mine: 0 };
+  (P.items || []).forEach(function (x) { if (x.ty === '提醒') return; if (x.ty === '當天') { s.day++; if (x.st === '過') s.dayOk++; return; }
+    s.emp++; if (x.st === '過') s.ok++; else if (x.st === '退回') s.bad++; else if (x.by) s.wait++; else s.todo++; if (x.by === U.n) s.mine++; });
+  return s;
+}
+function sqDay(P) { var d = P.d; return (+d.slice(4, 6)) + '/' + (+d.slice(6)) + '（' + WK[new Date(+d.slice(0, 4), d.slice(4, 6) - 1, +d.slice(6)).getDay()] + '）' + (P.slot || ''); }
+function sqHome() {
+  var want = U.s + U.n;
+  api('op=sgs&' + sqQ()).then(function (j) {
+    if (want !== U.s + U.n) return;
+    if (!j.ok || j.none || !j.items) { $('sqt').style.display = 'none'; $('sqhc').style.display = 'none'; return; }
+    SQ = j; var s = sqStat(j);
+    $('sqt').style.display = ''; $('c8').textContent = j.lead ? (s.wait ? '待驗收 ' + s.wait + ' 項' : '還有 ' + (s.todo + s.bad) + ' 項') : '還有 ' + (s.todo + s.bad) + ' 項';
+    $('b8').style.display = j.lead && s.wait ? '' : 'none'; $('b8').textContent = s.wait;
+    $('sqhc').style.display = '';
+    $('sqhc').innerHTML = '<b>🧽 SGS 稽核 ' + sqDay(j) + '</b>稽核前要做完<div class="sqbar"><i style="width:' + Math.round(s.ok / Math.max(1, s.emp) * 100) + '%"></i></div>' +
+      '<small style="color:var(--mu)">驗收過 ' + s.ok + '／' + s.emp + '　待驗收 ' + s.wait + '　還沒做 ' + s.todo + (s.bad ? '　<b style="color:#c0392b;margin:0">❌ 退回 ' + s.bad + '</b>' : '') + '</small>';
+  }).catch(function () {});
+}
+function sqSw() { $('sw').onclick(); SQ = null; SQK = ''; sqLoad(); }
+function sqLoad() {
+  $('sqsw').style.display = BOSS() ? '' : 'none'; $('sqsw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
+  if (SQ) sqRender(); else $('sqb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
+  var want = U.s;
+  api('op=sgs&' + sqQ()).then(function (j) {
+    if (CUR !== 'sgs' || want !== U.s) return;
+    if (!j.ok) { $('sqb').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; }
+    SQ = j; sqRender();
+  }).catch(function () { if (!SQ) $('sqb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+}
+function sqRender() {
+  var P = SQ, st = U.s === 'fs' ? '鳳山中山' : '熱河';
+  if (!P || P.none) { $('sqss').textContent = st; $('sqtab').innerHTML = ''; $('sqb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">現在沒有 SGS 稽核要準備' + (BOSS() ? '<br>要開新的一輪：查詢 →「🧽 SGS 稽核」' : '') + '</div>'; return; }
+  var s = sqStat(P), L = !!P.lead;
+  $('sqss').textContent = st + '・稽核 ' + sqDay(P);
+  var tabs = L ? [['wait', '待驗收 ' + s.wait], ['todo', '還沒做 ' + s.todo], ['bad', '退回 ' + s.bad], ['day', '當天巡檢 ' + s.dayOk + '/' + s.day], ['all', '全部']] : [['todo', '還沒做 ' + s.todo], ['bad', '❌ 退回 ' + s.bad], ['all', '全部']];
+  if (!SQK || !tabs.some(function (t) { return t[0] === SQK; })) SQK = L && s.wait ? 'wait' : s.bad && !L ? 'bad' : 'todo';
+  $('sqtab').innerHTML = tabs.map(function (t) { return '<span style="flex:1 0 28%;margin-bottom:6px" class="' + (t[0] === SQK ? 'on' : '') + '" onclick="SQK=\'' + t[0] + '\';sqRender()">' + t[1] + '</span>'; }).join('');
+  var f = function (x) {
+    if (SQK === 'all') return true;
+    if (SQK === 'day') return x.ty === '當天' || (x.ty === '提醒' && /當天/.test(x.z + x.n));
+    if (x.ty !== '員工') return false;
+    return SQK === 'wait' ? x.by && !x.st : SQK === 'bad' ? x.st === '退回' : !x.by;
+  };
+  var list = (P.items || []).filter(f), h = '<div class="card" style="margin-top:4px">';
+  if (!L) h += '<div style="font-size:13px;color:var(--mu)">做完一項就點方框打勾，會自動記日期和你的名字。點錯再點一次取消。</div>';
+  if (SQK === 'day') h += '<div style="font-size:13px;color:var(--mu)">稽核當天早上幹部檢查，點了就算過。</div>';
+  if (!list.length) h += '<div style="color:var(--mu);padding:10px 0">' + (SQK === 'wait' ? '沒有要驗收的 👍' : SQK === 'bad' ? '沒有被退回的 👍' : SQK === 'todo' ? '都做完了 👍' : '沒有項目') + '</div>';
+  var z = '';
+  list.forEach(function (x) {
+    if (x.z !== z) { z = x.z; var zz = (P.items || []).filter(function (y) { return y.z === z && y.ty !== '提醒'; }); h += '<div class="sqz">【' + esc(z) + '】<small>' + zz.filter(function (y) { return y.st === '過'; }).length + '／' + zz.length + '</small></div>'; }
+    if (x.ty === '提醒') { h += '<div style="color:#b06000;font-size:13px;padding:6px 0">🚨 ' + esc(x.n) + '</div>'; return; }
+    var cls = x.st === '過' ? 'k' : x.st === '退回' ? 'x' : x.by ? 'd' : '';
+    var sub = x.st === '退回' ? '<small class="why">❌ 退回：' + esc(x.why) + '（' + esc(x.vby) + '）</small>' : x.by ? '<small>' + esc(x.at) + ' ' + esc(x.by) + (x.st === '過' ? (x.ty === '當天' ? '' : '・✅ ' + esc(x.vby) + ' 驗收') : '・等幹部驗收') + '</small>' : '';
+    var canTick = x.ty === '員工' || L, act = '';
+    if (L && x.ty === '員工' && x.by && x.st !== '過') act = '<span class="sqbtn o" onclick="sqChk(' + x.i + ',\'ok\')">✅ 過</span><span class="sqbtn n" onclick="sqChk(' + x.i + ',\'bad\')">退回</span>';
+    if (L && x.ty === '員工' && x.st === '過' && SQK === 'all') act = '<span class="sqbtn n" style="border-color:var(--mu);color:var(--mu)" onclick="sqChk(' + x.i + ',\'clr\')">取消驗收</span>';
+    h += '<div class="sqi ' + cls + '"><div class="bx"' + (canTick ? ' onclick="sqDo(' + x.i + ',' + (x.by && x.st !== '退回' ? 0 : 1) + ')"' : '') + '>' + (cls === 'x' ? '!' : cls ? '✓' : '') + '</div><span>' + esc(x.n) + sub + '</span>' + act + '</div>';
+  });
+  $('sqb').innerHTML = h + '</div>';
+}
+function sqDo(i, v) {
+  if (SQW) return; if (DEV()) { bar('公務機不能打勾，請用自己的帳號', 2500); return; }
+  var x = (SQ.items || []).filter(function (y) { return y.i === i; })[0]; if (!x) return;
+  if (!v && x.st === '過' && !SQ.lead) { bar('已經驗收過了', 2000); return; }
+  if (!v && x.by && x.by !== U.n && !SQ.lead) { bar('這是 ' + x.by + ' 打的勾', 2000); return; }
+  var old = JSON.stringify(x); if (v) { x.by = U.n; x.at = '剛剛'; x.st = x.ty === '當天' ? '過' : ''; x.why = ''; } else { x.by = ''; x.st = ''; }
+  sqRender(); SQW = 1;
+  api('op=sgsdo&' + sqQ() + '&r=' + i + '&v=' + v).then(function (j) {
+    SQW = 0; if (!j.ok) { Object.assign(x, JSON.parse(old)); sqRender(); bar(j.err || '沒存到，請再點一次', 2500); return; }
+    SQ = j; sqRender(); sqHome();
+  }).catch(function () { SQW = 0; Object.assign(x, JSON.parse(old)); sqRender(); bar('網路不穩，請再點一次', 2500); });
+}
+function sqChk(i, v) {
+  var why = '';
+  if (v === 'bad') { why = window.prompt('退回原因（員工會看到）', '沒做好，再做一次'); if (why === null) return; }
+  bar(v === 'ok' ? '驗收中…' : '處理中…');
+  api('op=sgschk&' + sqQ() + '&r=' + i + '&v=' + v + '&why=' + encodeURIComponent(why)).then(function (j) {
+    if (!j.ok) { bar(j.err || '沒存到，請再按一次', 2500); return; }
+    bar(v === 'ok' ? '✅ 過' : v === 'bad' ? '已退回' : '已取消', 1200); SQ = j; sqRender(); sqHome();
+  }).catch(function () { bar('網路不穩，請再按一次', 2500); });
+}
+function sqOpen() {
+  var st = $('sqSt').value, d = $('sqD').value, sl = $('sqSl').value;
+  if (!d) { bar('先選稽核日期', 2000); return; }
+  bar('開新一輪中…');
+  api('op=sgsopen&' + sqQ() + '&st=' + encodeURIComponent(st) + '&d=' + d.replace(/-/g, '') + '&slot=' + encodeURIComponent(sl)).then(function (j) {
+    if (!j.ok) { bar(j.err || '沒開成功', 3000); return; }
+    bar(j.msg || '已開', 4000); SQ = null; sqHome();
+  }).catch(function () { bar('網路不穩，請再按一次', 3000); });
 }
 // ---------- 11/11 留茶湯 ----------
 var TEA = null, TEAK = 0, TEAF = null;
@@ -626,6 +732,7 @@ function render() {
   leadRender();
   teaHome();
   gwHome();
+  sqHome();
   devUI();
   var hr = d.hr;
   $('hrc').style.display = hr ? '' : 'none';
