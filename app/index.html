@@ -265,7 +265,7 @@ function show(v) {
 function go(v) { show(v); }
 // ---------- 11/14 崗位：晚班崗位＋早晚班拜訪、盤點 ----------
 // 幹部／儲備／可樂：今天、明天隨時看，可換人、提早發大群；員工：發了才看得到
-var GW_ALL = false;   // 11/14 崗位・拜訪先只給可樂、幹部、儲備測；可樂說「開給大家」→ true
+var GW_ALL = true;    // 11/14 崗位・拜訪先只給可樂、幹部、儲備測；可樂說「開給大家」→ true
 var GW = {}, GWK = 0, GWA = new Date().getHours() < 14 ? 1 : 0, GWW = 0;
 function gwLead() { return BOSS() || !!(DATA && (DATA.lead || DATA.rsv)); }
 function gwQ(k, a) { return 'op=gw&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&d=' + k + '&am=' + a; }
@@ -493,8 +493,8 @@ function teaCan() { return BOSS() || (TEA_OPEN && (!!(DATA && DATA.lead) || ['�
 function teaB(cc) { var b = cc / 10000; return b <= 0 ? '0' : (b % 1 ? b.toFixed(1) : String(b)); }
 function teaHome() {
   var t = DATA && DATA.tea, el = $('c5'); if (!el) return;
-  $('teat').style.display = BOSS() || teaCan() || DEV() ? '' : 'none';
-  $('pdt').style.display = PD_ALL || gwLead() ? '' : 'none';   // 11/14 幹部、儲備也先打開（在崗位旁邊）   // 11/13 盤點：員工、幹部、可樂、公務機都會有；可樂先測，PD_ALL 改 true 才開給大家
+  $('teat').style.display = '';   // 11/15 留茶湯開放所有員工（看留量、填冰箱時間）
+  $('pdt').style.display = PD_ALL || DEV() || gwLead() ? '' : 'none';   // 11/15 開給大家（含公務機）   // 11/14 幹部、儲備也先打開（在崗位旁邊）   // 11/13 盤點：員工、幹部、可樂、公務機都會有；可樂先測，PD_ALL 改 true 才開給大家
   var h = new Date().getHours();
   if (t && t.done) { el.textContent = t.who + ' ' + t.t + ' 填了'; $('b5').style.display = 'none'; }
   else { el.textContent = '今晚收店要留多少'; $('b5').style.display = 'none'; }
@@ -591,7 +591,7 @@ function teaExpHtml(P) {
         : '<span style="color:#2e7d32;font-weight:700">✅ 最快 ' + esc(x.first) + ' 到期' + (x.after ? '，後面還有 ' + x.after + ' 桶' : '') + '，預估不會報廢</span>') + '</div>';
   });
   h += '<div style="color:var(--mu);font-size:12px;margin-top:6px">照每個時段平常賣多少估的，先用最早煮的那桶</div>' +
-    (P.can ? '<button class="btn" onclick="teaEdOpen()">🧊 更新冰箱</button>' : '') + '</div>';
+    (P.can || P.frCan ? '<button class="btn" onclick="teaEdOpen()">🧊 更新冰箱</button>' : '') + '</div>';
   return h;
 }
 function teaEdOpen() { var b = (TEA.fr && TEA.fr.b) || {}; TEAED = {}; TEA.night.forEach(function (x) { TEAED[x.t] = (b[x.t] || []).slice(); }); teaRender(); window.scrollTo(0, 0); }
@@ -983,7 +983,7 @@ function devUI() {
   else $('td').parentNode.style.display = '';
 }
 // ---------- 11/13 盤點 ----------
-var PD_ALL = false;   // 可樂測完 → true
+var PD_ALL = true;    // 可樂測完 → true
 var PD = null, PDV = {}, PDI = {}, PDF = 0, PDSH = '', PDW = '';
 function pdKey() { return 'pd_' + U.s + '_' + (PD ? PD.day + PD.sh : ''); }
 function pdSave() { try { LS(pdKey(), JSON.stringify({ v: PDV, i: PDI })); } catch (e) { } }
