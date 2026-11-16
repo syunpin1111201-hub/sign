@@ -78,6 +78,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 .gwt{font-weight:800;color:var(--tx);margin:6px 0 2px}.gwc{display:inline-block;font-size:12px;border-radius:20px;padding:2px 10px;background:#fff1c9;color:#9a6a00;font-weight:700}.gwc.ok{background:#dff3e2;color:#2d7a3a}
 .gwb{display:flex;gap:8px;margin:0 16px 8px}.gwb a,.gwb span{flex:1;text-align:center;padding:12px 0;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none}.gwb .b1{background:#fff;color:var(--ac);border:1.5px solid var(--ac)}.gwb .b2{background:#2d7a3a;color:#fff}.gwb .b3{background:#ddd;color:#888}
 .gwme{display:flex;gap:8px;margin-top:6px}.gwme div{flex:1;border-radius:10px;padding:8px;text-align:center;background:#f6ece0;line-height:1.4}.gwme b{display:block;font-size:20px;color:var(--tx);margin:0}.gwme small{color:var(--mu);font-size:11px}
+.rvr{display:grid;grid-template-columns:1fr 128px;align-items:center;gap:8px;margin-bottom:8px}.rvr input{margin:0;padding:8px 10px;text-align:right;font-size:17px}.rvr.w{grid-template-columns:1fr}.rvr.w input{text-align:left;font-size:15px}.rvsum div{display:flex;justify-content:space-between;color:var(--mu)}.rvsum b{color:var(--tx);margin:0}.rvok{border-radius:8px;padding:6px 10px;font-size:13px;margin-top:8px}
 .s2p{display:flex;gap:8px;margin:12px 16px 0}.s2p span{flex:1;text-align:center;border:1px solid var(--ac);color:var(--ac);background:#fff;border-radius:20px;padding:7px 0;font-size:14px}.s2p span.on{background:var(--ac);color:#fff}
 .s2d{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;-webkit-overflow-scrolling:touch}.s2d span{flex:0 0 46px;text-align:center;background:#fff;border:1px solid var(--ln);border-radius:10px;padding:5px 0;font-size:12px;line-height:1.4}.s2d span.on{background:var(--ac);color:#fff;border-color:var(--ac)}.s2d span.we{color:#c0392b}.s2d span.on.we{color:#fff}
 .s2c h3{margin:0 0 4px;font-size:16px;display:flex;justify-content:space-between;align-items:baseline}.s2c h3 small{font-weight:400;color:var(--mu);font-size:12px}.s2c .t2{font-size:12px;color:var(--mu);margin:6px 0 0}.s2c .r{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed var(--ln)}.s2c .of{font-size:12px;color:var(--mu);margin-top:6px}
@@ -125,6 +126,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
     <div class="t" id="pdt" style="display:none" onclick="go('pd')"><span class="e">📦</span><b>盤點</b><small id="c6">　</small></div>
     <div class="t" id="gwtl" style="display:none" onclick="go('gw')"><span class="e">🧭</span><b>崗位・拜訪</b><small id="c7">　</small></div>
     <div class="t" id="sqt" style="display:none" onclick="go('sgs')"><span class="badge" id="b8" style="display:none"></span><span class="e">🧽</span><b>SGS 準備</b><small id="c8">　</small></div>
+    <div class="t" id="rvt" onclick="go('rv')"><span class="e">💰</span><b>營收回報</b><small id="c9">早班・晚班報表</small></div>
     <div class="t" id="teat" style="display:none" onclick="go('tea')"><span class="badge" id="b5" style="display:none">!</span><span class="e">🧊</span><b>留茶湯</b><small id="c5">　</small></div>
   </div>
   <div class="card" id="sqhc" style="display:none;background:#fff4e0" onclick="go('sgs')"></div>
@@ -144,6 +146,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div class="scr" id="pd"><div class="hd"><div class="s" id="pds"></div><h2>📦 盤點</h2><span class="rf" id="pdsw" style="display:none" onclick="pdSw()"></span></div><div class="s2p" id="pdsh"></div><div class="s2p" id="pdtab"></div><div id="pdb"></div><div style="height:30px"></div></div>
 <div class="scr" id="gw"><div class="hd"><div class="s" id="gws"></div><h2 id="gwh">🧭 崗位</h2><span class="rf" id="gwsw" style="display:none" onclick="gwSw()"></span></div><div class="s2p" id="gwtab"></div><div class="s2p" id="gwtab2"></div><div id="gwb"></div><div style="height:30px"></div></div>
 <div class="scr" id="sgs"><div class="hd"><div class="s" id="sqss"></div><h2>🧽 SGS 稽核準備</h2><span class="rf" id="sqsw" style="display:none" onclick="sqSw()"></span></div><div class="s2p" id="sqtab" style="flex-wrap:wrap"></div><div id="sqb"></div><div style="height:30px"></div></div>
+<div class="scr" id="rv"><div class="hd"><div class="s" id="rvs"></div><h2>💰 營收回報</h2><span class="rf" id="rvsw" style="display:none" onclick="rvSw()"></span></div><div class="s2p" id="rvday"></div><div class="s2p" id="rvtab"></div><div id="rvb"></div><div style="height:30px"></div></div>
 <div class="scr" id="tl"><div class="hd"><div class="s">可樂常用</div><h2 id="tlh"></h2></div><div class="box" id="tlf"></div><div id="tlr"></div><div style="height:20px"></div></div>
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -245,7 +248,7 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 function show(v) {
   if (v === 'sc' && BOSS()) v = 's2';   // 11/10 可樂：兩店班表一起看
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'rv', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
@@ -258,6 +261,7 @@ function show(v) {
   if (v === 'pd') { pdLoad(); window.scrollTo(0, 0); }
   if (v === 'gw') { gwLoad(); window.scrollTo(0, 0); }
   if (v === 'sgs') { sqLoad(); window.scrollTo(0, 0); }
+  if (v === 'rv') { rvLoad(); window.scrollTo(0, 0); }
   if (v === 'lv' || v === 'sc') frame();
   if (v === 'home') { load(0); if (DATA) mtRender(); }
   if (v === 'mt') { MTI = 0; mtRender(); window.scrollTo(0, 0); }
@@ -738,6 +742,120 @@ function render() {
   $('hrc').style.display = hr ? '' : 'none';
   if (hr) $('hrc').innerHTML = '<b>🔑 風行人資系統</b><div class="hrk"><span>網域</span><b>' + hr.dom + '<i onclick="cp(\'' + hr.dom + '\')">複製</i></b></div><div class="hrk"><span>帳號</span><b>' + esc(hr.id) + '<i onclick="cp(\'' + esc(hr.id) + '\')">複製</i></b></div><div class="hrk"><span>預設密碼</span><b>' + hr.pw + '</b></div>';
 }
+
+// ---------- 營收回報（11/17）：早班、晚班報表全部員工都能填；入庫只有幹部、儲備 ----------
+var RV = null, RVK = 'am', RVD = '', RVW = 0;
+var RV_F = {
+  am: [['sales', '銷售總額'], ['disc', '總折扣讓'], ['uber', 'UberEats'], ['panda', 'Foodpanda'], ['lp', 'LINE Pay'], ['web', '線上點'], ['exp', '門市支出'], ['note', '支出備註'], ['cash', '實際現有現金'], ['cups', '銷售杯數']],
+  pm: [['sales', '銷售總額'], ['disc', '總折扣讓'], ['uber', 'UberEats'], ['panda', 'Foodpanda'], ['lp', 'LINE Pay'], ['web', '線上點'], ['exp', '門市支出'], ['note', '支出備註'], ['cash', '實際現有現金'], ['pmRev', '晚班營業額'], ['pmCups', '晚班杯數']]
+};
+function rvN(x) { var n = Number(String(x == null ? '' : x).replace(/[,\s]/g, '')); return isNaN(n) ? 0 : n; }
+function rvC(n) { return Math.round(n).toLocaleString(); }
+function rvDefDay() { var d = new Date(); if (d.getHours() < 5) d.setDate(d.getDate() - 1); return d; }
+function rvDs(d) { return d.getFullYear() + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + ('0' + d.getDate()).slice(-2); }
+function rvSw() { $('sw').onclick(); RV = null; rvLoad(); }
+function rvLoad() {
+  $('rvsw').style.display = BOSS() ? '' : 'none'; $('rvsw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
+  if (!RVD) RVD = rvDs(rvDefDay());
+  if (RV && RV.d === RVD) rvRender(); else $('rvb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
+  var want = U.s + RVD;
+  api('op=rv&d=' + RVD + '&' + sqQ()).then(function (j) {
+    if (CUR !== 'rv' || want !== U.s + RVD) return;
+    if (!j.ok) { $('rvb').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; }
+    RV = j; rvRender();
+  }).catch(function () { if (!RV) $('rvb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+}
+function rvRender() {
+  var P = RV, st = U.s === 'fs' ? '鳳山中山' : '熱河';
+  $('rvs').textContent = st;
+  var d0 = rvDefDay(), d1 = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate() - 1);
+  $('rvday').innerHTML = [[rvDs(d0), '今天 ' + (d0.getMonth() + 1) + '/' + d0.getDate()], [rvDs(d1), '昨天 ' + (d1.getMonth() + 1) + '/' + d1.getDate()]].map(function (x) { return '<span class="' + (x[0] === RVD ? 'on' : '') + '" onclick="RVD=\'' + x[0] + '\';RV=null;rvLoad()">' + x[1] + '</span>'; }).join('');
+  if (!P) return;
+  var tabs = [['am', '早班報表' + (P.am && P.am.filled ? ' ✓' : '')], ['pm', '晚班報表' + (P.pm && P.pm.filled ? ' ✓' : '')]];
+  if (P.lead) tabs.push(['dep', '入庫' + (P.dep ? ' ✓' : '')]);
+  if (!tabs.some(function (t) { return t[0] === RVK; })) RVK = 'am';
+  $('rvtab').innerHTML = tabs.map(function (t) { return '<span class="' + (t[0] === RVK ? 'on' : '') + '" onclick="RVK=\'' + t[0] + '\';rvRender()">' + t[1] + '</span>'; }).join('');
+  $('rvb').innerHTML = RVK === 'dep' ? rvDepHtml() : rvFormHtml(RVK);
+  if (RVK !== 'dep') rvCalc(); else rvDepCalc();
+}
+function rvFormHtml(k) {
+  var o = RV[k] || {};
+  if (o.none) return '<div class="card" style="margin-top:12px;color:#c0392b">' + esc(o.none) + '，請找可樂</div>';
+  var h = '<div class="card" style="margin-top:12px">' + (o.filled ? '<div class="rvok" style="background:#dff3e2;color:#2d7a3a;margin:0 0 10px">已填過（' + esc(o.who || '') + '），改了再送出會蓋掉</div>' : '');
+  RV_F[k].forEach(function (f) {
+    var v = o[f[0]];
+    if (f[0] === 'note') { h += '<div class="rvr w" id="rvnote"><span style="color:var(--mu);font-size:13px">支出備註（有門市支出一定要寫：買了什麼、多少）</span><input id="rv_note" value="' + esc(v || '').replace(/"/g, '&quot;') + '" placeholder="例：牛奶 1,230、垃圾袋 718"></div>'; return; }
+    h += '<div class="rvr"><span>' + f[1] + '</span><input id="rv_' + f[0] + '" inputmode="numeric" value="' + (o.filled && v !== '' && v != null ? esc(String(v)) : '') + '" oninput="rvCalc()"></div>';
+  });
+  h += '<div class="rvsum" style="border-top:1px solid #eee;margin-top:6px;padding-top:8px"><div><span>營業額</span><b id="rv_r1">0</b></div><div><span>應有現金</span><b id="rv_r2">0</b></div><div><span>短溢</span><b id="rv_r3">0</b></div></div></div>';
+  h += '<div style="margin:0 16px"><button class="btn" onclick="rvSend()">' + (o.filled ? '修改送出' : '送出') + '</button><div style="color:var(--mu);font-size:12px;margin-top:6px">填表人自動帶：' + esc(U.n) + '</div></div>';
+  return h;
+}
+function rvVal(id) { var e = $('rv_' + id); return e ? e.value : ''; }
+function rvCalc() {
+  if (!$('rv_sales')) return;
+  var rev = rvN(rvVal('sales')) - rvN(rvVal('disc'));
+  var should = rev - rvN(rvVal('uber')) - rvN(rvVal('panda')) - rvN(rvVal('lp')) - rvN(rvVal('web')) - rvN(rvVal('exp'));
+  var diff = rvN(rvVal('cash')) - should;
+  $('rv_r1').textContent = rvC(rev); $('rv_r2').textContent = rvC(should);
+  $('rv_r3').textContent = (diff > 0 ? '+' : '') + rvC(diff); $('rv_r3').style.color = diff === 0 ? '#2d7a3a' : '#c0392b';
+}
+function rvSend() {
+  if (RVW) return;
+  var k = RVK, q = 'op=rvset&k=' + k + '&d=' + RVD, miss = [];
+  RV_F[k].forEach(function (f) {
+    var v = rvVal(f[0]).trim();
+    if (f[0] !== 'note') { v = v.replace(/[,\s]/g, ''); if (v !== '' && !/^-?\d+$/.test(v)) miss.push(f[1] + ' 要填數字'); }
+    q += '&' + f[0] + '=' + encodeURIComponent(v);
+  });
+  if (!(rvN(rvVal('sales')) > 0)) miss.push('銷售總額要填');
+  if (rvN(rvVal('exp')) > 0 && !rvVal('note').trim()) miss.push('有門市支出，請寫支出備註');
+  if (miss.length) { bar(miss[0], 3000); return; }
+  RVW = 1; bar('送出中…');
+  api(q + '&' + sqQ()).then(function (j) {
+    RVW = 0;
+    if (!j.ok) { bar(j.err || '沒送出，請再試一次', 3500); return; }
+    RV = j; rvRender(); bar('已送出 👍', 2000);
+  }).catch(function () { RVW = 0; bar('網路不穩，沒送出，請再按一次', 3500); });
+}
+function rvDepHtml() {
+  var pm = RV.pm || {}, am = RV.am || {}, dp = RV.dep;
+  if (pm.none || !pm.filled) return '<div class="card" style="margin-top:12px;color:var(--mu)">晚班報表還沒填，填完才能入庫</div>';
+  var cups = rvN(am.cups) + rvN(pm.pmCups);
+  var row = function (a, b) { return '<div style="display:flex;justify-content:space-between"><span style="color:var(--mu)">' + a + '</span><span>' + b + '</span></div>'; };
+  var h = '<div class="card" style="margin-top:12px">' + (dp ? '<div class="rvok" style="background:#dff3e2;color:#2d7a3a;margin:0 0 10px">已入庫（' + esc(dp.rw) + ' ' + esc(dp.at) + '，復點 ' + rvC(rvN(dp.re)) + '）</div>' : '');
+  h += '<div style="font-size:12px;color:var(--mu);margin-bottom:4px">從晚班報表帶過來（不用打）</div>';
+  h += row('營收日期', md(RV.d)) + row('關帳金額（應有現金）', rvC(rvN(pm.should))) + row('關帳短溢', (rvN(pm.diff) > 0 ? '+' : '') + rvC(rvN(pm.diff))) + row('員工實際現金', rvC(rvN(pm.cash))) + row('關帳人員', esc(pm.who || '')) + row('當日杯數（早＋晚）', rvC(cups) + (am.filled ? '' : '（早班還沒填）'));
+  h += '<div style="border-top:1px solid #eee;margin:10px 0 8px"></div>';
+  h += '<div class="rvr"><span>復點金額（你點的）</span><input id="rv_re" inputmode="numeric" value="" oninput="rvDepCalc()"></div>';
+  h += '<div class="rvr"><span>信件</span><input id="rv_mail" value="無" style="text-align:left"></div>';
+  h += '<div class="rvr w"><input id="rv_dnote" placeholder="備註（沒有就空白）"></div>';
+  h += '<div id="rv_chk"></div></div>';
+  h += '<div style="margin:0 16px"><button class="btn" onclick="rvDepSend()">' + (dp ? '重新入庫（蓋掉舊的）' : '送出入庫') + '</button><div style="color:var(--mu);font-size:12px;margin-top:6px">復點人員自動帶：' + esc(U.n) + '</div></div>';
+  return h;
+}
+function rvDepCalc() {
+  var e = $('rv_re'); if (!e) return;
+  var s = e.value.replace(/[,\s]/g, ''), c = $('rv_chk');
+  if (!s) { c.innerHTML = ''; return; }
+  var d = rvN(s) - rvN(RV.pm.cash);
+  c.innerHTML = d === 0 ? '<div class="rvok" style="background:#dff3e2;color:#2d7a3a">復點 = 員工實際現金，對了</div>' : '<div class="rvok" style="background:#fde4e1;color:#c0392b">跟員工實際現金差 ' + (d > 0 ? '+' : '') + rvC(d) + '，請再點一次</div>';
+}
+function rvDepSend(force, ow) {
+  if (RVW) return;
+  var s = ($('rv_re') || {}).value || '';
+  s = s.replace(/[,\s]/g, '');
+  if (!/^\d+$/.test(s)) { bar('復點金額要填數字', 3000); return; }
+  if (!ow && RV.dep && !confirm(md(RV.d) + ' 已經入庫過了，要蓋掉嗎？')) return;
+  RVW = 1; bar('送出中…');
+  api('op=rvdep&d=' + RVD + '&re=' + s + '&mail=' + encodeURIComponent(($('rv_mail') || {}).value || '無') + '&note=' + encodeURIComponent(($('rv_dnote') || {}).value || '') + (force ? '&force=1' : '') + (ow || RV.dep ? '&ow=1' : '') + '&' + sqQ()).then(function (j) {
+    RVW = 0;
+    if (!j.ok && j.mis !== undefined) { $('bar').style.display = 'none'; if (confirm(j.err + '\n確定點了兩次都是這個金額？確定就送出')) rvDepSend(1, ow); return; }
+    if (!j.ok && j.dup) { $('bar').style.display = 'none'; if (confirm(j.err + '\n要蓋掉嗎？')) rvDepSend(force, 1); return; }
+    if (!j.ok) { bar(j.err || '沒送出，請再試一次', 3500); return; }
+    RV = j; rvRender(); bar('入庫完成 👍', 2000);
+  }).catch(function () { RVW = 0; bar('網路不穩，沒送出，請再按一次', 3500); });
+}
 // ---------- 可樂：每月待辦＋考核進度 ----------
 function bossRender() {
   var B = DATA && DATA.boss, nv = document.querySelector('.nav div[data-v=ex]') || document.querySelector('.nav div[data-v=kh]');
@@ -1173,13 +1291,20 @@ function load(force) {
   if (!force && Date.now() - LAST < 60000) return;
   LAST = Date.now();
   if (force) bar('更新中…');
-  retry(function () { return api('op=all&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok); }, 2).then(function (j) {
+  // 11/17 變快：首頁、班表（lite）跟借支、考試、公告、帶人（more）同時拿，先到先顯示
+  var uq = 's=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok, me0 = U.s + U.n, MK = ['money', 'says', 'exam', 'boss', 'lead', 'ann', 'hr', 'prof', 'sch2'];
+  var more = null, gotCore = false;
+  var mergeMore = function () { if (!more || !DATA) return; MK.forEach(function (k) { if (k in more) DATA[k] = more[k]; }); LS('app_cache', JSON.stringify(DATA)); render(); if (CUR === 's2') s2Render(); };
+  retry(function () { return api('op=more&' + uq); }, 2).then(function (m) { if (!m || !m.ok || me0 !== U.s + U.n) return; more = m; if (gotCore) mergeMore(); }).catch(function () { });
+  retry(function () { return api('op=all&lite=1&' + uq); }, 2).then(function (j) {
+    if (me0 !== U.s + U.n) return;
     if (!j.ok) {
       if (j.out) { ['app_tok', 'app_cache'].forEach(function (k) { LS(k, null); }); $('gm').innerHTML = j.err.replace('，', '<br>'); show('gone'); return; }
       bar(j.err, 4000); return;
     }
     var changed = !DATA || DATA.html !== j.html;
-    DATA = j; LS('app_cache', JSON.stringify(j)); render(); if (CUR === 's2') s2Render();
+    if (DATA && DATA.me && DATA.me.n === j.me.n && DATA.s === j.s) MK.forEach(function (k) { if (!(k in j) && k in DATA) j[k] = DATA[k]; });   // 慢的那批還沒到 → 先用上次的
+    DATA = j; gotCore = true; LS('app_cache', JSON.stringify(j)); render(); if (CUR === 's2') s2Render(); if (more) mergeMore();
     if (CUR === 'lv' || CUR === 'sc') {
       if (changed && !FRV) frame();   // 11/11 剛換店 → 直接顯示
       else if (changed) bar('有新資料，點這裡更新', 0, function () { $('bar').style.display = 'none'; frame(); });
