@@ -156,7 +156,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
     <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('exp')">💸 打支出</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('net')">💰 看淨利</span>
-    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span><span class="chip f" style="margin:0;text-align:center;padding:10px;grid-column:1/3;background:#c0392b;border-color:#c0392b" onclick="qForm('hb')">🔴 登記紅榜</span></div>
+    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('pub')">📅 發班表</span><span class="chip f" style="margin:0;text-align:center;padding:10px;background:#c0392b;border-color:#c0392b" onclick="qForm('hb')">🔴 登記紅榜</span></div>
   <div id="qf"></div><div id="qr"></div>
   <div class="sec2">👤 查人</div><div class="card"><div id="qps"></div>
     <span class="chip" onclick="qP('#查員工','員工資料')">員工資料</span><span class="chip" onclick="qP('#查薪資','薪資')">薪資</span><span class="chip" onclick="qP('#查欠時數','欠時數')">欠時數</span><span class="chip" onclick="qP('#查借支','借支')">借支</span><span class="chip" onclick="qP('#查考核','考核')">考核</span><span class="chip" onclick="qP('#查紅黑榜','紅黑榜')">紅黑榜</span><span class="chip" onclick="qP('#查獎金','獎金')">獎金</span><span class="chip" onclick="qP('#查禮金','禮金')">禮金</span><span class="chip" onclick="qP('#查代班','代班')">代班</span></div>
@@ -1384,6 +1384,10 @@ function qForm(k) {
   var h = '';
   if (k === 'net') { qRun('#更新財務 ' + ym(0), ym(0) + ' 淨利'); h = '<div class="card">看別的月份：<span class="chip" onclick="qRun(\'#更新財務 ' + ym(1) + '\',\'' + ym(1) + ' 淨利\')">' + ym(1) + '</span><span class="chip" onclick="qRun(\'#更新財務 ' + ym(2) + '\',\'' + ym(2) + ' 淨利\')">' + ym(2) + '</span></div>'; }
   else if (k === 'hb') { h = '<div class="card" id="hbf"><b>🔴 登記紅榜</b><div style="color:var(--mu)">載入中…</div></div>'; HB = null; HBF = { d: 0, dv: '', code: '', ns: {}, st: U.s === 'fs' ? '鳳山' : '熱河', amt: '', t: '' }; setTimeout(hbLoad, 0); }
+  else if (k === 'pub') h = '<div class="card"><b>📅 發班表</b><p style="font-size:13px;color:var(--mu);margin:4px 0 0">發到大群給員工看；改班後再發一次＝新版本，只列有變的人</p>' +
+    '<div style="font-size:13px;color:var(--mu);margin-top:10px">門市</div><select id="pbS"><option value="">兩店</option><option>熱河</option><option>鳳山</option></select>' +
+    '<div style="font-size:13px;color:var(--mu);margin-top:6px">哪兩週（不選＝下一個還沒發的兩週；改班重發選那兩週的第一天）</div><input id="pbD" type="date">' +
+    '<button class="btn" style="margin-top:10px" onclick="qPub(0)">發布</button><span class="chip" style="margin-top:10px" onclick="qPub(1)">↩️ 撤回上一版</span></div>';
   else if (k === 'waste') h = '<div class="card">耗損分析：<span class="chip f" onclick="qRun(\'#耗損分析\',\'兩店耗損\')">兩店</span><span class="chip" onclick="qRun(\'#耗損分析\\n熱河\',\'熱河耗損\')">熱河</span><span class="chip" onclick="qRun(\'#耗損分析\\n鳳山\',\'鳳山耗損\')">鳳山</span></div>';
   else if (k === 'exp') h = '<div class="card"><b>💸 打支出</b><select id="xS" onchange="$(\'xSp\').style.display=this.value===\'共用\'?\'\':\'none\'"><option>熱河</option><option>鳳山</option><option>共用</option></select>' +
     '<input id="xI" placeholder="項目，例：清潔用品"><input id="xA" inputmode="numeric" placeholder="金額"><input id="xP" placeholder="付款方式，例：現金／轉帳" list="xPl"><datalist id="xPl"><option>現金</option><option>轉帳</option><option>信用卡</option></datalist>' +
@@ -1396,6 +1400,10 @@ function qForm(k) {
     window.__EF = F;
   }
   $('qf').innerHTML = h; if (k !== 'net') { $('qr').innerHTML = ''; $('qf').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+}
+function qPub(back) {
+  var st = $('pbS').value, d = $('pbD').value, c = '#發班表' + (st ? ' ' + st : '') + (back ? ' 撤回' : (d ? ' ' + md2(d) : ''));
+  qRun(c, (st || '兩店') + (back ? ' 撤回班表' : ' 發班表'), true);
 }
 function qExp() {
   var st = $('xS').value, it = $('xI').value.trim(), am = $('xA').value.replace(/[^\d.]/g, '');
