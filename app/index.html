@@ -759,6 +759,7 @@ function tdShifts() {
 function tdSw() { $('sw').onclick(); TD = null; tdLoad(1); }
 function tdLoad(force) {
   if (!U.tok) return;
+  if (BOSS()) return tdBossLoad(force);
   if (!force && TD && Date.now() - TDT < 120000) { tdRender(); return; }
   if (TD) tdRender(); else if (CUR === 'tdo') $('tdb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
   var want = U.s;
@@ -779,7 +780,40 @@ function tdItems(sh) {
   return L;
 }
 function tdOpen(gid) { var C = TD && TD.clean; if (!C) return; window.open(C.url + (gid ? '#gid=' + gid : ''), '_blank'); }
+// 11/17 可樂：核對兩店今天有沒有做完（公告簽名、早晚班各項，誰做的）
+var TDB = {}, TDBT = 0;
+function tdBossLoad(force) {
+  if (!force && TDB.rh && Date.now() - TDBT < 120000) { tdBossRender(); return; }
+  if (TDB.rh) tdBossRender(); else if (CUR === 'tdo') $('tdb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入兩間店…</div>';
+  ['rh', 'fs'].forEach(function (k) {
+    api('op=today&s=' + k + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok).then(function (j) { if (j.ok) { TDB[k] = j; TDBT = Date.now(); tdBossRender(); } }).catch(function () { });
+  });
+}
+function tdBossRender() {
+  $('tdsw').style.display = 'none'; $('tds').textContent = '兩間店・今天'; $('tdh').textContent = '✅ 核對';
+  var h = '', A = (DATA && DATA.ann && DATA.ann.boss) ? (DATA.ann.list || []) : null;
+  if (A) {
+    var left = A.reduce(function (n, x) { return n + x.todo.length; }, 0);
+    h += '<div class="tdl" onclick="go(\'sg\')"><div class="tdi"><span class="ic">' + (left ? '⬜️' : '✅') + '</span><div>公告簽名<small>' + (A.length ? A.length + ' 則進行中' : '沒有進行中的公告') + '</small></div><span class="r" style="color:' + (left ? '#c0392b' : '#2d7a3a') + '">' + (left ? left + ' 人未簽 ›' : '全部簽完') + '</span></div></div>';
+  }
+  var save = TD;
+  [['rh', '熱河'], ['fs', '鳳山中山']].forEach(function (x) {
+    TD = TDB[x[0]];
+    h += '<div style="margin:14px 16px 0;font-size:16px;font-weight:700;color:var(--tx)">🏪 ' + x[1] + '</div>';
+    if (!TD) { h += '<div class="card" style="margin-top:8px;color:var(--mu)">載入中…</div>'; return; }
+    ['早班', '晚班'].forEach(function (s) {
+      var L = tdItems(s), dn = L.filter(function (i) { return i.done; }).length;
+      h += '<div class="tdh" style="margin:8px 16px 0;padding:0">' + (s === '早班' ? '☀️ 早班' : '🌙 晚班') + '　' + dn + ' / ' + L.length + '</div><div class="tdl" style="margin-top:4px">';
+      L.forEach(function (i) { h += '<div class="tdi" style="padding:8px 14px"><span class="ic">' + (i.done ? '✅' : '⬜️') + '</span><div>' + i.n + '</div><span class="r" style="color:' + (i.done ? '#2d7a3a' : i.grp ? '#b7791f' : '#c0392b') + '">' + (i.d || '還沒') + '</span></div>'; });
+      h += '</div>';
+    });
+  });
+  TD = save;
+  if (CUR === 'tdo') $('tdb').innerHTML = h;
+  tdBadge(0);
+}
 function tdRender() {
+  if (BOSS()) return tdBossRender();
   var sh = tdShifts(), st = U.s === 'fs' ? '鳳山中山' : '熱河', left = 0, all = 0, h = '';
   $('tdsw').style.display = BOSS() ? '' : 'none'; $('tdsw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
   var t = (DATA && DATA.home && DATA.home.today) || '';
@@ -800,7 +834,8 @@ function tdRender() {
   if (CUR === 'tdo') $('tdb').innerHTML = h;
   tdBadge(BOSS() || DEV() ? 0 : left);
 }
-function tdBadge(n) { var b = $('tdn'); if (!b) return; b.style.display = n > 0 ? '' : 'none'; b.textContent = n; }
+function tdNav() { var d = document.querySelector('.nav div[data-v=tdo]'); if (d) d.firstChild.nextSibling.nodeValue = BOSS() ? '核對' : '今天要做'; }
+function tdBadge(n) { tdNav(); var b = $('tdn'); if (!b) return; b.style.display = n > 0 ? '' : 'none'; b.textContent = n; }
 // ---------- 營收回報（11/17）：早班、晚班報表全部員工都能填；入庫只有幹部、儲備 ----------
 var RV = null, RVK = 'am', RVD = '', RVW = 0;
 var RV_F = {
