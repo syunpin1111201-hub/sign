@@ -848,7 +848,7 @@ function clRender() {
   var cnt = function (k) { var I = clItems(k, sh); return I.filter(function (x) { return x.who.length; }).length + '/' + I.length; };
   $('clsh').innerHTML = ['早班', '晚班'].map(function (s) { return '<span class="' + (s === sh ? 'on' : '') + '" onclick="CLS=\'' + s + '\';clRender()">' + s + '</span>'; }).join('');
   $('cltab').innerHTML = [['day', '每日 ' + cnt('day')], ['week', '週清 ' + cnt('week')], ['mon', '月清 ' + cnt('mon')]].map(function (t) { return '<span class="' + (t[0] === CLK ? 'on' : '') + '" onclick="CLK=\'' + t[0] + '\';clRender()">' + t[1] + '</span>'; }).join('');
-  var I = clItems(CLK, sh), h = devWhoHtml('clRender');
+  var I = clItems(CLK, sh), h = devWhoHtml('clLoad');   // 公務機換人 → 重拿（代號跟著換）
   h += '<div class="card" style="margin-top:12px;font-size:13px;color:var(--mu)">' + (CLK === 'day' ? '今天 ' + (P.day ? P.day.date : '') : CLK === 'week' ? '第 ' + (P.week ? P.week.wi : '') + ' 週（週一～週日）' : '這個月') + '｜點一下打勾＝寫你的代號，再點一下取消' + (L ? '；右邊「驗收」幹部按' : '') + '</div><div class="tdl">';
   if (!I.length) h += '<div class="tdi" style="color:var(--mu)">這班沒有項目</div>';
   I.forEach(function (x) {
@@ -865,15 +865,33 @@ function clRender() {
   }
   $('clb').innerHTML = h;
 }
+// 11/17 打勾先在畫面上打好（不用等），背景送出；失敗才改回來並提示
+function clFind(k, r) { var o = CL && CL[k]; return o && o.items ? o.items.filter(function (x) { return x.r === r; })[0] : null; }
 function clTap(k, r, on) {
-  if (CLW) return; if (devNeed()) return; if (BOSS()) { bar('可樂帳號只看，打勾請用員工帳號', 2500); return; }
-  CLW = 1; bar(on ? '打勾中…' : '取消中…');
-  api('op=cldo&k=' + k + '&r=' + r + '&v=' + on + '&sh=' + encodeURIComponent(clShift()) + '&' + clQ()).then(function (j) { CLW = 0; if (!j.ok) { bar(j.err || '沒存到，請再按一次', 3000); return; } CL = j; clRender(); bar(on ? '✅ 已打勾' : '已取消', 1200); TD = null; }).catch(function () { CLW = 0; bar('網路不穩，請再按一次', 3000); });
+  if (devNeed()) return; if (BOSS()) { bar('可樂帳號只看，打勾請用員工帳號', 2500); return; }
+  var it = clFind(k, r); if (!it || it.busy) return;
+  var me = CL.me || (DEV() ? '' : ''), old = { who: it.who.slice(), date: it.date };
+  it.who = it.who.filter(function (x) { return x !== me; }); if (on && me) it.who.push(me);
+  if (k !== 'day') it.date = it.who.length ? (it.date || (new Date().getMonth() + 1) + '/' + new Date().getDate()) : '';
+  it.busy = 1; clRender();
+  api('op=cldo&k=' + k + '&r=' + r + '&v=' + on + '&sh=' + encodeURIComponent(clShift()) + '&' + clQ()).then(function (j) {
+    it.busy = 0;
+    if (!j.ok) { it.who = old.who; it.date = old.date; clRender(); bar((j.err || '沒存到') + '，請再按一次', 3000); return; }
+    if (j.fast && j.item) { it.who = j.item.who; it.date = j.item.date; } else if (j.day) CL = j;
+    clRender(); TD = null;
+  }).catch(function () { it.busy = 0; it.who = old.who; it.date = old.date; clRender(); bar('網路不穩，沒存到，請再按一次', 3000); });
 }
 function clChk(k, r, on) {
-  if (CLW) return; if (devNeed()) return;
-  CLW = 1; bar('驗收中…');
-  api('op=clchk&k=' + k + '&r=' + r + '&v=' + on + '&sh=' + encodeURIComponent(clShift()) + '&' + clQ()).then(function (j) { CLW = 0; if (!j.ok) { bar(j.err || '沒存到，請再按一次', 3000); return; } CL = j; clRender(); bar(on ? '✓ 已驗收' : '已取消驗收', 1200); TD = null; }).catch(function () { CLW = 0; bar('網路不穩，請再按一次', 3000); });
+  if (devNeed()) return;
+  var sh = clShift(), it = k === 'day' ? null : clFind(k, r), vv = k === 'day' ? CL.day.ver[sh] : null, me = CL.me;
+  var old = k === 'day' ? vv.who.slice() : (it.ver || []).slice();
+  if (k === 'day') vv.who = on ? [me] : []; else { if (on && !it.who.length) { bar('還沒有人做，不能驗收', 2500); return; } it.ver = on ? [me] : []; }
+  clRender();
+  api('op=clchk&k=' + k + '&r=' + r + '&v=' + on + '&sh=' + encodeURIComponent(sh) + '&' + clQ()).then(function (j) {
+    if (!j.ok) { if (k === 'day') vv.who = old; else it.ver = old; clRender(); bar((j.err || '沒存到') + '，請再按一次', 3000); return; }
+    if (j.fast) { if (j.item && it) it.ver = j.item.ver; if (j.ver && vv) vv.who = j.ver.who; } else if (j.day) CL = j;
+    clRender(); TD = null;
+  }).catch(function () { if (k === 'day') vv.who = old; else it.ver = old; clRender(); bar('網路不穩，沒存到，請再按一次', 3000); });
 }
 // ---------- 今天要做（11/17，右下角）：照今天班別列出茶湯、盤點、清潔、營收報表，做完自動打勾 ----------
 var TD = null, TDT = 0;
