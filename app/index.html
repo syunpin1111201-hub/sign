@@ -500,8 +500,9 @@ function teaCan() { return BOSS() || (TEA_OPEN && (!!(DATA && DATA.lead) || ['�
 function teaB(cc) { var b = cc / 10000; return b <= 0 ? '0' : (b % 1 ? b.toFixed(1) : String(b)); }
 function teaHome() {
   var t = DATA && DATA.tea, el = $('c5'); if (!el) return;
-  $('teat').style.display = 'none';   // 11/17 首頁精簡：在「今天要做」裡   // 11/15 留茶湯開放所有員工（看留量、填冰箱時間）
-  $('pdt').style.display = 'none';   // 11/17 首頁精簡：在「今天要做」裡   // 11/15 開給大家（含公務機）   // 11/14 幹部、儲備也先打開（在崗位旁邊）   // 11/13 盤點：員工、幹部、可樂、公務機都會有；可樂先測，PD_ALL 改 true 才開給大家
+  $('teat').style.display = gwLead() ? '' : 'none';   // 11/17 首頁精簡：員工在「今天要做」裡；幹部、儲備、可樂首頁照舊   // 11/15 留茶湯開放所有員工（看留量、填冰箱時間）
+  $('pdt').style.display = gwLead() ? '' : 'none';   // 11/17 首頁精簡（幹部、儲備照舊）
+  $('rvt').style.display = gwLead() ? '' : 'none';   // 11/15 開給大家（含公務機）   // 11/14 幹部、儲備也先打開（在崗位旁邊）   // 11/13 盤點：員工、幹部、可樂、公務機都會有；可樂先測，PD_ALL 改 true 才開給大家
   var h = new Date().getHours();
   if (t && t.done) { el.textContent = t.who + ' ' + t.t + ' 填了'; $('b5').style.display = 'none'; }
   else { el.textContent = '今晚收店要留多少'; $('b5').style.display = 'none'; }
@@ -743,6 +744,7 @@ function render() {
   gwHome();
   sqHome();
   devUI();
+  tdNav(); if (TD && CUR === 'tdo') tdRender();
   var hr = d.hr;
   $('hrc').style.display = hr ? '' : 'none';
   if (hr) $('hrc').innerHTML = '<b>🔑 風行人資系統</b><div class="hrk"><span>網域</span><b>' + hr.dom + '<i onclick="cp(\'' + hr.dom + '\')">複製</i></b></div><div class="hrk"><span>帳號</span><b>' + esc(hr.id) + '<i onclick="cp(\'' + esc(hr.id) + '\')">複製</i></b></div><div class="hrk"><span>預設密碼</span><b>' + hr.pw + '</b></div>';
@@ -752,7 +754,7 @@ function render() {
 // ---------- 今天要做（11/17，右下角）：照今天班別列出茶湯、盤點、清潔、營收報表，做完自動打勾 ----------
 var TD = null, TDT = 0;
 function tdShifts() {
-  if (BOSS() || DEV()) return ['早班', '晚班'];
+  if (BOSS() || DEV() || gwLead()) return ['早班', '晚班'];   // 11/17 幹部、儲備：跟可樂一樣核對整店早晚班
   var t = (DATA && DATA.home && DATA.home.today) || '', out = [];
   if (!t || /^沒排|^休|假/.test(t)) return [];
   (t.match(/(\d{3,4})-(\d{3,4})/g) || []).forEach(function (x) { var st = Number(x.split('-')[0]); var k = st < 1400 ? '早班' : '晚班'; if (out.indexOf(k) < 0) out.push(k); });
@@ -819,7 +821,8 @@ function tdRender() {
   var sh = tdShifts(), st = U.s === 'fs' ? '鳳山中山' : '熱河', left = 0, all = 0, h = '';
   $('tdsw').style.display = BOSS() ? '' : 'none'; $('tdsw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
   var t = (DATA && DATA.home && DATA.home.today) || '';
-  $('tds').textContent = st + (BOSS() || DEV() ? '｜早晚班都看' : t ? '｜今天 ' + t : '');
+  $('tds').textContent = st + (BOSS() || DEV() || gwLead() ? '｜早晚班都看' : t ? '｜今天 ' + t : '');
+  $('tdh').textContent = gwLead() ? '✅ 核對' : '✅ 今天要做';
   if (!TD) { tdBadge(-1); return; }
   if (!sh.length) { h = '<div class="card" style="margin-top:12px;color:var(--mu)">' + (/休|假/.test(t) ? '今天休假，好好休息 😊' : '今天沒有排班') + '</div>'; }
   sh.forEach(function (s) {
@@ -828,15 +831,16 @@ function tdRender() {
     L.forEach(function (x) {
       all++; if (!x.done) left++;
       if (x.grp && !g) { g = true; h += '<div class="tdh">🧹 清潔（' + s + '）・點開清潔表填代號</div>'; }
-      h += '<div class="tdi" onclick="' + x.go + '"><span class="ic">' + (x.done ? '✅' : '⬜️') + '</span><div>' + x.n + (x.s && !x.done ? '<small>' + x.s + '</small>' : '') + '</div><span class="r" style="color:' + (x.done ? '#2d7a3a' : x.grp ? '#b7791f' : 'var(--mu)') + '">' + (x.d || '›') + '</span></div>';
+      var gl = gwLead();
+      h += '<div class="tdi" onclick="' + x.go + '"><span class="ic">' + (x.done ? '✅' : '⬜️') + '</span><div>' + x.n + (x.s && !x.done && !gl ? '<small>' + x.s + '</small>' : '') + '</div><span class="r" style="color:' + (x.done ? '#2d7a3a' : x.grp ? '#b7791f' : gl ? '#c0392b' : 'var(--mu)') + '">' + (x.d || (gl ? '還沒 ›' : '›')) + '</span></div>';
     });
     h += '</div>';
   });
   if (sh.length) h = '<div style="margin:12px 16px 0;font-size:17px;font-weight:700;color:var(--tx)">完成 ' + (all - left) + ' / ' + all + '</div>' + h + '<div style="margin:0 16px;color:var(--mu);font-size:12px">清潔：每日看今天、週清看這週、月清看這個月；做完填代號就會打勾（回這頁按 ↻ 或重開）</div>';
   if (CUR === 'tdo') $('tdb').innerHTML = h;
-  tdBadge(BOSS() || DEV() ? 0 : left);
+  tdBadge(BOSS() || DEV() || gwLead() ? 0 : left);
 }
-function tdNav() { var d = document.querySelector('.nav div[data-v=tdo]'); if (d) d.firstChild.nextSibling.nodeValue = BOSS() ? '核對' : '今天要做'; }
+function tdNav() { var d = document.querySelector('.nav div[data-v=tdo]'); if (d) d.firstChild.nextSibling.nodeValue = gwLead() ? '核對' : '今天要做'; }
 function tdBadge(n) { tdNav(); var b = $('tdn'); if (!b) return; b.style.display = n > 0 ? '' : 'none'; b.textContent = n; }
 
 // 11/17 公務機大家共用：留茶湯、營收報表送出前要選是誰填的
