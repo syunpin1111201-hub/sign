@@ -788,6 +788,7 @@ function cbBossRender() {
   CB.list.forEach(function (x, i) {
     h += '<div style="border-top:1px solid #f1ebe3;padding:8px 0"><div style="display:flex;justify-content:space-between"><b style="color:var(--tx)">' + esc(x.name) + '</b><b style="color:var(--tx)" id="cbt' + i + '">$ ' + cbN(x.total) + '</b></div>' +
       '<div style="font-size:13px;color:var(--mu)">柚香 ' + cbN(x.citrus) + (x.rsv ? '（' + esc(x.down || '全額') + '）' : '｜分紅 ' + cbN(x.div) + '（' + x.score + ' 分應得 ' + (x.due != null ? x.due : '') + '%、實發 ' + x.pct + '%；淨利 ' + cbN(x.rev) + ' × ' + x.pct + '%' + (x.pfrom === '本期考核' ? '，上期沒考核先用本期%' : '') + '）') + '</div>' +
+      '<div style="font-size:12px;color:#8a6d3b">上個月：' + (x.last != null ? '總共發 ' + cbN(x.last) : '總額沒有紀錄（下個月起會有）') + (x.lastCit != null ? '｜' + CB.pmon + ' 月柚香 ' + cbN(x.lastCit) : '') + '</div>' +
       '<div style="display:flex;gap:8px;align-items:center;margin-top:4px"><span style="font-size:13px">多發</span><input class="cbx" data-n="' + esc(x.name) + '" data-i="' + i + '" inputmode="numeric" value="' + esc(x.name in CBX ? CBX[x.name] : (x.extra || '')) + '" oninput="CBX[this.getAttribute(\'data-n\')]=this.value;cbSum()" style="margin:0;padding:6px 10px;width:160px;font-size:16px;text-align:right"></div></div>';
   });
   if (CB.list.length) h += '<div id="cbsum" style="border-top:2px solid #e6d9c8;margin-top:6px;padding-top:8px"></div>';
@@ -805,7 +806,11 @@ function cbSum() {
     if ($('cbt' + i)) $('cbt' + i).textContent = '$ ' + cbN(t);
     tot[st] = tot[st] || { c: 0, d: 0, x: 0, t: 0 }; tot[st].c += x.citrus; tot[st].d += x.rsv ? 0 : x.div; tot[st].x += ex; tot[st].t += t; all += t;
   });
-  $('cbsum').innerHTML = Object.keys(tot).map(function (k) { var o = tot[k]; return '<div style="display:flex;justify-content:space-between"><b style="color:var(--tx)">' + k + ' 合計</b><b style="color:var(--tx)">$ ' + cbN(o.t) + '</b></div><div style="font-size:12px;color:var(--mu);margin-bottom:6px">柚香 ' + cbN(o.c) + '｜分紅 ' + cbN(o.d) + '｜多發 ' + cbN(o.x) + '</div>'; }).join('') +
+  $('cbsum').innerHTML = Object.keys(tot).map(function (k) {
+    var o = tot[k], kk = k === '鳳山' ? '鳳山中山' : k, rv = (CB.rev || {})[kk] || 0, pr = (CB.prevRev || {})[kk] || 0, pc = pr ? Math.round((rv - pr) / pr * 100) : null;
+    return '<div style="display:flex;justify-content:space-between"><b style="color:var(--tx)">' + k + ' 合計</b><b style="color:var(--tx)">$ ' + cbN(o.t) + '</b></div><div style="font-size:12px;color:var(--mu)">柚香 ' + cbN(o.c) + '｜分紅 ' + cbN(o.d) + '｜多發 ' + cbN(o.x) + '</div>' +
+      '<div style="font-size:12px;color:#8a6d3b;margin-bottom:6px">' + CB.mon + ' 月營業額 ' + cbN(rv) + (pr ? '（' + CB.pmon + ' 月 ' + cbN(pr) + '，' + (pc >= 0 ? '+' : '') + pc + '%）' : '') + (rv ? '｜發出去占營業額 ' + (Math.round(o.t / rv * 1000) / 10) + '%' : '') + '</div>';
+  }).join('') +
     '<div style="display:flex;justify-content:space-between;font-size:16px"><b style="color:var(--tx)">兩間總共</b><b style="color:#c0392b">$ ' + cbN(all) + '</b></div>';
 }
 function cbSave(n) {
