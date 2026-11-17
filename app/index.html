@@ -79,6 +79,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 .gwb{display:flex;gap:8px;margin:0 16px 8px}.gwb a,.gwb span{flex:1;text-align:center;padding:12px 0;border-radius:12px;font-weight:800;font-size:15px;text-decoration:none}.gwb .b1{background:#fff;color:var(--ac);border:1.5px solid var(--ac)}.gwb .b2{background:#2d7a3a;color:#fff}.gwb .b3{background:#ddd;color:#888}
 .gwme{display:flex;gap:8px;margin-top:6px}.gwme div{flex:1;border-radius:10px;padding:8px;text-align:center;background:#f6ece0;line-height:1.4}.gwme b{display:block;font-size:20px;color:var(--tx);margin:0}.gwme small{color:var(--mu);font-size:11px}
 .rvr{display:grid;grid-template-columns:1fr 128px;align-items:center;gap:8px;margin-bottom:8px}.rvr input{margin:0;padding:8px 10px;text-align:right;font-size:17px}.rvr.w{grid-template-columns:1fr}.rvr.w input{text-align:left;font-size:15px}.rvsum div{display:flex;justify-content:space-between;color:var(--mu)}.rvsum b{color:var(--tx);margin:0}.rvok{border-radius:8px;padding:6px 10px;font-size:13px;margin-top:8px}
+.tdl{background:#fff;margin:12px 16px 10px;border-radius:14px;overflow:hidden}.tdi{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #f1ebe3;font-size:15px}.tdi:last-child{border-bottom:0}.tdi .ic{font-size:19px;width:22px;text-align:center}.tdi small{display:block;color:var(--mu);font-size:12px}.tdi .r{margin-left:auto;font-size:13px;white-space:nowrap}.tdh{padding:8px 14px 2px;font-size:12px;color:var(--mu)}
 .s2p{display:flex;gap:8px;margin:12px 16px 0}.s2p span{flex:1;text-align:center;border:1px solid var(--ac);color:var(--ac);background:#fff;border-radius:20px;padding:7px 0;font-size:14px}.s2p span.on{background:var(--ac);color:#fff}
 .s2d{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;-webkit-overflow-scrolling:touch}.s2d span{flex:0 0 46px;text-align:center;background:#fff;border:1px solid var(--ln);border-radius:10px;padding:5px 0;font-size:12px;line-height:1.4}.s2d span.on{background:var(--ac);color:#fff;border-color:var(--ac)}.s2d span.we{color:#c0392b}.s2d span.on.we{color:#fff}
 .s2c h3{margin:0 0 4px;font-size:16px;display:flex;justify-content:space-between;align-items:baseline}.s2c h3 small{font-weight:400;color:var(--mu);font-size:12px}.s2c .t2{font-size:12px;color:var(--mu);margin:6px 0 0}.s2c .r{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed var(--ln)}.s2c .of{font-size:12px;color:var(--mu);margin-top:6px}
@@ -147,6 +148,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div class="scr" id="gw"><div class="hd"><div class="s" id="gws"></div><h2 id="gwh">🧭 崗位</h2><span class="rf" id="gwsw" style="display:none" onclick="gwSw()"></span></div><div class="s2p" id="gwtab"></div><div class="s2p" id="gwtab2"></div><div id="gwb"></div><div style="height:30px"></div></div>
 <div class="scr" id="sgs"><div class="hd"><div class="s" id="sqss"></div><h2>🧽 SGS 稽核準備</h2><span class="rf" id="sqsw" style="display:none" onclick="sqSw()"></span></div><div class="s2p" id="sqtab" style="flex-wrap:wrap"></div><div id="sqb"></div><div style="height:30px"></div></div>
 <div class="scr" id="rv"><div class="hd"><div class="s" id="rvs"></div><h2>💰 營收回報</h2><span class="rf" id="rvsw" style="display:none" onclick="rvSw()"></span></div><div class="s2p" id="rvday"></div><div class="s2p" id="rvtab"></div><div id="rvb"></div><div style="height:30px"></div></div>
+<div class="scr" id="td"><div class="hd"><div class="s" id="tds"></div><h2 id="tdh">✅ 今天要做</h2><span class="rf" id="tdsw" style="display:none" onclick="tdSw()"></span></div><div id="tdb"></div><div style="height:30px"></div></div>
 <div class="scr" id="tl"><div class="hd"><div class="s">可樂常用</div><h2 id="tlh"></h2></div><div class="box" id="tlf"></div><div id="tlr"></div><div style="height:20px"></div></div>
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -197,7 +199,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div data-v="sc"><i>🗓️</i>班表</div>
   <div data-v="q" id="navq" style="display:none"><i>🔍</i>查詢</div>
   <div data-v="ex"><i>📝</i>考試</div>
-  <div data-v="sg"><i>✍️</i>簽名</div>
+  <div data-v="td" style="position:relative"><i>✅</i>今天要做<span id="tdn" style="display:none;position:absolute;top:0;left:56%;background:#e04b3c;color:#fff;border-radius:9px;font-size:10px;padding:0 5px;line-height:16px;font-weight:700"></span></div>
 </div>
 
 <script>
@@ -248,7 +250,7 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 function show(v) {
   if (v === 'sc' && BOSS()) v = 's2';   // 11/10 可樂：兩店班表一起看
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'rv', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'rv', 'td', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
@@ -262,6 +264,7 @@ function show(v) {
   if (v === 'gw') { gwLoad(); window.scrollTo(0, 0); }
   if (v === 'sgs') { sqLoad(); window.scrollTo(0, 0); }
   if (v === 'rv') { rvLoad(); window.scrollTo(0, 0); }
+  if (v === 'td') { tdLoad(1); window.scrollTo(0, 0); }
   if (v === 'lv' || v === 'sc') frame();
   if (v === 'home') { load(0); if (DATA) mtRender(); }
   if (v === 'mt') { MTI = 0; mtRender(); window.scrollTo(0, 0); }
@@ -743,6 +746,61 @@ function render() {
   if (hr) $('hrc').innerHTML = '<b>🔑 風行人資系統</b><div class="hrk"><span>網域</span><b>' + hr.dom + '<i onclick="cp(\'' + hr.dom + '\')">複製</i></b></div><div class="hrk"><span>帳號</span><b>' + esc(hr.id) + '<i onclick="cp(\'' + esc(hr.id) + '\')">複製</i></b></div><div class="hrk"><span>預設密碼</span><b>' + hr.pw + '</b></div>';
 }
 
+
+// ---------- 今天要做（11/17，右下角）：照今天班別列出茶湯、盤點、清潔、營收報表，做完自動打勾 ----------
+var TD = null, TDT = 0;
+function tdShifts() {
+  if (BOSS() || DEV()) return ['早班', '晚班'];
+  var t = (DATA && DATA.home && DATA.home.today) || '', out = [];
+  if (!t || /^沒排|^休|假/.test(t)) return [];
+  (t.match(/(\d{3,4})-(\d{3,4})/g) || []).forEach(function (x) { var st = Number(x.split('-')[0]); var k = st < 1400 ? '早班' : '晚班'; if (out.indexOf(k) < 0) out.push(k); });
+  return out;
+}
+function tdSw() { $('sw').onclick(); TD = null; tdLoad(1); }
+function tdLoad(force) {
+  if (!U.tok) return;
+  if (!force && TD && Date.now() - TDT < 120000) { tdRender(); return; }
+  if (TD) tdRender(); else if (CUR === 'td') $('tdb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
+  var want = U.s;
+  api('op=today&' + sqQ()).then(function (j) { if (want !== U.s || !j.ok) return; TD = j; TDT = Date.now(); tdRender(); }).catch(function () { if (CUR === 'td' && !TD) $('tdb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+}
+function tdItems(sh) {
+  var P = TD || {}, L = [], am = sh === '早班';
+  var ok = function (x) { return x ? '✓ ' + esc(x.who || '') + (x.t ? ' ' + esc(x.t) : '') : ''; };
+  if (!am) L.push({ k: 'tea', n: '留茶湯', s: '22:30 前算好收店要留多少', done: P.tea && P.tea.done, d: P.tea && P.tea.done ? ok(P.tea) : '', go: "go('tea')" });
+  L.push({ k: 'fr', n: '冰箱茶湯時間', s: am ? '盤點時 key 冰箱每桶時間' : '下班回拍時 key 冰箱每桶時間', done: !!(P.fr && P.fr[sh]), d: ok(P.fr && P.fr[sh]), go: "go('tea')" });
+  L.push({ k: 'pd', n: sh + '盤點', s: '店裡有人送出就算完成', done: !!(P.pd && P.pd[sh]), d: ok(P.pd && P.pd[sh]), go: "go('pd')" });
+  var C = P.clean;
+  if (C) [['day', '每日清潔'], ['week', '本週週清'], ['mon', '本月月清']].forEach(function (c) {
+    var o = C[c[0]] && C[c[0]][sh]; if (!o || !o.total) return;
+    L.push({ k: 'cl', grp: 1, n: c[1], done: o.left === 0, d: o.left === 0 ? '✓ 做完了' : '還有 ' + o.left + ' / ' + o.total, go: "tdOpen('" + (C[c[0] + 'Gid'] || '') + "')" });
+  });
+  L.push({ k: 'rv', n: sh + '營收報表', s: am ? '16:30 算完錢填' : '收班算完錢填', done: !!(P.rv && P.rv[sh]), d: ok(P.rv && P.rv[sh]), go: "RVK='" + (am ? 'am' : 'pm') + "';RVD='';go('rv')" });
+  return L;
+}
+function tdOpen(gid) { var C = TD && TD.clean; if (!C) return; window.open(C.url + (gid ? '#gid=' + gid : ''), '_blank'); }
+function tdRender() {
+  var sh = tdShifts(), st = U.s === 'fs' ? '鳳山中山' : '熱河', left = 0, all = 0, h = '';
+  $('tdsw').style.display = BOSS() ? '' : 'none'; $('tdsw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
+  var t = (DATA && DATA.home && DATA.home.today) || '';
+  $('tds').textContent = st + (BOSS() || DEV() ? '｜早晚班都看' : t ? '｜今天 ' + t : '');
+  if (!TD) { tdBadge(-1); return; }
+  if (!sh.length) { h = '<div class="card" style="margin-top:12px;color:var(--mu)">' + (/休|假/.test(t) ? '今天休假，好好休息 😊' : '今天沒有排班') + '</div>'; }
+  sh.forEach(function (s) {
+    var L = tdItems(s), g = false;
+    h += '<div class="tdh" style="margin:10px 16px 0;padding:0">' + (s === '早班' ? '☀️ 早班' : '🌙 晚班') + '</div><div class="tdl">';
+    L.forEach(function (x) {
+      all++; if (!x.done) left++;
+      if (x.grp && !g) { g = true; h += '<div class="tdh">🧹 清潔（' + s + '）・點開清潔表填代號</div>'; }
+      h += '<div class="tdi" onclick="' + x.go + '"><span class="ic">' + (x.done ? '✅' : '⬜️') + '</span><div>' + x.n + (x.s && !x.done ? '<small>' + x.s + '</small>' : '') + '</div><span class="r" style="color:' + (x.done ? '#2d7a3a' : x.grp ? '#b7791f' : 'var(--mu)') + '">' + (x.d || '›') + '</span></div>';
+    });
+    h += '</div>';
+  });
+  if (sh.length) h = '<div style="margin:12px 16px 0;font-size:17px;font-weight:700;color:var(--tx)">完成 ' + (all - left) + ' / ' + all + '</div>' + h + '<div style="margin:0 16px;color:var(--mu);font-size:12px">清潔：每日看今天、週清看這週、月清看這個月；做完填代號就會打勾（回這頁按 ↻ 或重開）</div>';
+  if (CUR === 'td') $('tdb').innerHTML = h;
+  tdBadge(BOSS() || DEV() ? 0 : left);
+}
+function tdBadge(n) { var b = $('tdn'); if (!b) return; b.style.display = n > 0 ? '' : 'none'; b.textContent = n; }
 // ---------- 營收回報（11/17）：早班、晚班報表全部員工都能填；入庫只有幹部、儲備 ----------
 var RV = null, RVK = 'am', RVD = '', RVW = 0;
 var RV_F = {
@@ -1096,7 +1154,7 @@ window.addEventListener('message', function (e) { if (e.data && e.data.annSigned
 function devUI() {
   var D = DEV();
   [].forEach.call(document.querySelectorAll('#home .grid .t'), function (t) { if (/go\('(lv|ex|sg)'\)/.test(t.getAttribute('onclick') || '')) t.style.display = D ? 'none' : ''; });
-  [].forEach.call(document.querySelectorAll('.nav div'), function (n) { if (/^(lv|ex|sg)$/.test(n.getAttribute('data-v'))) n.style.display = D ? 'none' : ''; });
+  [].forEach.call(document.querySelectorAll('.nav div'), function (n) { if (/^(lv|ex)$/.test(n.getAttribute('data-v'))) n.style.display = D ? 'none' : ''; });
   if (D) { $('sayb').style.display = 'none'; $('rmc').style.display = 'none'; $('td').parentNode.style.display = 'none'; $('hn').textContent = '公務機'; $('c2').textContent = '看今天誰上班'; }
   else $('td').parentNode.style.display = '';
 }
@@ -1305,6 +1363,7 @@ function load(force) {
     var changed = !DATA || DATA.html !== j.html;
     if (DATA && DATA.me && DATA.me.n === j.me.n && DATA.s === j.s) MK.forEach(function (k) { if (!(k in j) && k in DATA) j[k] = DATA[k]; });   // 慢的那批還沒到 → 先用上次的
     DATA = j; gotCore = true; LS('app_cache', JSON.stringify(j)); render(); if (CUR === 's2') s2Render(); if (more) mergeMore();
+    tdLoad(force);   // 11/17 今天要做（背景拿，右下角顯示還剩幾項）
     if (CUR === 'lv' || CUR === 'sc') {
       if (changed && !FRV) frame();   // 11/11 剛換店 → 直接顯示
       else if (changed) bar('有新資料，點這裡更新', 0, function () { $('bar').style.display = 'none'; frame(); });
