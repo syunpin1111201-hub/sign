@@ -148,7 +148,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div class="scr" id="gw"><div class="hd"><div class="s" id="gws"></div><h2 id="gwh">🧭 崗位</h2><span class="rf" id="gwsw" style="display:none" onclick="gwSw()"></span></div><div class="s2p" id="gwtab"></div><div class="s2p" id="gwtab2"></div><div id="gwb"></div><div style="height:30px"></div></div>
 <div class="scr" id="sgs"><div class="hd"><div class="s" id="sqss"></div><h2>🧽 SGS 稽核準備</h2><span class="rf" id="sqsw" style="display:none" onclick="sqSw()"></span></div><div class="s2p" id="sqtab" style="flex-wrap:wrap"></div><div id="sqb"></div><div style="height:30px"></div></div>
 <div class="scr" id="rv"><div class="hd"><div class="s" id="rvs"></div><h2>💰 營收回報</h2><span class="rf" id="rvsw" style="display:none" onclick="rvSw()"></span></div><div class="s2p" id="rvday"></div><div class="s2p" id="rvtab"></div><div id="rvb"></div><div style="height:30px"></div></div>
-<div class="scr" id="td"><div class="hd"><div class="s" id="tds"></div><h2 id="tdh">✅ 今天要做</h2><span class="rf" id="tdsw" style="display:none" onclick="tdSw()"></span></div><div id="tdb"></div><div style="height:30px"></div></div>
+<div class="scr" id="tdo"><div class="hd"><div class="s" id="tds"></div><h2 id="tdh">✅ 今天要做</h2><span class="rf" id="tdsw" style="display:none" onclick="tdSw()"></span></div><div id="tdb"></div><div style="height:30px"></div></div>
 <div class="scr" id="tl"><div class="hd"><div class="s">可樂常用</div><h2 id="tlh"></h2></div><div class="box" id="tlf"></div><div id="tlr"></div><div style="height:20px"></div></div>
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -199,7 +199,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div data-v="sc"><i>🗓️</i>班表</div>
   <div data-v="q" id="navq" style="display:none"><i>🔍</i>查詢</div>
   <div data-v="ex"><i>📝</i>考試</div>
-  <div data-v="td" style="position:relative"><i>✅</i>今天要做<span id="tdn" style="display:none;position:absolute;top:0;left:56%;background:#e04b3c;color:#fff;border-radius:9px;font-size:10px;padding:0 5px;line-height:16px;font-weight:700"></span></div>
+  <div data-v="tdo" style="position:relative"><i>✅</i>今天要做<span id="tdn" style="display:none;position:absolute;top:0;left:56%;background:#e04b3c;color:#fff;border-radius:9px;font-size:10px;padding:0 5px;line-height:16px;font-weight:700"></span></div>
 </div>
 
 <script>
@@ -250,7 +250,7 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 function show(v) {
   if (v === 'sc' && BOSS()) v = 's2';   // 11/10 可樂：兩店班表一起看
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'rv', 'td', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'rv', 'tdo', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
@@ -264,7 +264,7 @@ function show(v) {
   if (v === 'gw') { gwLoad(); window.scrollTo(0, 0); }
   if (v === 'sgs') { sqLoad(); window.scrollTo(0, 0); }
   if (v === 'rv') { rvLoad(); window.scrollTo(0, 0); }
-  if (v === 'td') { tdLoad(1); window.scrollTo(0, 0); }
+  if (v === 'tdo') { tdLoad(1); window.scrollTo(0, 0); }
   if (v === 'lv' || v === 'sc') frame();
   if (v === 'home') { load(0); if (DATA) mtRender(); }
   if (v === 'mt') { MTI = 0; mtRender(); window.scrollTo(0, 0); }
@@ -760,9 +760,9 @@ function tdSw() { $('sw').onclick(); TD = null; tdLoad(1); }
 function tdLoad(force) {
   if (!U.tok) return;
   if (!force && TD && Date.now() - TDT < 120000) { tdRender(); return; }
-  if (TD) tdRender(); else if (CUR === 'td') $('tdb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
+  if (TD) tdRender(); else if (CUR === 'tdo') $('tdb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
   var want = U.s;
-  api('op=today&' + sqQ()).then(function (j) { if (want !== U.s || !j.ok) return; TD = j; TDT = Date.now(); tdRender(); }).catch(function () { if (CUR === 'td' && !TD) $('tdb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+  api('op=today&' + sqQ()).then(function (j) { if (want !== U.s || !j.ok) return; TD = j; TDT = Date.now(); tdRender(); }).catch(function () { if (CUR === 'tdo' && !TD) $('tdb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
 }
 function tdItems(sh) {
   var P = TD || {}, L = [], am = sh === '早班';
@@ -797,7 +797,7 @@ function tdRender() {
     h += '</div>';
   });
   if (sh.length) h = '<div style="margin:12px 16px 0;font-size:17px;font-weight:700;color:var(--tx)">完成 ' + (all - left) + ' / ' + all + '</div>' + h + '<div style="margin:0 16px;color:var(--mu);font-size:12px">清潔：每日看今天、週清看這週、月清看這個月；做完填代號就會打勾（回這頁按 ↻ 或重開）</div>';
-  if (CUR === 'td') $('tdb').innerHTML = h;
+  if (CUR === 'tdo') $('tdb').innerHTML = h;
   tdBadge(BOSS() || DEV() ? 0 : left);
 }
 function tdBadge(n) { var b = $('tdn'); if (!b) return; b.style.display = n > 0 ? '' : 'none'; b.textContent = n; }
