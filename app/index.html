@@ -762,13 +762,13 @@ function cbHome() {
   if (!c || BOSS()) { el.style.display = 'none'; return; }
   el.style.display = '';
   var r = function (a, b) { return '<div style="display:flex;justify-content:space-between"><span style="color:var(--mu)">' + a + '</span><span>' + b + '</span></div>'; };
-  var h = '<div style="display:flex;justify-content:space-between"><b>💰 ' + c.mon + ' 月獎金</b><span style="color:var(--mu);font-size:12px">' + esc(c.at || '') + ' 公告</span></div><span class="big" style="margin:4px 0 6px">$ ' + cbN(c.total) + '</span>' +
-    r('柚香獎金' + (c.rsv && c.down ? '（' + esc(c.down) + '）' : ''), cbN(c.citrus)) + (c.rsv ? '' : r('淨利分紅（' + c.pct + '%）', cbN(c.div))) + (c.extra ? r('多發', cbN(c.extra)) : '');
+  var h = '<div style="display:flex;justify-content:space-between"><b>💰 獎金公告</b><span style="color:var(--mu);font-size:12px">' + esc(c.at || '') + ' 公告</span></div><span class="big" style="margin:4px 0 6px">$ ' + cbN(c.total) + '</span>' +
+    r(c.mon + ' 月柚香獎金' + (c.rsv && c.down ? '（' + esc(c.down) + '）' : ''), cbN(c.citrus)) + (c.rsv ? '' : r((c.dmon || '') + ' 月淨利分紅（' + c.pct + '%）', cbN(c.div))) + (c.extra ? r('多發', cbN(c.extra)) : '');
   if (CBO) {
     var i = c.info || {};
     h += '<div style="border-top:1px solid #eee;margin-top:8px;padding-top:6px;font-size:13px"><b style="color:var(--tx)">柚香獎金（' + (c.store === '鳳山中山' ? '鳳山' : esc(c.store)) + '）</b>' +
       r('營業額', cbN(i.rev)) + r('柚香覺醒 307 杯數', cbN(i.cups)) + r('人事成本占比', cbP(i.labor)) + r('門市巡查', cbP(i.chk)) + r('缺失', cbP(i.miss));
-    if (!c.rsv) h += '<b style="color:var(--tx);display:block;margin-top:8px">淨利分紅</b>' + r(c.mon + ' 月淨利（分紅前）', cbN(c.rev)) + r('考核總分 → 實發', c.score + ' 分 → ' + c.pct + '%') + r('分紅＝淨利 × ' + c.pct + '%', cbN(c.div));
+    if (!c.rsv) h += '<b style="color:var(--tx);display:block;margin-top:8px">淨利分紅</b>' + r((c.dmon || '') + ' 月淨利（分紅前）', cbN(c.rev)) + r('考核總分 → 實發', c.score + ' 分 → ' + c.pct + '%') + r('分紅＝淨利 × ' + c.pct + '%', cbN(c.div));
     else h += '<div style="color:var(--mu);margin-top:6px">儲備沒有淨利分紅，柚香照考核：' + esc(c.down || '全額') + '</div>';
     h += '</div>';
   } else h += '<div style="color:var(--ac);font-size:12px;margin-top:6px">點開看怎麼算的 ›</div>';
@@ -781,16 +781,16 @@ function cbLoad(m) {
 }
 function cbBossRender() {
   var el = $('cbb'); if (!el || !CB) return;
-  var h = '<div class="sec2">幹部獎金公告（' + CB.mon + ' 月）</div><div class="card">' +
-    '<div style="color:var(--mu);font-size:13px;margin-bottom:6px">' + (CB.pub ? '✅ 已公告 ' + esc(CB.pub) + '（改多發後按「重新公告」）' : '每月 23 號 12:00 自動公告：App 首頁＋LINE 私訊。要多發的先填好') + '</div>' +
-    (CB.miss && CB.miss.length ? '<div style="color:#c0392b;font-size:13px">⚠️ 損益表 ' + CB.mon + ' 月淨利還沒算出來：' + CB.miss.map(esc).join('、') + '</div>' : '');
+  var h = '<div class="sec2">幹部獎金公告（' + CB.mon + ' 月柚香＋' + CB.dmon + ' 月分紅）</div><div class="card">' +
+    '<div style="color:var(--mu);font-size:13px;margin-bottom:6px">' + (CB.pub ? '✅ 已送出 ' + esc(CB.pub) + '（改了再按「重新送出」）' : '填好多發按「送出」→ 幹部、儲備 LINE 私訊＋App 首頁，通知群也會收到') + '</div>' +
+    (CB.miss && CB.miss.length ? '<div style="color:#c0392b;font-size:13px">⚠️ 損益表 ' + CB.dmon + ' 月淨利還沒算出來：' + CB.miss.map(esc).join('、') + '</div>' : '');
   if (!CB.list.length) h += '<div style="color:var(--mu)">這期幹部考核還沒有「已完成」的</div>';
   CB.list.forEach(function (x) {
     h += '<div style="border-top:1px solid #f1ebe3;padding:8px 0"><div style="display:flex;justify-content:space-between"><b style="color:var(--tx)">' + esc(x.name) + '</b><b style="color:var(--tx)">$ ' + cbN(x.total) + '</b></div>' +
-      '<div style="font-size:13px;color:var(--mu)">柚香 ' + cbN(x.citrus) + (x.rsv ? '（' + esc(x.down || '全額') + '）' : '｜分紅 ' + cbN(x.div) + '（淨利 ' + cbN(x.rev) + ' × ' + x.pct + '%）') + '</div>' +
-      '<div style="display:flex;gap:8px;align-items:center;margin-top:4px"><span style="font-size:13px">多發</span><input id="cbx_' + esc(x.name) + '" inputmode="numeric" value="' + (x.extra || '') + '" style="margin:0;padding:6px 8px;width:110px;text-align:right"><span class="chip" style="margin:0" onclick="cbSave(\'' + esc(x.name) + '\')">存</span></div></div>';
+      '<div style="font-size:13px;color:var(--mu)">柚香 ' + cbN(x.citrus) + (x.rsv ? '（' + esc(x.down || '全額') + '）' : '｜分紅 ' + cbN(x.div) + '（淨利 ' + cbN(x.rev) + ' × ' + x.pct + '%' + (x.pfrom === '本期考核' ? '，上期沒考核先用本期%' : '') + '）') + '</div>' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-top:4px"><span style="font-size:13px">多發</span><input class="cbx" data-n="' + esc(x.name) + '" inputmode="numeric" value="' + (x.extra || '') + '" style="margin:0;padding:6px 8px;width:110px;text-align:right"></div></div>';
   });
-  if (CB.list.length) h += '<button class="btn" style="margin-top:8px" onclick="cbPub()">' + (CB.pub ? '重新公告' : '現在公告（不等 23 號）') + '</button>';
+  if (CB.list.length) h += '<button class="btn" style="margin-top:8px" onclick="cbPub()">' + (CB.pub ? '重新送出' : '送出') + '</button>';
   el.innerHTML = h + '</div>';
 }
 function cbSave(n) {
@@ -799,9 +799,12 @@ function cbSave(n) {
   api('op=cbset&m=' + CB.m + '&name=' + encodeURIComponent(n) + '&v=' + encodeURIComponent(v) + '&' + sqQ()).then(function (j) { if (!j.ok) { bar(j.err || '沒存到', 3000); return; } CB = j; cbBossRender(); bar('已存 👍', 1500); }).catch(function () { bar('網路不穩，請再按一次', 3000); });
 }
 function cbPub() {
-  if (!confirm((CB.pub ? '重新公告' : '現在公告') + CB.mon + ' 月幹部獎金？會私訊每位幹部、儲備')) return;
-  bar('公告中…');
-  api('op=cbpub&m=' + CB.m + '&' + sqQ()).then(function (j) { if (!j.ok) { bar(j.err || '沒公告', 4000); return; } CB = j; cbBossRender(); bar('已公告' + (j.nob && j.nob.length ? '（' + j.nob.join('、') + ' 沒綁 LINE，只在 App 看得到）' : ''), 4000); }).catch(function () { bar('網路不穩，請再按一次', 3000); });
+  var X = {}, bad = '';
+  [].forEach.call(document.querySelectorAll('.cbx'), function (e) { var v = e.value.replace(/[,\s]/g, ''); if (v && !/^-?\d+$/.test(v)) bad = e.getAttribute('data-n'); X[e.getAttribute('data-n')] = Number(v) || 0; });
+  if (bad) { bar(bad + ' 的多發要填數字', 3000); return; }
+  if (!confirm((CB.pub ? '重新送出' : '送出') + '幹部獎金？會 LINE 私訊每位幹部、儲備')) return;
+  bar('送出中…');
+  api('op=cbpub&m=' + CB.m + '&x=' + encodeURIComponent(JSON.stringify(X)) + '&' + sqQ()).then(function (j) { if (!j.ok) { bar(j.err || '沒公告', 4000); return; } CB = j; cbBossRender(); bar('已送出' + (j.nob && j.nob.length ? '（' + j.nob.join('、') + ' 沒綁 LINE，只在 App 看得到）' : ''), 4000); }).catch(function () { bar('網路不穩，請再按一次', 3000); });
 }
 // ---------- 今天要做（11/17，右下角）：照今天班別列出茶湯、盤點、清潔、營收報表，做完自動打勾 ----------
 var TD = null, TDT = 0;
