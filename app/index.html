@@ -785,13 +785,28 @@ function cbBossRender() {
     '<div style="color:var(--mu);font-size:13px;margin-bottom:6px">' + (CB.pub ? '✅ 已送出 ' + esc(CB.pub) + '（改了再按「重新送出」）' : '填好多發按「送出」→ 幹部、儲備 LINE 私訊＋App 首頁，通知群也會收到') + '</div>' +
     (CB.miss && CB.miss.length ? '<div style="color:#c0392b;font-size:13px">⚠️ 損益表 ' + CB.dmon + ' 月淨利還沒算出來：' + CB.miss.map(esc).join('、') + '</div>' : '');
   if (!CB.list.length) h += '<div style="color:var(--mu)">這期幹部考核還沒有「已完成」的</div>';
-  CB.list.forEach(function (x) {
-    h += '<div style="border-top:1px solid #f1ebe3;padding:8px 0"><div style="display:flex;justify-content:space-between"><b style="color:var(--tx)">' + esc(x.name) + '</b><b style="color:var(--tx)">$ ' + cbN(x.total) + '</b></div>' +
+  CB.list.forEach(function (x, i) {
+    h += '<div style="border-top:1px solid #f1ebe3;padding:8px 0"><div style="display:flex;justify-content:space-between"><b style="color:var(--tx)">' + esc(x.name) + '</b><b style="color:var(--tx)" id="cbt' + i + '">$ ' + cbN(x.total) + '</b></div>' +
       '<div style="font-size:13px;color:var(--mu)">柚香 ' + cbN(x.citrus) + (x.rsv ? '（' + esc(x.down || '全額') + '）' : '｜分紅 ' + cbN(x.div) + '（' + x.score + ' 分應得 ' + (x.due != null ? x.due : '') + '%、實發 ' + x.pct + '%；淨利 ' + cbN(x.rev) + ' × ' + x.pct + '%' + (x.pfrom === '本期考核' ? '，上期沒考核先用本期%' : '') + '）') + '</div>' +
-      '<div style="display:flex;gap:8px;align-items:center;margin-top:4px"><span style="font-size:13px">多發</span><input class="cbx" data-n="' + esc(x.name) + '" inputmode="numeric" value="' + (x.extra || '') + '" style="margin:0;padding:6px 8px;width:110px;text-align:right"></div></div>';
+      '<div style="display:flex;gap:8px;align-items:center;margin-top:4px"><span style="font-size:13px">多發</span><input class="cbx" data-n="' + esc(x.name) + '" data-i="' + i + '" inputmode="numeric" value="' + (x.extra || '') + '" oninput="cbSum()" style="margin:0;padding:6px 8px;width:110px;text-align:right"></div></div>';
   });
+  if (CB.list.length) h += '<div id="cbsum" style="border-top:2px solid #e6d9c8;margin-top:6px;padding-top:8px"></div>';
   if (CB.list.length) h += '<button class="btn" style="margin-top:8px" onclick="cbPub()">' + (CB.pub ? '重新送出' : '送出') + '</button>';
   el.innerHTML = h + '</div>';
+  cbSum();
+}
+// 11/17 多發一改，個人合計、兩店總額跟著變
+function cbSum() {
+  if (!CB || !$('cbsum')) return;
+  var tot = {}, all = 0;
+  CB.list.forEach(function (x, i) {
+    var e = document.querySelector('.cbx[data-i="' + i + '"]'), ex = e ? Number(e.value.replace(/[,\s]/g, '')) || 0 : (x.extra || 0);
+    var t = x.citrus + (x.rsv ? 0 : x.div) + ex, st = x.store === '鳳山中山' ? '鳳山' : x.store;
+    if ($('cbt' + i)) $('cbt' + i).textContent = '$ ' + cbN(t);
+    tot[st] = tot[st] || { c: 0, d: 0, x: 0, t: 0 }; tot[st].c += x.citrus; tot[st].d += x.rsv ? 0 : x.div; tot[st].x += ex; tot[st].t += t; all += t;
+  });
+  $('cbsum').innerHTML = Object.keys(tot).map(function (k) { var o = tot[k]; return '<div style="display:flex;justify-content:space-between"><b style="color:var(--tx)">' + k + ' 合計</b><b style="color:var(--tx)">$ ' + cbN(o.t) + '</b></div><div style="font-size:12px;color:var(--mu);margin-bottom:6px">柚香 ' + cbN(o.c) + '｜分紅 ' + cbN(o.d) + '｜多發 ' + cbN(o.x) + '</div>'; }).join('') +
+    '<div style="display:flex;justify-content:space-between;font-size:16px"><b style="color:var(--tx)">兩間總共</b><b style="color:#c0392b">$ ' + cbN(all) + '</b></div>';
 }
 function cbSave(n) {
   var v = ($('cbx_' + n) || {}).value || '0';
