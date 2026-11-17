@@ -140,7 +140,6 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div class="card" id="hrc" style="display:none"></div>
   <div class="row2" id="mny" style="display:none"></div>
   <div class="card" id="cbc" style="display:none" onclick="CBO=!CBO;cbHome()"></div>
-  <div class="card" id="wrc" style="display:none"></div>
   <div class="say" id="sayb" onclick="go('say')">💬 對可樂說</div>
   <div class="out">不是你？<span onclick="logout()">登出</span></div>
 </div>
@@ -204,6 +203,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div data-v="q" id="navq" style="display:none"><i>🔍</i>查詢</div>
   <div data-v="ex"><i>📝</i>考試</div>
   <div data-v="tdo" style="position:relative"><i>✅</i>今天要做<span id="tdn" style="display:none;position:absolute;top:0;left:56%;background:#e04b3c;color:#fff;border-radius:9px;font-size:10px;padding:0 5px;line-height:16px;font-weight:700"></span></div>
+  <div data-v="wr" id="navwr" style="display:none"><i>📣</i>回報</div>
 </div>
 
 <script>
@@ -268,6 +268,7 @@ function show(v) {
   if (v === 'gw') { gwLoad(); window.scrollTo(0, 0); }
   if (v === 'sgs') { sqLoad(); window.scrollTo(0, 0); }
   if (v === 'rv') { rvLoad(); window.scrollTo(0, 0); }
+  if (v === 'wr') { wrLoad(); window.scrollTo(0, 0); }
   if (v === 'cln') { clLoad(); window.scrollTo(0, 0); }
   if (v === 'tdo') { tdLoad(1); window.scrollTo(0, 0); }
   if (v === 'lv' || v === 'sc') frame();
@@ -1222,11 +1223,7 @@ function toolCmd(c, who) {
 
 // ---------- 11/17 回報員工狀況、新人回報（幹部、儲備）：用點的，不用機器人猜 ----------
 var WR = null, WRK = 'st', WRF = {}, WRB = 0;
-function wrHome() {
-  var on = !BOSS() && !DEV() && !!(DATA && (DATA.lead || DATA.rsv));
-  $('wrc').style.display = on ? '' : 'none';
-  if (on) $('wrc').innerHTML = '<b>📣 回報給幹部群</b><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="wrGo(\'st\')">👤 回報員工狀況</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="wrGo(\'nb\')">🌱 新人回報</span></div>';
-}
+function wrHome() { $('navwr').style.display = !BOSS() && !DEV() && !!(DATA && (DATA.lead || DATA.rsv)) ? '' : 'none'; }   // 11/17 可樂：放最下方選單
 function wrGo(k) { WRK = k; WRF = {}; go('wr'); window.scrollTo(0, 0); wrLoad(); }
 function wrTabs() { $('wrtab').innerHTML = [['st', '👤 員工狀況'], ['nb', '🌱 新人回報']].map(function (x) { return '<span class="' + (x[0] === WRK ? 'on' : '') + '" onclick="WRK=\'' + x[0] + '\';WRF={};wrRender()">' + x[1] + '</span>'; }).join(''); }
 function wrLoad() {
