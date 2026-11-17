@@ -139,6 +139,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div class="card" id="mtc" onclick="go('mt')" style="display:none"><b>📋 開會內容</b><span id="mtt"></span><span style="float:right;color:var(--mu)">›</span></div>
   <div class="card" id="hrc" style="display:none"></div>
   <div class="row2" id="mny" style="display:none"></div>
+  <div class="card" id="cbc" style="display:none" onclick="CBO=!CBO;cbHome()"></div>
   <div class="say" id="sayb" onclick="go('say')">💬 對可樂說</div>
   <div class="out">不是你？<span onclick="logout()">登出</span></div>
 </div>
@@ -745,12 +746,63 @@ function render() {
   sqHome();
   devUI();
   tdNav(); if (TD && CUR === 'tdo') tdRender();
+  cbHome();
   var hr = d.hr;
   $('hrc').style.display = hr ? '' : 'none';
   if (hr) $('hrc').innerHTML = '<b>🔑 風行人資系統</b><div class="hrk"><span>網域</span><b>' + hr.dom + '<i onclick="cp(\'' + hr.dom + '\')">複製</i></b></div><div class="hrk"><span>帳號</span><b>' + esc(hr.id) + '<i onclick="cp(\'' + esc(hr.id) + '\')">複製</i></b></div><div class="hrk"><span>預設密碼</span><b>' + hr.pw + '</b></div>';
 }
 
 
+// ---------- 幹部獎金公告（11/17）：柚香＋淨利分紅＋多發＝總額；23 號 12:00 自動公告 ----------
+var CBO = false, CB = null;
+function cbN(x) { return Math.round(Number(x) || 0).toLocaleString(); }
+function cbP(x) { return typeof x === 'number' ? Math.round(x * (x <= 1 ? 100 : 1)) + '%' : esc(String(x || '')); }
+function cbHome() {
+  var c = DATA && DATA.cb, el = $('cbc'); if (!el) return;
+  if (!c || BOSS()) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  var r = function (a, b) { return '<div style="display:flex;justify-content:space-between"><span style="color:var(--mu)">' + a + '</span><span>' + b + '</span></div>'; };
+  var h = '<div style="display:flex;justify-content:space-between"><b>💰 ' + c.mon + ' 月獎金</b><span style="color:var(--mu);font-size:12px">' + esc(c.at || '') + ' 公告</span></div><span class="big" style="margin:4px 0 6px">$ ' + cbN(c.total) + '</span>' +
+    r('柚香獎金' + (c.rsv && c.down ? '（' + esc(c.down) + '）' : ''), cbN(c.citrus)) + (c.rsv ? '' : r('淨利分紅（' + c.pct + '%）', cbN(c.div))) + (c.extra ? r('多發', cbN(c.extra)) : '');
+  if (CBO) {
+    var i = c.info || {};
+    h += '<div style="border-top:1px solid #eee;margin-top:8px;padding-top:6px;font-size:13px"><b style="color:var(--tx)">柚香獎金（' + (c.store === '鳳山中山' ? '鳳山' : esc(c.store)) + '）</b>' +
+      r('營業額', cbN(i.rev)) + r('柚香覺醒 307 杯數', cbN(i.cups)) + r('人事成本占比', cbP(i.labor)) + r('門市巡查', cbP(i.chk)) + r('缺失', cbP(i.miss));
+    if (!c.rsv) h += '<b style="color:var(--tx);display:block;margin-top:8px">淨利分紅</b>' + r(c.mon + ' 月淨利（分紅前）', cbN(c.rev)) + r('考核總分 → 實發', c.score + ' 分 → ' + c.pct + '%') + r('分紅＝淨利 × ' + c.pct + '%', cbN(c.div));
+    else h += '<div style="color:var(--mu);margin-top:6px">儲備沒有淨利分紅，柚香照考核：' + esc(c.down || '全額') + '</div>';
+    h += '</div>';
+  } else h += '<div style="color:var(--ac);font-size:12px;margin-top:6px">點開看怎麼算的 ›</div>';
+  el.innerHTML = h;
+}
+function cbLoad(m) {
+  if (!BOSS() || !$('cbb')) return;
+  if (CB) cbBossRender();
+  api('op=cb' + (m ? '&m=' + m : '') + '&' + sqQ()).then(function (j) { if (j.ok) { CB = j; cbBossRender(); } }).catch(function () { });
+}
+function cbBossRender() {
+  var el = $('cbb'); if (!el || !CB) return;
+  var h = '<div class="sec2">幹部獎金公告（' + CB.mon + ' 月）</div><div class="card">' +
+    '<div style="color:var(--mu);font-size:13px;margin-bottom:6px">' + (CB.pub ? '✅ 已公告 ' + esc(CB.pub) + '（改多發後按「重新公告」）' : '每月 23 號 12:00 自動公告：App 首頁＋LINE 私訊。要多發的先填好') + '</div>' +
+    (CB.miss && CB.miss.length ? '<div style="color:#c0392b;font-size:13px">⚠️ 損益表 ' + CB.mon + ' 月淨利還沒算出來：' + CB.miss.map(esc).join('、') + '</div>' : '');
+  if (!CB.list.length) h += '<div style="color:var(--mu)">這期幹部考核還沒有「已完成」的</div>';
+  CB.list.forEach(function (x) {
+    h += '<div style="border-top:1px solid #f1ebe3;padding:8px 0"><div style="display:flex;justify-content:space-between"><b style="color:var(--tx)">' + esc(x.name) + '</b><b style="color:var(--tx)">$ ' + cbN(x.total) + '</b></div>' +
+      '<div style="font-size:13px;color:var(--mu)">柚香 ' + cbN(x.citrus) + (x.rsv ? '（' + esc(x.down || '全額') + '）' : '｜分紅 ' + cbN(x.div) + '（淨利 ' + cbN(x.rev) + ' × ' + x.pct + '%）') + '</div>' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-top:4px"><span style="font-size:13px">多發</span><input id="cbx_' + esc(x.name) + '" inputmode="numeric" value="' + (x.extra || '') + '" style="margin:0;padding:6px 8px;width:110px;text-align:right"><span class="chip" style="margin:0" onclick="cbSave(\'' + esc(x.name) + '\')">存</span></div></div>';
+  });
+  if (CB.list.length) h += '<button class="btn" style="margin-top:8px" onclick="cbPub()">' + (CB.pub ? '重新公告' : '現在公告（不等 23 號）') + '</button>';
+  el.innerHTML = h + '</div>';
+}
+function cbSave(n) {
+  var v = ($('cbx_' + n) || {}).value || '0';
+  bar('存檔中…');
+  api('op=cbset&m=' + CB.m + '&name=' + encodeURIComponent(n) + '&v=' + encodeURIComponent(v) + '&' + sqQ()).then(function (j) { if (!j.ok) { bar(j.err || '沒存到', 3000); return; } CB = j; cbBossRender(); bar('已存 👍', 1500); }).catch(function () { bar('網路不穩，請再按一次', 3000); });
+}
+function cbPub() {
+  if (!confirm((CB.pub ? '重新公告' : '現在公告') + CB.mon + ' 月幹部獎金？會私訊每位幹部、儲備')) return;
+  bar('公告中…');
+  api('op=cbpub&m=' + CB.m + '&' + sqQ()).then(function (j) { if (!j.ok) { bar(j.err || '沒公告', 4000); return; } CB = j; cbBossRender(); bar('已公告' + (j.nob && j.nob.length ? '（' + j.nob.join('、') + ' 沒綁 LINE，只在 App 看得到）' : ''), 4000); }).catch(function () { bar('網路不穩，請再按一次', 3000); });
+}
 // ---------- 今天要做（11/17，右下角）：照今天班別列出茶湯、盤點、清潔、營收報表，做完自動打勾 ----------
 var TD = null, TDT = 0;
 function tdShifts() {
@@ -1136,7 +1188,7 @@ function khRender() {
     B.rsv.map(function (x) { return '<div class="pl"><span>' + esc(x.n) + ' <small style="color:var(--mu)">' + esc(x.st) + '</small></span><span><a class="chip f" href="' + x.url + '" target="_blank">打分</a><a class="chip" href="' + x.talk + '" target="_blank">面談</a></span></div>'; }).join('');
   var tk = [], tn = 0; (B.kh || []).forEach(function (k) { k.talk.forEach(function (t) { tk.push(t); if (t.ok) tn++; }); });
   h += '<div class="sec2">員工面談（25 號～5 號）已簽 ' + tn + '／' + tk.length + '</div><div class="card">' + tk.map(function (t) { return '<div class="pl"><span>' + (t.ok ? '✅ ' : '') + esc(t.n) + '</span><a class="chip" href="' + t.url + '" target="_blank">面談頁 ›</a></div>'; }).join('') + '</div>';
-  $('khb').innerHTML = h;
+  $('khb').innerHTML = h + '<div id="cbb"></div>'; cbLoad();
 }
 function remind(s, n) {
   if (!confirm('推到' + (s === 'rh' ? '熱河' : '鳳山') + '幹部群，提醒還有 ' + n + ' 位考核沒打完？')) return;
