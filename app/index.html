@@ -127,7 +127,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
     <div class="t" id="pdt" style="display:none" onclick="go('pd')"><span class="e">📦</span><b>盤點</b><small id="c6">　</small></div>
     <div class="t" id="gwtl" style="display:none" onclick="go('gw')"><span class="e">🧭</span><b>崗位・拜訪</b><small id="c7">　</small></div>
     <div class="t" id="sqt" style="display:none" onclick="go('sgs')"><span class="badge" id="b8" style="display:none"></span><span class="e">🧽</span><b>SGS 準備</b><small id="c8">　</small></div>
-    <div class="t" id="rvt" onclick="go('rv')"><span class="e">💰</span><b>營收回報</b><small id="c9">早班・晚班報表</small></div>
+    <div class="t" id="rvt" style="display:none" onclick="go('rv')"><span class="e">💰</span><b>營收回報</b><small id="c9">早班・晚班報表</small></div>
     <div class="t" id="teat" style="display:none" onclick="go('tea')"><span class="badge" id="b5" style="display:none">!</span><span class="e">🧊</span><b>留茶湯</b><small id="c5">　</small></div>
   </div>
   <div class="card" id="sqhc" style="display:none;background:#fff4e0" onclick="go('sgs')"></div>
@@ -500,8 +500,8 @@ function teaCan() { return BOSS() || (TEA_OPEN && (!!(DATA && DATA.lead) || ['�
 function teaB(cc) { var b = cc / 10000; return b <= 0 ? '0' : (b % 1 ? b.toFixed(1) : String(b)); }
 function teaHome() {
   var t = DATA && DATA.tea, el = $('c5'); if (!el) return;
-  $('teat').style.display = '';   // 11/15 留茶湯開放所有員工（看留量、填冰箱時間）
-  $('pdt').style.display = PD_ALL || DEV() || gwLead() ? '' : 'none';   // 11/15 開給大家（含公務機）   // 11/14 幹部、儲備也先打開（在崗位旁邊）   // 11/13 盤點：員工、幹部、可樂、公務機都會有；可樂先測，PD_ALL 改 true 才開給大家
+  $('teat').style.display = 'none';   // 11/17 首頁精簡：在「今天要做」裡   // 11/15 留茶湯開放所有員工（看留量、填冰箱時間）
+  $('pdt').style.display = 'none';   // 11/17 首頁精簡：在「今天要做」裡   // 11/15 開給大家（含公務機）   // 11/14 幹部、儲備也先打開（在崗位旁邊）   // 11/13 盤點：員工、幹部、可樂、公務機都會有；可樂先測，PD_ALL 改 true 才開給大家
   var h = new Date().getHours();
   if (t && t.done) { el.textContent = t.who + ' ' + t.t + ' 填了'; $('b5').style.display = 'none'; }
   else { el.textContent = '今晚收店要留多少'; $('b5').style.display = 'none'; }
@@ -548,7 +548,7 @@ function teaRender() {
     (P.perf && P.perf.day ? '<div style="margin-top:4px">📊 今天全天 ' + P.perf.day.cups + ' 杯，平常同一天 ' + P.perf.day.avg + ' 杯（' + (P.perf.day.r >= 1 ? '+' : '−') + Math.abs(Math.round((P.perf.day.r - 1) * 100)) + '%）→ 明早煮的量 ' + (P.perf.day.f >= 1 ? '+' : '−') + Math.abs(Math.round((P.perf.day.f - 1) * 100)) + '%</div>' : '') +
     (P.perf ? '<div style="margin-top:4px">📊 今天早班 ' + P.perf.cups + ' 杯，平常同一天 ' + P.perf.avg + ' 杯（' + (P.perf.r >= 1 ? '+' : '−') + Math.abs(Math.round((P.perf.r - 1) * 100)) + '%）→ 晚上留的量 ' + (P.perf.f >= 1 ? '+' : '−') + Math.abs(Math.round((P.perf.f - 1) * 100)) + '%</div>' : '<div style="color:var(--mu);font-size:12px;margin-top:4px">📊 早班營收報表還沒填（16:30 算完錢後，17:00 再看會照今天生意加減）</div>') +
     (P.can ? '<div style="color:var(--mu);font-size:12px;margin-top:4px">有大單或覺得不妥，按 ＋／− 改明天的量（只改這一次，↺ 改回）</div>' : '') + '</div>';
-  if (TEAK === 1) { $('teab').innerHTML = h + teaExpHtml(P); return; }
+  if (TEAK === 1) { $('teab').innerHTML = devWhoHtml('teaRender') + h + teaExpHtml(P); return; }
   if (TEAK === 2) {
     h += '<div class="card"><b>☀️ 明天早班 9:30 開店前，冰箱要有</b>' + P.morn.map(function (x) {
       return teaRow(x.t, x.v / 10000, '桶', '', 'morn', x.t, 0.5, x.adj, '<span style="font-size:14px;color:#2e7d32">冰箱不用</span>');
@@ -568,14 +568,15 @@ function teaRender() {
     (P.sugar ? teaRow('琥珀糖', P.sugar.keep, '罐', '5kg 糖＋約 1630 水', 'night', '琥珀糖', 1, P.sugar.adj) : '') +
     teaRow('白玉', P.ball, 'g', '準備好一盒，給明天開早用', 'night', '白玉', 500, P.ballAdj) +
     '<div style="color:var(--mu);font-size:12px;margin-top:6px">今天的白玉當天賣完；黑烏龍、青茶（12H）今天報廢</div></div>';
-  $('teab').innerHTML = h;
+  $('teab').innerHTML = devWhoHtml('teaRender') + h;
 }
 function teaStep(i, d) {
   if (i < 0) { TEAF.m = Math.max(0, TEAF.m + d); $('tlm').textContent = TEAF.m; return; }
   TEAF.l[i] = Math.max(0, Math.round((TEAF.l[i] + d) * 2) / 2); $('tl' + i).textContent = TEAF.l[i];
 }
 function teaSave() {
-  var q = 'op=teaset&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&lm=' + TEAF.m;
+  if (devNeed()) return;
+  var q = 'op=teaset&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&lm=' + TEAF.m + devQ();
   TEA.night.forEach(function (x, i) { q += '&l' + i + '=' + TEAF.l[i] + '&e' + i + '=' + encodeURIComponent($('te' + i).value); });
   bar('送出中…');
   api(q).then(function (j) {
@@ -633,8 +634,9 @@ function teaEdAdd() {
 function teaEdClr() { Object.keys(TEAED).forEach(function (t) { TEAED[t] = []; }); teaRender(); bar('已全部清除，加好現在冰箱的桶子再按「更新」', 2500); }
 function teaEdDel(t, k) { TEAED[t].splice(k, 1); teaRender(); }
 function teaEdSave() {
+  if (devNeed()) return;
   bar('更新中…');
-  api('op=fridgeset&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&j=' + encodeURIComponent(JSON.stringify(TEAED))).then(function (j) {
+  api('op=fridgeset&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + devQ() + '&j=' + encodeURIComponent(JSON.stringify(TEAED))).then(function (j) {
     if (!j.ok) { bar(j.err || '沒更新到，請再按一次', 3000); return; }
     TEA = j; TEAED = null; TEAK = 1; teaRender(); window.scrollTo(0, 0); bar('已更新', 1500);
   }).catch(function () { bar('網路不穩，請再按一次', 3000); });
@@ -836,6 +838,17 @@ function tdRender() {
 }
 function tdNav() { var d = document.querySelector('.nav div[data-v=tdo]'); if (d) d.firstChild.nextSibling.nodeValue = BOSS() ? '核對' : '今天要做'; }
 function tdBadge(n) { tdNav(); var b = $('tdn'); if (!b) return; b.style.display = n > 0 ? '' : 'none'; b.textContent = n; }
+
+// 11/17 公務機大家共用：留茶湯、營收報表送出前要選是誰填的
+var DEVN = null, DEVW = '';
+function devNames(cb) { if (DEVN) { cb(); return; } api('op=staff&s=' + U.s).then(function (j) { DEVN = (j.staff || []).filter(function (n) { return n !== '可樂' && n !== '公務機'; }); cb(); }).catch(function () { }); }
+function devWhoHtml(re) {
+  if (!DEV()) return '';
+  if (!DEVN) { devNames(window[re]); return '<div class="card" style="margin-top:12px;color:var(--mu)">載入名單…</div>'; }
+  return '<div class="card" style="margin-top:12px"><div style="color:#c0392b;font-weight:700;margin-bottom:2px">公務機：誰填的？</div>' + DEVN.map(function (n) { return '<span class="chip' + (DEVW === n ? ' f' : '') + '" onclick="DEVW=\'' + n + '\';' + re + '()">' + esc(n) + '</span>'; }).join('') + '</div>';
+}
+function devQ() { return DEV() ? '&who=' + encodeURIComponent(DEVW) : ''; }
+function devNeed() { if (DEV() && !DEVW) { bar('公務機請先選是誰填的', 2500); window.scrollTo(0, 0); return true; } return false; }
 // ---------- 營收回報（11/17）：早班、晚班報表全部員工都能填；入庫只有幹部、儲備 ----------
 var RV = null, RVK = 'am', RVD = '', RVW = 0;
 var RV_F = {
@@ -874,14 +887,14 @@ function rvRender() {
 function rvFormHtml(k) {
   var o = RV[k] || {};
   if (o.none) return '<div class="card" style="margin-top:12px;color:#c0392b">' + esc(o.none) + '，請找可樂</div>';
-  var h = '<div class="card" style="margin-top:12px">' + (o.filled ? '<div class="rvok" style="background:#dff3e2;color:#2d7a3a;margin:0 0 10px">已填過（' + esc(o.who || '') + '），改了再送出會蓋掉</div>' : '');
+  var h = devWhoHtml('rvRender') + '<div class="card" style="margin-top:12px">' + (o.filled ? '<div class="rvok" style="background:#dff3e2;color:#2d7a3a;margin:0 0 10px">已填過（' + esc(o.who || '') + '），改了再送出會蓋掉</div>' : '');
   RV_F[k].forEach(function (f) {
     var v = o[f[0]];
     if (f[0] === 'note') { h += '<div class="rvr w" id="rvnote"><span style="color:var(--mu);font-size:13px">支出備註（有門市支出一定要寫：買了什麼、多少）</span><input id="rv_note" value="' + esc(v || '').replace(/"/g, '&quot;') + '" placeholder="例：牛奶 1,230、垃圾袋 718"></div>'; return; }
     h += '<div class="rvr"><span>' + f[1] + '</span><input id="rv_' + f[0] + '" inputmode="numeric" value="' + (o.filled && v !== '' && v != null ? esc(String(v)) : '') + '" oninput="rvCalc()"></div>';
   });
   h += '<div class="rvsum" style="border-top:1px solid #eee;margin-top:6px;padding-top:8px"><div><span>營業額</span><b id="rv_r1">0</b></div><div><span>應有現金</span><b id="rv_r2">0</b></div><div><span>短溢</span><b id="rv_r3">0</b></div></div></div>';
-  h += '<div style="margin:0 16px"><button class="btn" onclick="rvSend()">' + (o.filled ? '修改送出' : '送出') + '</button><div style="color:var(--mu);font-size:12px;margin-top:6px">填表人自動帶：' + esc(U.n) + '</div></div>';
+  h += '<div style="margin:0 16px"><button class="btn" onclick="rvSend()">' + (o.filled ? '修改送出' : '送出') + '</button><div style="color:var(--mu);font-size:12px;margin-top:6px">填表人：' + esc(DEV() ? (DEVW || '上面選') : U.n) + '</div></div>';
   return h;
 }
 function rvVal(id) { var e = $('rv_' + id); return e ? e.value : ''; }
@@ -904,8 +917,9 @@ function rvSend() {
   if (!(rvN(rvVal('sales')) > 0)) miss.push('銷售總額要填');
   if (rvN(rvVal('exp')) > 0 && !rvVal('note').trim()) miss.push('有門市支出，請寫支出備註');
   if (miss.length) { bar(miss[0], 3000); return; }
+  if (devNeed()) return;
   RVW = 1; bar('送出中…');
-  api(q + '&' + sqQ()).then(function (j) {
+  api(q + devQ() + '&' + sqQ()).then(function (j) {
     RVW = 0;
     if (!j.ok) { bar(j.err || '沒送出，請再試一次', 3500); return; }
     RV = j; rvRender(); bar('已送出 👍', 2000);
