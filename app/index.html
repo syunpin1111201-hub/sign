@@ -1225,7 +1225,7 @@ function toolCmd(c, who) {
 var WR = null, WRK = 'st', WRF = {}, WRB = 0;
 function wrHome() { $('navwr').style.display = !BOSS() && !DEV() && !!(DATA && (DATA.lead || DATA.rsv)) ? '' : 'none'; }   // 11/17 可樂：放最下方選單
 function wrGo(k) { WRK = k; WRF = {}; go('wr'); window.scrollTo(0, 0); wrLoad(); }
-function wrTabs() { $('wrtab').innerHTML = [['st', '👤 員工狀況'], ['nb', '🌱 新人回報']].map(function (x) { return '<span class="' + (x[0] === WRK ? 'on' : '') + '" onclick="WRK=\'' + x[0] + '\';WRF={};wrRender()">' + x[1] + '</span>'; }).join(''); }
+function wrTabs() { $('wrtab').innerHTML = [['st', '👤 員工狀況'], ['nb', '🌱 新人回報'], ['bk', '⚫ 黑榜']].map(function (x) { return '<span class="' + (x[0] === WRK ? 'on' : '') + '" onclick="WRK=\'' + x[0] + '\';WRF={};wrRender()">' + x[1] + '</span>'; }).join(''); }
 function wrLoad() {
   $('wrs').textContent = DATA && DATA.store || ''; wrTabs();
   if (WR) { wrRender(); return; }
@@ -1239,6 +1239,7 @@ var WSI = { '未學習': '⬜', '學習中': '🟡', '不熟練': '🟠', '可�
 function wrLists() {
   var L = {};
   if (WRK === 'st') { L.n = WR.staff; L.it = WR.items; L.st = ['優良', '待改善']; return L; }
+  if (WRK === 'bk') { L.n = WR.staff; return L; }
   L.n = WRF.all ? WR.staff : WR.nb;
   var ar = [WR.soft]; WR.master.forEach(function (m) { if (m[2] === '硬技能' && ar.indexOf(m[0]) < 0) ar.push(m[0]); }); L.area = ar;
   L.skill = !WRF.area ? [] : WR.master.filter(function (m) { return WRF.area === WR.soft ? m[2] === '軟性' : (m[2] === '硬技能' && m[0] === WRF.area); }).map(function (m) { return m[1]; });
@@ -1267,6 +1268,8 @@ function wrRender() {
     h += lb('員工') + wrChips(L, 'n') + lb('項目') + wrChips(L, 'it') +
       lb('狀況') + wrChips(L, 'st', function (x) { return x === '優良' ? '👍 ' : '⚠️ '; }) +
       lb('內容（必填）') + '<textarea id="wrt" maxlength="500" style="height:90px" placeholder="例：客人點錯主動重做，態度很好">' + esc(WRF.t || '') + '</textarea>';
+  } else if (WRK === 'bk') {
+    h += lb('員工') + wrChips(L, 'n') + lb('事由（必填）') + '<textarea id="wrt" maxlength="500" style="height:90px" placeholder="例：在櫃檯忘記拍進貨，沒有交接">' + esc(WRF.t || '') + '</textarea>';
   } else {
     h += lb('新人' + (WRF.all ? '（全部員工）' : '')) + wrChips(L, 'n') + '<span class="chip" onclick="wrSaveT();WRF.all=!WRF.all;wrRender()">' + (WRF.all ? '只看新人' : '其他人…') + '</span>';
     if (WRF.n) {
@@ -1278,6 +1281,7 @@ function wrRender() {
   }
   h += '<button class="btn" style="margin-top:12px" onclick="wrSend()">' + (WRB ? '送出中…' : '送出') + '</button></div>';
   if (WRF.msg) h += '<div class="card" style="white-space:pre-wrap;font-size:14px;background:#eef7e8">' + esc(WRF.msg) + '</div>';
+  if (WRK === 'bk') { var B = WR.bk || []; h += '<div class="sec2">本月黑榜（' + B.length + ' 筆）</div><div class="card" style="font-size:13px;line-height:1.7">' + (B.length ? B.map(function (r) { return esc(r.d + '｜' + r.n + '　' + r.x) + ' <span style="color:var(--mu)">（' + esc(r.by) + '）</span>'; }).join('<br>') : '<span style="color:var(--mu)">這個月還沒有</span>') + '</div>'; }
   $('wrb').innerHTML = h;
 }
 function wrSend() {
@@ -1286,6 +1290,10 @@ function wrSend() {
     if (!WRF.n || !WRF.it || !WRF.st) { bar('請選員工、項目、狀況', 2000); return; }
     if (!t) { bar('內容要填', 2000); return; }
     q = 'op=wrset&' + sqQ() + '&name=' + encodeURIComponent(WRF.n) + '&it=' + encodeURIComponent(WRF.it) + '&st=' + encodeURIComponent(WRF.st) + '&t=' + encodeURIComponent(t);
+  } else if (WRK === 'bk') {
+    if (!WRF.n) { bar('請選員工', 2000); return; }
+    if (!t) { bar('事由要填', 2000); return; }
+    q = 'op=bkset&' + sqQ() + '&name=' + encodeURIComponent(WRF.n) + '&t=' + encodeURIComponent(t);
   } else {
     if (!WRF.n || !WRF.area || !WRF.skill || !WRF.stage) { bar('請選新人、崗位、技能、階段', 2000); return; }
     if (!t) { bar('狀況說明要填', 2000); return; }
@@ -1297,6 +1305,7 @@ function wrSend() {
     if (!j.ok) { bar(j.err || '失敗', 3000); wrRender(); return; }
     bar('已送出 👍', 2000);
     if (WRK === 'st') WRF = { msg: j.text };
+    else if (WRK === 'bk') { if (j.bk) WR.bk = j.bk; WRF = { msg: j.text }; }
     else { (WR.prog[WRF.n] = WR.prog[WRF.n] || {})[WRF.skill] = WRF.stage; WRF = { n: WRF.n, area: WRF.area, all: WRF.all, msg: j.text + '\n\n👉 同一位可以繼續選下一個技能' }; }
     wrRender(); window.scrollTo(0, 0);
   }).catch(function () { WRB = 0; bar('網路不穩，請再按一次', 3000); wrRender(); });
