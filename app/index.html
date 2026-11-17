@@ -768,7 +768,7 @@ function cbHome() {
     var i = c.info || {};
     h += '<div style="border-top:1px solid #eee;margin-top:8px;padding-top:6px;font-size:13px"><b style="color:var(--tx)">柚香獎金（' + (c.store === '鳳山中山' ? '鳳山' : esc(c.store)) + '）</b>' +
       r('營業額', cbN(i.rev)) + r('柚香覺醒 307 杯數', cbN(i.cups)) + r('人事成本占比', cbP(i.labor)) + r('門市巡查', cbP(i.chk)) + r('缺失', cbP(i.miss));
-    if (!c.rsv) h += '<b style="color:var(--tx);display:block;margin-top:8px">淨利分紅</b>' + r((c.dmon || '') + ' 月淨利（分紅前）', cbN(c.rev)) + r('考核總分 → 實發', c.score + ' 分 → ' + c.pct + '%') + r('分紅＝淨利 × ' + c.pct + '%', cbN(c.div));
+    if (!c.rsv) h += '<b style="color:var(--tx);display:block;margin-top:8px">淨利分紅</b>' + r((c.dmon || '') + ' 月淨利（分紅前）', cbN(c.rev)) + r('考核總分 → 應得', c.score + ' 分 → ' + (c.due != null ? c.due : '') + '%') + r('實發分紅', c.pct + '%') + r('分紅＝淨利 × ' + c.pct + '%', cbN(c.div));
     else h += '<div style="color:var(--mu);margin-top:6px">儲備沒有淨利分紅，柚香照考核：' + esc(c.down || '全額') + '</div>';
     h += '</div>';
   } else h += '<div style="color:var(--ac);font-size:12px;margin-top:6px">點開看怎麼算的 ›</div>';
@@ -787,7 +787,7 @@ function cbBossRender() {
   if (!CB.list.length) h += '<div style="color:var(--mu)">這期幹部考核還沒有「已完成」的</div>';
   CB.list.forEach(function (x) {
     h += '<div style="border-top:1px solid #f1ebe3;padding:8px 0"><div style="display:flex;justify-content:space-between"><b style="color:var(--tx)">' + esc(x.name) + '</b><b style="color:var(--tx)">$ ' + cbN(x.total) + '</b></div>' +
-      '<div style="font-size:13px;color:var(--mu)">柚香 ' + cbN(x.citrus) + (x.rsv ? '（' + esc(x.down || '全額') + '）' : '｜分紅 ' + cbN(x.div) + '（淨利 ' + cbN(x.rev) + ' × ' + x.pct + '%' + (x.pfrom === '本期考核' ? '，上期沒考核先用本期%' : '') + '）') + '</div>' +
+      '<div style="font-size:13px;color:var(--mu)">柚香 ' + cbN(x.citrus) + (x.rsv ? '（' + esc(x.down || '全額') + '）' : '｜分紅 ' + cbN(x.div) + '（' + x.score + ' 分應得 ' + (x.due != null ? x.due : '') + '%、實發 ' + x.pct + '%；淨利 ' + cbN(x.rev) + ' × ' + x.pct + '%' + (x.pfrom === '本期考核' ? '，上期沒考核先用本期%' : '') + '）') + '</div>' +
       '<div style="display:flex;gap:8px;align-items:center;margin-top:4px"><span style="font-size:13px">多發</span><input class="cbx" data-n="' + esc(x.name) + '" inputmode="numeric" value="' + (x.extra || '') + '" style="margin:0;padding:6px 8px;width:110px;text-align:right"></div></div>';
   });
   if (CB.list.length) h += '<button class="btn" style="margin-top:8px" onclick="cbPub()">' + (CB.pub ? '重新送出' : '送出') + '</button>';
