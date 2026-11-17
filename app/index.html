@@ -1559,9 +1559,14 @@ function pdSumLoad() {
 function pdWtLine(x) {
   if (x.miss) return '<div class="pl"><span>' + esc(x.n) + '</span><span style="color:var(--mu)">庫存表找不到</span></div>';
   var old = x.today ? '' : ' <small style="color:#b06000">（' + (x.d ? x.d + ' 號' : '上月') + '的）</small>';
+  var su = PD_SU[x.n];
+  if (su && x.conv && x.v !== x.raw) return '<div class="pl"><span>' + esc(x.n) + old + '</span><b style="text-align:right">' + x.raw + ' ' + su + '<small style="display:block;color:var(--mu);font-weight:400;font-size:11px">＝' + x.v + ' ' + x.u + '</small></b></div>';
   return '<div class="pl"><span>' + esc(x.n) + old + '</span><b>' + (x.conv ? x.v + ' ' + x.u : '<span style="color:#b06000;font-weight:400;font-size:12px">庫存表 ' + x.raw + '，請自己換成' + x.u + '</span>') + '</b></div>';
 }
-function pdWtTxt(L) { return L.filter(function (x) { return !x.miss; }).map(function (x) { return x.n + ' ' + (x.conv ? x.v : '?(' + x.raw + ')'); }).join('\n'); }
+// 11/17 可樂：幹部回報 1.39 箱太難 → 有小單位的直接顯示罐／包／條（下面小字才是箱）
+var PD_SU = { '統一多多': '罐', '厚奶茶粉': '包', '蜂蜜風味糖漿': '桶', '八曜贅沢蜜': '桶', '水晶粉圓(白珍珠)': '包', '八曜22oz紙杯': '條', 'JC平蓋': '條', '八曜粗吸管': '包', '八曜可降解細吸管': '包',
+  '八曜和茶封口膜': '捲', '八曜1.5oz試飲杯': '條', '封口膜(小雞上工)': '捲', '八曜1杯袋': '小袋', '八曜2杯袋': '小袋', '八曜4杯袋': '小袋', '八曜可降解6杯袋': '小袋', '透明六杯架': '袋', '電子發票熱感紙': '捲' };
+function pdWtTxt(L) { return L.filter(function (x) { return !x.miss; }).map(function (x) { var su = PD_SU[x.n]; return x.n + ' ' + (su && x.conv ? x.raw + su : x.conv ? x.v : '?(' + x.raw + ')'); }).join('\n'); }
 function pdSumR() {
   var P = PDS; if (!P) return;
   $('pds').textContent = (P.store === '鳳山中山' ? '鳳山中山' : '熱河') + '・' + P.day + '・幹部看';
