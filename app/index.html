@@ -149,6 +149,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div class="scr" id="gw"><div class="hd"><div class="s" id="gws"></div><h2 id="gwh">🧭 崗位</h2><span class="rf" id="gwsw" style="display:none" onclick="gwSw()"></span></div><div class="s2p" id="gwtab"></div><div class="s2p" id="gwtab2"></div><div id="gwb"></div><div style="height:30px"></div></div>
 <div class="scr" id="sgs"><div class="hd"><div class="s" id="sqss"></div><h2>🧽 SGS 稽核準備</h2><span class="rf" id="sqsw" style="display:none" onclick="sqSw()"></span></div><div class="s2p" id="sqtab" style="flex-wrap:wrap"></div><div id="sqb"></div><div style="height:30px"></div></div>
 <div class="scr" id="rv"><div class="hd"><div class="s" id="rvs"></div><h2>💰 營收回報</h2><span class="rf" id="rvsw" style="display:none" onclick="rvSw()"></span></div><div class="s2p" id="rvday"></div><div class="s2p" id="rvtab"></div><div id="rvb"></div><div style="height:30px"></div></div>
+<div class="scr" id="cln"><div class="hd"><div class="s" id="cls"></div><h2>🧹 清潔</h2><span class="rf" id="clsw" style="display:none" onclick="clSw()"></span></div><div class="s2p" id="clsh"></div><div class="s2p" id="cltab"></div><div id="clb"></div><div style="height:30px"></div></div>
 <div class="scr" id="tdo"><div class="hd"><div class="s" id="tds"></div><h2 id="tdh">✅ 今天要做</h2><span class="rf" id="tdsw" style="display:none" onclick="tdSw()"></span></div><div id="tdb"></div><div style="height:30px"></div></div>
 <div class="scr" id="tl"><div class="hd"><div class="s">可樂常用</div><h2 id="tlh"></h2></div><div class="box" id="tlf"></div><div id="tlr"></div><div style="height:20px"></div></div>
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
@@ -251,7 +252,7 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 function show(v) {
   if (v === 'sc' && BOSS()) v = 's2';   // 11/10 可樂：兩店班表一起看
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'rv', 'tdo', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'rv', 'tdo', 'cln', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
@@ -265,6 +266,7 @@ function show(v) {
   if (v === 'gw') { gwLoad(); window.scrollTo(0, 0); }
   if (v === 'sgs') { sqLoad(); window.scrollTo(0, 0); }
   if (v === 'rv') { rvLoad(); window.scrollTo(0, 0); }
+  if (v === 'cln') { clLoad(); window.scrollTo(0, 0); }
   if (v === 'tdo') { tdLoad(1); window.scrollTo(0, 0); }
   if (v === 'lv' || v === 'sc') frame();
   if (v === 'home') { load(0); if (DATA) mtRender(); }
@@ -826,6 +828,53 @@ function cbPub() {
   bar('送出中…');
   api('op=cbpub&m=' + CB.m + '&x=' + encodeURIComponent(JSON.stringify(X)) + '&' + sqQ()).then(function (j) { if (!j.ok) { bar(j.err || '沒公告', 4000); return; } CBX = {}; CB = j; cbBossRender(); bar('已送出' + (j.nob && j.nob.length ? '（' + j.nob.join('、') + ' 沒綁 LINE，只在 App 看得到）' : ''), 4000); }).catch(function () { bar('網路不穩，請再按一次', 3000); });
 }
+// ---------- 清潔打勾（11/17）：每日／週清／月清，打勾寫代號進清潔表；幹部、儲備驗收 ----------
+var CL = null, CLK = 'day', CLS = '', CLW = 0;
+function clSw() { $('sw').onclick(); CL = null; clLoad(); }
+function clShift() { if (CLS) return CLS; var s = tdShifts(); if (s.length === 1) return s[0]; return new Date().getHours() < 17 ? '早班' : '晚班'; }
+function clQ() { return sqQ() + (DEV() ? '&who=' + encodeURIComponent(DEVW) : ''); }
+function clLoad() {
+  $('clsw').style.display = BOSS() ? '' : 'none'; $('clsw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
+  if (CL) clRender(); else $('clb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
+  var want = U.s;
+  api('op=cl&' + clQ()).then(function (j) { if (want !== U.s || CUR !== 'cln') return; if (!j.ok) { $('clb').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; } CL = j; clRender(); }).catch(function () { if (!CL) $('clb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+}
+function clItems(k, sh) { var o = CL && CL[k]; return o && o.items ? o.items.filter(function (x) { return x.sh === sh; }) : []; }
+function clWho(a) { return a.join('、'); }
+function clRender() {
+  var P = CL; if (!P) return;
+  var sh = clShift(), st = U.s === 'fs' ? '鳳山中山' : '熱河', L = !!P.lead;
+  $('cls').textContent = st + '・' + sh + (P.me ? '｜你的代號：' + P.me : '');
+  var cnt = function (k) { var I = clItems(k, sh); return I.filter(function (x) { return x.who.length; }).length + '/' + I.length; };
+  $('clsh').innerHTML = ['早班', '晚班'].map(function (s) { return '<span class="' + (s === sh ? 'on' : '') + '" onclick="CLS=\'' + s + '\';clRender()">' + s + '</span>'; }).join('');
+  $('cltab').innerHTML = [['day', '每日 ' + cnt('day')], ['week', '週清 ' + cnt('week')], ['mon', '月清 ' + cnt('mon')]].map(function (t) { return '<span class="' + (t[0] === CLK ? 'on' : '') + '" onclick="CLK=\'' + t[0] + '\';clRender()">' + t[1] + '</span>'; }).join('');
+  var I = clItems(CLK, sh), h = devWhoHtml('clRender');
+  h += '<div class="card" style="margin-top:12px;font-size:13px;color:var(--mu)">' + (CLK === 'day' ? '今天 ' + (P.day ? P.day.date : '') : CLK === 'week' ? '第 ' + (P.week ? P.week.wi : '') + ' 週（週一～週日）' : '這個月') + '｜點一下打勾＝寫你的代號，再點一下取消' + (L ? '；右邊「驗收」幹部按' : '') + '</div><div class="tdl">';
+  if (!I.length) h += '<div class="tdi" style="color:var(--mu)">這班沒有項目</div>';
+  I.forEach(function (x) {
+    var mine = P.me && x.who.indexOf(P.me) >= 0, done = x.who.length > 0, ver = x.ver && x.ver.length;
+    var sub = done ? (x.date ? x.date + ' ' : (CLK === 'day' ? P.day.date + ' ' : '')) + clWho(x.who) + (ver ? '｜' + clWho(x.ver) + ' 驗收' : '') : x.std;
+    h += '<div class="tdi"><span class="ic" onclick="clTap(\'' + CLK + '\',' + x.r + ',' + (mine ? 0 : 1) + ')">' + (done ? '✅' : '⬜️') + '</span><div style="flex:1" onclick="clTap(\'' + CLK + '\',' + x.r + ',' + (mine ? 0 : 1) + ')">' + esc(x.id + ' ' + x.n) + '<small style="color:' + (done ? '#2d7a3a' : 'var(--mu)') + '">' + esc(sub) + '</small></div>' +
+      (L && CLK !== 'day' && done ? '<span class="r"><span class="chip' + (ver ? ' f' : '') + '" style="margin:0" onclick="clChk(\'' + CLK + '\',' + x.r + ',' + (ver ? 0 : 1) + ')">' + (ver ? '✓ 已驗收' : '驗收') + '</span></span>' : '') + '</div>';
+  });
+  h += '</div>';
+  if (CLK === 'day' && P.day && P.day.ver && P.day.ver[sh]) {
+    var vv = P.day.ver[sh].who, left = I.filter(function (x) { return !x.who.length; }).length;
+    h += '<div class="card"><b>' + sh + '主管驗收</b>' + (vv.length ? '<span style="color:#2d7a3a">✓ ' + clWho(vv) + '</span>' : '<span style="color:var(--mu)">還沒驗收' + (left ? '（還有 ' + left + ' 項沒做）' : '') + '</span>') +
+      (L ? '<div style="margin-top:6px"><span class="chip' + (vv.length ? ' f' : '') + '" onclick="clChk(\'day\',0,' + (vv.length ? 0 : 1) + ')">' + (vv.length ? '取消驗收' : '今天驗收完成') + '</span></div>' : '') + '</div>';
+  }
+  $('clb').innerHTML = h;
+}
+function clTap(k, r, on) {
+  if (CLW) return; if (devNeed()) return; if (BOSS()) { bar('可樂帳號只看，打勾請用員工帳號', 2500); return; }
+  CLW = 1; bar(on ? '打勾中…' : '取消中…');
+  api('op=cldo&k=' + k + '&r=' + r + '&v=' + on + '&sh=' + encodeURIComponent(clShift()) + '&' + clQ()).then(function (j) { CLW = 0; if (!j.ok) { bar(j.err || '沒存到，請再按一次', 3000); return; } CL = j; clRender(); bar(on ? '✅ 已打勾' : '已取消', 1200); TD = null; }).catch(function () { CLW = 0; bar('網路不穩，請再按一次', 3000); });
+}
+function clChk(k, r, on) {
+  if (CLW) return; if (devNeed()) return;
+  CLW = 1; bar('驗收中…');
+  api('op=clchk&k=' + k + '&r=' + r + '&v=' + on + '&sh=' + encodeURIComponent(clShift()) + '&' + clQ()).then(function (j) { CLW = 0; if (!j.ok) { bar(j.err || '沒存到，請再按一次', 3000); return; } CL = j; clRender(); bar(on ? '✓ 已驗收' : '已取消驗收', 1200); TD = null; }).catch(function () { CLW = 0; bar('網路不穩，請再按一次', 3000); });
+}
 // ---------- 今天要做（11/17，右下角）：照今天班別列出茶湯、盤點、清潔、營收報表，做完自動打勾 ----------
 var TD = null, TDT = 0;
 function tdShifts() {
@@ -853,7 +902,7 @@ function tdItems(sh) {
   var C = P.clean;
   if (C) [['day', '每日清潔'], ['week', '本週週清'], ['mon', '本月月清']].forEach(function (c) {
     var o = C[c[0]] && C[c[0]][sh]; if (!o || !o.total) return;
-    L.push({ k: 'cl', grp: 1, n: c[1], done: o.left === 0, d: o.left === 0 ? '✓ 做完了' : '還有 ' + o.left + ' / ' + o.total, go: "tdOpen('" + (C[c[0] + 'Gid'] || '') + "')" });
+    L.push({ k: 'cl', grp: 1, n: c[1], done: o.left === 0, d: o.left === 0 ? '✓ 做完了' : '還有 ' + o.left + ' / ' + o.total, go: "CLK='" + c[0] + "';CLS='" + sh + "';go('cln')" });
   });
   L.push({ k: 'rv', n: sh + '營收報表', s: am ? '16:30 算完錢填' : '收班算完錢填', done: !!(P.rv && P.rv[sh]), d: ok(P.rv && P.rv[sh]), go: "RVK='" + (am ? 'am' : 'pm') + "';RVD='';go('rv')" });
   return L;
@@ -905,7 +954,7 @@ function tdRender() {
     h += '<div class="tdh" style="margin:10px 16px 0;padding:0">' + (s === '早班' ? '☀️ 早班' : '🌙 晚班') + '</div><div class="tdl">';
     L.forEach(function (x) {
       all++; if (!x.done) left++;
-      if (x.grp && !g) { g = true; h += '<div class="tdh">🧹 清潔（' + s + '）・點開清潔表填代號</div>'; }
+      if (x.grp && !g) { g = true; h += '<div class="tdh">🧹 清潔（' + s + '）・點進去打勾</div>'; }
       var gl = gwLead();
       h += '<div class="tdi" onclick="' + x.go + '"><span class="ic">' + (x.done ? '✅' : '⬜️') + '</span><div>' + x.n + (x.s && !x.done && !gl ? '<small>' + x.s + '</small>' : '') + '</div><span class="r" style="color:' + (x.done ? '#2d7a3a' : x.grp ? '#b7791f' : gl ? '#c0392b' : 'var(--mu)') + '">' + (x.d || (gl ? '還沒 ›' : '›')) + '</span></div>';
     });
