@@ -987,7 +987,7 @@ function rvN(x) { var n = Number(String(x == null ? '' : x).replace(/[,\s]/g, ''
 function rvC(n) { return Math.round(n).toLocaleString(); }
 function rvDefDay() { var d = new Date(); if (d.getHours() < 5) d.setDate(d.getDate() - 1); return d; }
 function rvDs(d) { return d.getFullYear() + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + ('0' + d.getDate()).slice(-2); }
-function rvSw() { $('sw').onclick(); RV = null; rvLoad(); }
+function rvSw() { $('sw').onclick(); RV = null; RVP = null; rvLoad(); }
 function rvLoad() {
   $('rvsw').style.display = BOSS() ? '' : 'none'; $('rvsw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
   if (!RVD) RVD = rvDs(rvDefDay());
@@ -1003,13 +1003,15 @@ function rvRender() {
   var P = RV, st = U.s === 'fs' ? '鳳山中山' : '熱河';
   $('rvs').textContent = st;
   var d0 = rvDefDay(), d1 = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate() - 1);
+  $('rvday').style.display = RVK === 'dep' ? 'none' : '';
   $('rvday').innerHTML = [[rvDs(d0), '今天 ' + (d0.getMonth() + 1) + '/' + d0.getDate()], [rvDs(d1), '昨天 ' + (d1.getMonth() + 1) + '/' + d1.getDate()]].map(function (x) { return '<span class="' + (x[0] === RVD ? 'on' : '') + '" onclick="RVD=\'' + x[0] + '\';RV=null;rvLoad()">' + x[1] + '</span>'; }).join('');
   if (!P) return;
   var tabs = [['am', '早班報表' + (P.am && P.am.filled ? ' ✓' : '')], ['pm', '晚班報表' + (P.pm && P.pm.filled ? ' ✓' : '')]];
   if (P.lead) tabs.push(['dep', '入庫' + (P.dep ? ' ✓' : '')]);
   if (!tabs.some(function (t) { return t[0] === RVK; })) RVK = 'am';
   $('rvtab').innerHTML = tabs.map(function (t) { return '<span class="' + (t[0] === RVK ? 'on' : '') + '" onclick="RVK=\'' + t[0] + '\';rvRender()">' + t[1] + '</span>'; }).join('');
-  $('rvb').innerHTML = RVK === 'dep' ? rvDepHtml() : rvFormHtml(RVK);
+  $('rvb').innerHTML = RVK === 'dep' ? rvPendHtml() + rvDepHtml() : rvFormHtml(RVK);
+  if (RVK === 'dep' && !RVP) rvPendLoad();
   if (RVK !== 'dep') rvCalc(); else rvDepCalc();
 }
 function rvFormHtml(k) {
@@ -1053,6 +1055,21 @@ function rvSend() {
     RV = j; rvRender(); bar('已送出 👍', 2000);
   }).catch(function () { RVW = 0; bar('網路不穩，沒送出，請再按一次', 3500); });
 }
+
+// 11/17 入庫 3、4 天才拿上去一次 → 列出最近兩週還沒入庫的日子，點日期再入庫
+var RVP = null;
+function rvPendLoad() {
+  var want = U.s;
+  api('op=rvpend&' + sqQ()).then(function (j) { if (want !== U.s || !j.ok) return; RVP = j.list || []; if (CUR !== 'rv' || RVK !== 'dep') return; var P = RVP.filter(function (x) { return !x.done; }).map(function (x) { return x.d; }).sort(); if (P.length && P.indexOf(RVD) < 0) { RVD = P[0]; RV = null; rvLoad(); } else rvRender(); }).catch(function () { });
+}
+function rvPendHtml() {
+  if (!RVP) return '<div class="card" style="margin-top:12px;color:var(--mu)">找還沒入庫的日子…</div>';
+  var P = RVP.filter(function (x) { return !x.done; }).sort(function (a, b) { return a.d < b.d ? -1 : 1; });
+  var h = '<div class="card" style="margin-top:12px"><b>還沒入庫（' + P.length + ' 天）</b><div style="font-size:12px;color:var(--mu)">點日期 → 下面填復點金額送出</div>';
+  if (!P.length) h += '<div style="color:#2d7a3a;margin-top:6px">✅ 最近兩週都入庫了</div>';
+  h += P.map(function (x) { return '<span class="chip' + (x.d === RVD ? ' f' : '') + '" onclick="RVD=\'' + x.d + '\';RV=null;rvLoad()">' + md(x.d) + '（' + wk(x.d) + '）$' + rvC(x.cash) + '</span>'; }).join('');
+  return h + '</div>';
+}
 function rvDepHtml() {
   var pm = RV.pm || {}, am = RV.am || {}, dp = RV.dep;
   if (pm.none || !pm.filled) return '<div class="card" style="margin-top:12px;color:var(--mu)">晚班報表還沒填，填完才能入庫</div>';
@@ -1088,7 +1105,7 @@ function rvDepSend(force, ow) {
     if (!j.ok && j.mis !== undefined) { $('bar').style.display = 'none'; if (confirm(j.err + '\n確定點了兩次都是這個金額？確定就送出')) rvDepSend(1, ow); return; }
     if (!j.ok && j.dup) { $('bar').style.display = 'none'; if (confirm(j.err + '\n要蓋掉嗎？')) rvDepSend(force, 1); return; }
     if (!j.ok) { bar(j.err || '沒送出，請再試一次', 3500); return; }
-    RV = j; rvRender(); bar('入庫完成 👍', 2000);
+    RV = j; RVP = null; rvRender(); bar('入庫完成 👍', 2000);
   }).catch(function () { RVW = 0; bar('網路不穩，沒送出，請再按一次', 3500); });
 }
 // ---------- 可樂：每月待辦＋考核進度 ----------
