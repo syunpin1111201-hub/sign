@@ -1191,7 +1191,7 @@ function khRender() {
     B.rsv.map(function (x) { return '<div class="pl"><span>' + esc(x.n) + ' <small style="color:var(--mu)">' + esc(x.st) + '</small></span><span><a class="chip f" href="' + x.url + '" target="_blank">打分</a><a class="chip" href="' + x.talk + '" target="_blank">面談</a></span></div>'; }).join('');
   var tk = [], tn = 0; (B.kh || []).forEach(function (k) { k.talk.forEach(function (t) { tk.push(t); if (t.ok) tn++; }); });
   h += '<div class="sec2">員工面談（25 號～5 號）已簽 ' + tn + '／' + tk.length + '</div><div class="card">' + tk.map(function (t) { return '<div class="pl"><span>' + (t.ok ? '✅ ' : '') + esc(t.n) + '</span><a class="chip" href="' + t.url + '" target="_blank">面談頁 ›</a></div>'; }).join('') + '</div>';
-  $('khb').innerHTML = h + '<div id="cbb"></div>'; cbLoad();
+  $('khb').innerHTML = h + '<div id="cbb"></div>'; var cbd = new Date(); cbLoad(cbd.getFullYear() * 100 + cbd.getMonth() + 1);   // 11/17 這個月 25 號發的那一期（例：11 月 → 202611＝10 月柚香＋9 月分紅）
 }
 function remind(s, n) {
   if (!confirm('推到' + (s === 'rh' ? '熱河' : '鳳山') + '幹部群，提醒還有 ' + n + ' 位考核沒打完？')) return;
