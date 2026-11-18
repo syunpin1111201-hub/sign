@@ -835,13 +835,14 @@ function cbPub() {
 }
 // ---------- 清潔打勾（11/17）：每日／週清／月清，打勾寫代號進清潔表；幹部、儲備驗收 ----------
 var CL = null, CLK = 'day', CLS = '', CLW = 0;
-function clSw() { $('sw').onclick(); CL = null; CLFS = ''; clLoad(); }
+function clSw() { $('sw').onclick(); CL = null; CLFS = ''; CLB = null; CLBT = 0; clLoad(); }
 function clShift() { if (CLS) return CLS; var s = tdShifts(); if (s.length === 1) return s[0]; return new Date().getHours() < 17 ? '早班' : '晚班'; }
 function clQ() { return sqQ() + (DEV() ? '&who=' + encodeURIComponent(DEVW) : ''); }
 function clLoad() {
   $('clsw').style.display = BOSS() ? '' : 'none'; $('clsw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
   if (CL) clRender(); else $('clb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
   var want = U.s, t0 = Date.now();
+  if (!CL) { try { var ls = JSON.parse(LS('cl_snap_' + U.s) || 'null'); if (ls && new Date(ls.at).toDateString() === new Date().toDateString() && ls.at > CLBT) { CLB = JSON.parse(ls.snap); CLBT = ls.at; clMerge(); } } catch (e) { } }   // 11/18 手機裡存的上一份 → 馬上秀
   clFsSub();   // 11/18 Firestore：先秀大家最新的打勾（幾乎不用等），清潔表在背景對
   api('op=cl&' + clQ()).then(function (j) { if (want !== U.s || CUR !== 'cln') return; if (!j.ok) { $('clb').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; } clFromServer(j, t0); }).catch(function () { if (!CL) $('clb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
 }
@@ -910,14 +911,15 @@ function clMeta() { try { return JSON.parse(LS('cl_meta_' + U.s + U.n) || 'null'
 function clFsSub() {
   if (CLFS === U.s && CLFU) return;
   if (CLFU) { try { CLFU(); } catch (e) { } CLFU = null; }
-  CLFS = U.s; CLF = null; CLB = null; CLBT = 0;
+  if (CLFS !== U.s && CLB && CLB.store && CLB.store !== (U.s === 'fs' ? '鳳山中山' : '熱河')) { CLB = null; CLBT = 0; }
+  CLFS = U.s; CLF = null;
   var st = U.s;
   clFsReady().then(function () {
     if (st !== U.s) return;
     CLFU = clDoc(st).onSnapshot(function (d) {
       if (st !== U.s) return;
       CLF = d.exists ? d.data() : null;
-      if (CLF && CLF.snap && CLF.at > CLBT && new Date(CLF.at).toDateString() === new Date().toDateString()) { try { CLB = JSON.parse(CLF.snap); CLBT = CLF.at; } catch (e) { } }
+      if (CLF && CLF.snap && CLF.at > CLBT && new Date(CLF.at).toDateString() === new Date().toDateString()) { try { CLB = JSON.parse(CLF.snap); CLBT = CLF.at; LS('cl_snap_' + st, JSON.stringify({ snap: CLF.snap, at: CLF.at })); } catch (e) { } }
       clMerge();
     }, function () { });
   }).catch(function () { });
@@ -925,7 +927,7 @@ function clFsSub() {
 function clFromServer(j, t0) {
   var m = { me: j.me, lead: j.lead }; LS('cl_meta_' + U.s + U.n, JSON.stringify(m));
   var base = JSON.parse(JSON.stringify(j)); delete base.me; delete base.lead;
-  if (t0 >= CLBT) { CLB = base; CLBT = t0; }
+  if (t0 >= CLBT) { CLB = base; CLBT = t0; try { LS('cl_snap_' + U.s, JSON.stringify({ snap: JSON.stringify(base), at: t0 })); } catch (e) { } }
   clMerge();
   clFsReady().then(function () {   // 把清潔表最新的放上去，舊的打勾紀錄（比這次讀表還早的）清掉
     var ov = (CLF && CLF.ov) || {}, keep = {};
@@ -1669,6 +1671,7 @@ function pdLoad(sh) {
   $('pdtab').innerHTML = ''; $('pdb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
   var want = PDSH, t0 = Date.now();
   PD = null; PDV = {}; PDI = {}; PDF = 0; PDW = ''; PDT = 0;
+  try { var ls = JSON.parse(LS('pd_snap_' + pdDocId(PDSH)) || 'null'); if (ls && ls.dd === new Date().toDateString()) { PD = JSON.parse(ls.snap); PDT = ls.at; pdInit(); pdRender(); } } catch (e) { PD = null; }   // 11/18 手機裡存的上一份 → 馬上秀
   pdFsSub(PDSH);   // 11/18 Firestore：先秀上次的盤點表＋大家正在填的數字，庫存表在背景對
   api('op=pdget&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&sh=' + encodeURIComponent(PDSH)).then(function (j) {
     if (PDSH !== want) return;   // 已經切到別的分頁
@@ -1805,7 +1808,7 @@ function pdFsSub(sh) {
       if (PDFK !== key) return;
       PDFD = d.exists ? d.data() : null; PDFL = true;
       if (!PD && PDFD && PDFD.snap && pdToday(PDFD) && PDSH === sh) {   // 庫存表還沒讀回來 → 先用雲端上次的
-        try { PD = JSON.parse(PDFD.snap); PDT = PDFD.at || 0; pdInit(); pdRender(); } catch (e) { PD = null; }
+        try { PD = JSON.parse(PDFD.snap); PDT = PDFD.at || 0; pdInit(); pdRender(); LS('pd_snap_' + key, JSON.stringify({ snap: PDFD.snap, at: PDFD.at, dd: PDFD.dd })); } catch (e) { PD = null; }
         return;
       }
       pdFsDraft(true);
@@ -1816,6 +1819,7 @@ function pdFsSnap(j, t0) {
   var sh = j.sh || PDSH;
   clFsReady().then(function () {
     var o = { snap: JSON.stringify(j), at: t0, dd: new Date().toDateString() };
+    try { LS('pd_snap_' + U.s + '_' + (sh === '晚班' ? 'pm' : 'am'), JSON.stringify(o)); } catch (e) { }
     if (PDFL && PDFD && !pdToday(PDFD)) { o.dv = {}; o.di = {}; return pdDoc(sh).set(o, { mergeFields: ['snap', 'at', 'dd', 'dv', 'di'] }); }   // 新的一天 → 清掉昨天的草稿（雲端讀到了才判斷）
     return pdDoc(sh).set(o, { merge: true });
   }).catch(function () { });
@@ -1935,7 +1939,7 @@ function load(force) {
     if (DATA && DATA.me && DATA.me.n === j.me.n && DATA.s === j.s) MK.forEach(function (k) { if (!(k in j) && k in DATA) j[k] = DATA[k]; });   // 慢的那批還沒到 → 先用上次的
     DATA = j; gotCore = true; LS('app_cache', JSON.stringify(j)); render(); if (CUR === 's2') s2Render(); if (more) mergeMore();
     tdLoad(force);   // 11/17 今天要做（背景拿，右下角顯示還剩幾項）
-    if (!window.__pc) { window.__pc = 1; setTimeout(pushCheck, 1500); }   // 11/18 手機通知
+    if (!window.__pc) { window.__pc = 1; setTimeout(pushCheck, 1500); setTimeout(function () { clFsReady().then(function () { firebase.firestore(); }).catch(function () { }); }, 2500); }   // 11/18 手機通知；資料庫先在背景連好
     if (GO0) { var g0 = GO0; GO0 = null; try { history.replaceState(null, '', location.pathname); } catch (e) { } go(g0); }   // 點通知打開 → 直接到那一頁
     if (CUR === 'lv' || CUR === 'sc') {
       if (changed && !FRV) frame();   // 11/11 剛換店 → 直接顯示
