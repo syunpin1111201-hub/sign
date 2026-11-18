@@ -1670,7 +1670,7 @@ function tkRender() {
   if (CUR !== 'tk') return;
   var o = TKC[TKN];
   if (o && o.err && !o.d) { $('tkb').innerHTML = '<div class="load">' + esc(o.err) + '<br><br><span class="chip f" onclick="delete TKC[TKN];tkGet(TKT);tkRender()">再試一次</span></div>'; return; }
-  if (!o || !o.d) { $('tkb').innerHTML = '<div class="load">載入考核表…</div>'; return; }
+  if (!o || !o.d) { $('tkb').innerHTML = o && o.html ? '<div class="fmwrap">' + o.html + '</div><div class="load" style="padding:30px 10px">簽名區載入中…</div>' : '<div class="load">載入考核表…</div>'; return; }   // 11/18 考核表先到就先秀
   var d = o.d, h = '';
   $('tks').textContent = (d.store || '') + '・' + (d.monthText || '') + '考核';
   h += '<div class="fmwrap">' + (o.html || '<div class="load">正式考核表載入中…</div>') + '</div>';
