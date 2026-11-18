@@ -171,6 +171,34 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div class="sec2" id="qhh"></div><div class="card" id="qh" style="display:none"></div>
   <div style="height:20px"></div></div>
 <div class="scr" id="s2"><div class="hd"><div class="s">老闆・點日期兩間一起換</div><h2>🗓️ 兩店班表</h2></div><div id="s2b"></div><div style="height:20px"></div></div>
+<style>/* 11/18 面談單（App 版）*/
+.tkp{background:#fff;margin:10px 10px 0;padding:14px 12px 24px;border-radius:12px;-webkit-user-select:none;user-select:none}
+.tkp .fmwrap{overflow-x:auto}
+.tkp table.fm{border-collapse:collapse;table-layout:fixed;width:100%;min-width:900px}
+.tkp table.fm td.c{padding:3px 5px;line-height:1.45;word-break:break-word;border:0}
+.tkp table.fm td.bd{border:1px solid #444}
+.tkp table.fm .old{text-decoration:line-through;color:#999;font-weight:400}
+.tkp table.fm .new{color:#c00000;font-weight:700}
+.tkp table{width:100%;border-collapse:collapse;font-size:14px}
+.tkp td,.tkp th{border:1px solid #444;padding:6px 7px;vertical-align:top}
+.tkp th{background:#efefef;font-weight:600;text-align:center;vertical-align:middle}
+.tkp .old{text-decoration:line-through;color:#999;font-size:15px;font-weight:400}
+.tkp .new{color:#c00000}
+.tkp .sec{margin-top:16px;font-weight:700;font-size:16px;border-left:4px solid #7a4e24;padding-left:8px}
+.tkp .box{border:1px solid #444;padding:10px 12px;margin-top:8px;font-size:14px;background:#fff}
+.tkp .row2{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #ddd}
+.tkp .row2:last-child{border:0}
+.tkp .big{font-size:20px;font-weight:700}
+.tkp .warn{color:#c00000;font-weight:600}
+.tkp .pad{border:2px dashed #999;border-radius:8px;background:#fcfcfc;width:100%;height:190px;touch-action:none;display:block;margin-top:8px}
+.tkp .btns{display:flex;gap:8px;margin-top:8px}
+.tkp .btns button{flex:1;padding:12px;border:0;border-radius:9px;font-size:16px}
+.tkp .ok{background:#2e7d4f;color:#fff;font-weight:600}
+.tkp .clr{background:#ece8e1}
+.tkp .signed img{max-width:320px;width:100%;border-bottom:1px solid #444;display:block;margin-top:6px}
+.tkp .load{text-align:center;color:#888;padding:60px 10px}
+</style>
+<div class="scr" id="tk"><div class="hd"><div class="s" id="tks"></div><h2 id="tkh">面談</h2><span class="rf" onclick="go('kh')">‹ 回考核</span></div><div id="tkb" class="tkp"></div><div style="height:40px"></div></div>
 <div class="scr" id="kh"><div class="hd"><div class="s" id="khs"></div><h2>📊 考核</h2></div><div id="khb"></div><div style="height:20px"></div></div>
 <div class="scr" id="mt"><div class="hd"><div class="s" id="mts"></div><h2>📋 開會內容</h2></div><div id="mtb"></div></div>
 <div class="scr" id="say">
@@ -255,7 +283,7 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 function show(v) {
   if (v === 'sc' && BOSS()) v = 's2';   // 11/10 可樂：兩店班表一起看
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'rv', 'tdo', 'cln', 'wr', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'rv', 'tdo', 'cln', 'wr', 'tk', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
@@ -1610,8 +1638,105 @@ function khRender() {
   if ((B.rsv || []).length) h += '<div style="height:10px"></div><b style="color:var(--tx)">儲備一般考核</b>　<span class="st ' + (rd === B.rsv.length ? 'ok' : 'soon') + '">' + rd + '／' + B.rsv.length + '</span><div style="font-size:12px;color:var(--mu)">考核獎金，你打（幹部不打）</div>' +
     B.rsv.map(function (x) { return '<div class="pl"><span>' + esc(x.n) + ' <small style="color:var(--mu)">' + esc(x.st) + '</small></span><span><a class="chip f" href="' + x.url + '" target="_blank">打分</a><a class="chip" href="' + x.talk + '" target="_blank">面談</a></span></div>'; }).join('');
   var tk = [], tn = 0; (B.kh || []).forEach(function (k) { k.talk.forEach(function (t) { tk.push(t); if (t.ok) tn++; }); });
-  h += '<div class="sec2">員工面談（25 號～5 號）已簽 ' + tn + '／' + tk.length + '</div><div class="card">' + tk.map(function (t) { return '<div class="pl"><span>' + (t.ok ? '✅ ' : '') + esc(t.n) + '</span><a class="chip" href="' + t.url + '" target="_blank">面談頁 ›</a></div>'; }).join('') + '</div>';
+  window.__TK = tk;
+  h += '<div class="sec2">員工面談（25 號～5 號）已簽 ' + tn + '／' + tk.length + '</div><div class="card">' + tk.map(function (t, i) { return '<div class="pl"><span>' + (t.ok ? '✅ ' : '') + esc(t.n) + '</span><span class="chip" onclick="tkOpen(' + i + ')">面談頁 ›</span></div>'; }).join('') + '</div>';
+  tkPre(tk.filter(function (t) { return !t.ok; }));   // 11/18 還沒簽的先在背景讀好
   $('khb').innerHTML = h + '<div id="cbb"></div>'; var cbd = new Date(); cbLoad(cbd.getFullYear() * 100 + cbd.getMonth() + 1);   // 11/17 這個月 25 號發的那一期（例：11 月 → 202611＝10 月柚香＋9 月分紅）
+}
+
+// ---------- 11/18 面談單（App 版）：不開 Google 網頁；名單一打開就先把還沒簽的讀好；簽名一樣寫回考核庫 ----------
+var TKC = {}, TKQ = [], TKA = 0, TKN = null, TKT = null, TKP = {};
+function tkQ(t) { var q = {}; try { new URL(t.url).searchParams.forEach(function (v, k) { q[k] = v; }); } catch (e) { } return q; }
+function tkBase(t) { var q = tkQ(t); return '&m=' + q.m + '&tn=' + encodeURIComponent(q.n || t.n) + '&sig=' + encodeURIComponent(q.sig || '') + '&' + sqQ(); }
+function tkGet(t) {
+  var k = t.n, o = TKC[k];
+  if (o && (o.p || o.d)) return o.p || Promise.resolve();
+  o = TKC[k] = {}; var b = tkBase(t);
+  var pd = api('op=talk' + b).then(function (j) { if (!j.ok) throw new Error(j.err || '讀不到'); o.d = j.d; if (TKN === k) tkRender(); });
+  var pf = api('op=talkf' + b).then(function (j) { o.html = j.ok ? j.html : '<div class="load">正式考核表載入失敗：' + esc(j.err || '') + '</div>'; if (TKN === k) tkRender(); }).catch(function () { o.html = '<div class="load">正式考核表載入失敗，請重新整理</div>'; });
+  o.p = Promise.all([pd, pf]).then(function () { o.p = null; }).catch(function (e) { o.p = null; o.err = (e && e.message) || '網路不穩'; if (TKN === k) tkRender(); });
+  return o.p;
+}
+function tkPre(L) { L.forEach(function (t) { if (!TKC[t.n]) TKQ.push(t); }); tkPump(); }
+function tkPump() { while (TKA < 3 && TKQ.length) { var t = TKQ.shift(); if (TKC[t.n]) continue; TKA++; tkGet(t).then(function () { TKA--; tkPump(); }, function () { TKA--; tkPump(); }); } }
+function tkOpen(i) {
+  var t = (window.__TK || [])[i]; if (!t) return;
+  TKN = t.n; TKT = t; $('tkh').textContent = '📝 ' + t.n + ' 面談'; $('tks').textContent = '';
+  var o = TKC[t.n]; if (o && o.err) delete TKC[t.n];
+  show('tk'); window.scrollTo(0, 0); tkGet(t); tkRender();
+}
+function tkMoney(n) { return n == null || n === '' ? '—' : Number(n).toLocaleString('en-US'); }
+function tkRender() {
+  if (CUR !== 'tk') return;
+  var o = TKC[TKN];
+  if (o && o.err && !o.d) { $('tkb').innerHTML = '<div class="load">' + esc(o.err) + '<br><br><span class="chip f" onclick="delete TKC[TKN];tkGet(TKT);tkRender()">再試一次</span></div>'; return; }
+  if (!o || !o.d) { $('tkb').innerHTML = '<div class="load">載入考核表…</div>'; return; }
+  var d = o.d, h = '';
+  $('tks').textContent = (d.store || '') + '・' + (d.monthText || '') + '考核';
+  h += '<div class="fmwrap">' + (o.html || '<div class="load">正式考核表載入中…</div>') + '</div>';
+  h += '<div class="sec">被考核者簽名確認</div><div class="box">本人已與考核人員逐項確認本月考核內容。';
+  h += d.sign1 ? '<div class="signed"><img src="' + d.sign1.img + '"><div style="font-size:13px;color:#555">簽名時間：' + esc(d.sign1.time) + '</div></div>'
+    : '<canvas class="pad" id="tkpad1"></canvas><div class="btns"><button class="clr" onclick="TKP.p1.clear()">重寫</button><button class="ok" onclick="tkSign(\'review\')">確認簽名</button></div>';
+  h += '</div>';
+  var c = d.cup || { cup: 0, red: 0, job: 0, other: 0, holiday: 0 };
+  var lines = [['杯數獎金（' + d.cupTab + '）', c.cup], ['紅榜獎金', c.red], ['拜訪獎金', c.visit], ['職務加給', c.job], ['其他獎金', c.other], ['國定假日獎金', c.holiday], ['茶譜獎金', c.tea]];
+  var tot = 0; lines.forEach(function (x) { tot += Number(x[1]) || 0; });
+  var led = (!d.sign2 && d.ledger && d.ledger.length) ? d.ledger[0] : null, showCash = tot > 0 || !!d.sign2;   // 沒有現金就不用簽收
+  if (showCash) {
+    h += '<div class="sec">獎金簽收單（當日現金發放）</div><div class="box">';
+    lines.forEach(function (x, i) { if (i < 1 || x[1]) h += '<div class="row2"><span>' + esc(x[0]) + '</span><span>' + tkMoney(x[1]) + '</span></div>'; });
+    h += '<div class="row2"><span><b>合計</b></span><span class="big">' + tkMoney(tot) + '</span></div>';
+    if (d.cupMissing && !d.snap) h += '<div class="warn">杯數獎金檔還沒有 ' + esc(d.cupTab) + ' 分頁</div>';
+    h += '<div style="margin-top:8px">本人已領取上述獎金，共新台幣 <b>' + tkMoney(tot) + '</b> 元。</div>';
+    h += '<div style="margin-top:4px;font-size:13px;color:#666">※ 考核獎金 ' + tkMoney((d.snap ? d.snap.pay : d.pay) || 0) + ' 元隨薪資發放，不在此簽收。</div>';
+    h += d.sign2 ? '<div class="signed"><img src="' + d.sign2.img + '"><div style="font-size:13px;color:#555">簽收時間：' + esc(d.sign2.time) + '</div></div>'
+      : led ? '<div class="signed" style="padding:10px;color:#2F6B4F;font-weight:700">✅ 已在現金簽收單簽收（' + esc(led.id) + '　' + esc(led.at) + '）</div>'
+      : '<canvas class="pad" id="tkpad2"></canvas><div class="btns"><button class="clr" onclick="TKP.p2.clear()">重寫</button><button class="ok" onclick="tkSign(\'bonus\')">確認簽收</button></div>';
+    h += '</div>';
+  } else h += '<div style="margin-top:14px;font-size:13px;color:#666">本期沒有現金獎金，不用簽收。</div>';
+  var keep = { p1: TKP.p1 && !TKP.p1.empty(), p2: TKP.p2 && !TKP.p2.empty() };
+  if ((keep.p1 && $('tkpad1')) || (keep.p2 && $('tkpad2'))) { var fw = $('tkb').querySelector('.fmwrap'); if (fw && o.html) fw.innerHTML = o.html; return; }   // 正在簽名 → 只更新上面的考核表，簽名不洗掉
+  $('tkb').innerHTML = h;
+  TKP = {};
+  if (!d.sign1) TKP.p1 = SP($('tkpad1'), 0);
+  if (showCash && !d.sign2 && !led) TKP.p2 = SP($('tkpad2'), 0);
+}
+function tkSign(kind) {
+  var pad = kind === 'review' ? TKP.p1 : TKP.p2;
+  if (!pad || pad.empty()) { bar('請先簽名', 2000); return; }
+  if (!confirm(kind === 'review' ? '確認考核內容並簽名？' : '確認已領取獎金並簽收？')) return;
+  var btns = $('tkb').querySelectorAll('.ok'); [].forEach.call(btns, function (b) { b.disabled = true; });
+  bar('送出中…');
+  var k = TKN, t = TKT;
+  fetch(EXEC + '?api=app&op=talksign&kind=' + kind + tkBase(t), { method: 'POST', body: new URLSearchParams({ img: pad.data() }) })
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      if (!j.ok) throw new Error(j.err || '沒送出');
+      bar(kind === 'review' ? '簽好了 ✅' : '簽收好了 ✅', 2000);
+      TKP = {}; delete TKC[k]; tkGet(t); tkRender();
+      if (DATA && DATA.boss) { (DATA.boss.kh || []).forEach(function (x) { x.talk.forEach(function (y) { if (y.n === k && kind === 'review') y.ok = true; }); }); }
+    })
+    .catch(function (e) { [].forEach.call(btns, function (b) { b.disabled = false; }); bar('❌ ' + ((e && e.message) || '網路不穩，請再按一次'), 4000); });
+}
+// 11/17 簽名板（跟機器人頁面同一個）：touch＋滑鼠；畫布還沒排好版時第一筆自動重設大小；送出的圖最寬 900px
+function SP(cv, white) {
+  var ctx = null, drawing = false, dirty = false, last = null, W = 0, H = 0, r = Math.min(window.devicePixelRatio || 1, 2);
+  function size() { var b = cv.getBoundingClientRect(); if (b.width < 2 || b.height < 2) return false; W = b.width; H = b.height; cv.width = Math.round(W * r); cv.height = Math.round(H * r); ctx = cv.getContext('2d'); ctx.setTransform(r, 0, 0, r, 0, 0); ctx.lineWidth = 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#111'; ctx.fillStyle = '#111'; return true; }
+  function ready() { var b = cv.getBoundingClientRect(); if (!ctx || (!dirty && (Math.abs(b.width - W) > 1 || Math.abs(b.height - H) > 1))) return size(); return true; }
+  size(); setTimeout(function () { if (!dirty) size(); }, 400);
+  function pos(x, y) { var b = cv.getBoundingClientRect(); return [x - b.left, y - b.top]; }
+  function start(p) { if (!ready()) return; drawing = true; dirty = true; last = p; ctx.beginPath(); ctx.arc(p[0], p[1], 1.3, 0, 6.3); ctx.fill(); }
+  function move(p) { if (!drawing || !ctx) return; ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p; }
+  function end() { drawing = false; }
+  cv.addEventListener('touchstart', function (e) { e.preventDefault(); var t = e.changedTouches[0]; start(pos(t.clientX, t.clientY)); }, { passive: false });
+  cv.addEventListener('touchmove', function (e) { e.preventDefault(); for (var i = 0; i < e.changedTouches.length; i++) { var t = e.changedTouches[i]; move(pos(t.clientX, t.clientY)); } }, { passive: false });
+  cv.addEventListener('touchend', function (e) { e.preventDefault(); end(); }, { passive: false });
+  cv.addEventListener('touchcancel', end);
+  cv.addEventListener('mousedown', function (e) { start(pos(e.clientX, e.clientY)); });
+  window.addEventListener('mousemove', function (e) { move(pos(e.clientX, e.clientY)); });
+  window.addEventListener('mouseup', end);
+  return { clear: function () { if (ctx) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.restore(); } dirty = false; }, empty: function () { return !dirty; },
+    data: function () { var c = document.createElement('canvas'), k = Math.min(1, 900 / (cv.width || 1)); c.width = Math.max(1, Math.round(cv.width * k)); c.height = Math.max(1, Math.round(cv.height * k)); var x = c.getContext('2d'); if (white) { x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); } x.drawImage(cv, 0, 0, c.width, c.height); return c.toDataURL('image/png'); } };
 }
 function remind(s, n) {
   if (!confirm('推到' + (s === 'rh' ? '熱河' : '鳳山') + '幹部群，提醒還有 ' + n + ' 位考核沒打完？')) return;
