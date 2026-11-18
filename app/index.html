@@ -988,7 +988,16 @@ function tdRender() {
   tdBadge(BOSS() || DEV() || gwLead() ? 0 : left);
 }
 function tdNav() { var d = document.querySelector('.nav div[data-v=tdo]'); if (d) d.firstChild.nextSibling.nodeValue = gwLead() ? '核對' : '今天要做'; }
-function tdBadge(n) { tdNav(); var b = $('tdn'); if (!b) return; b.style.display = n > 0 ? '' : 'none'; b.textContent = n; }
+function tdBadge(n) { tdNav(); var b = $('tdn'); if (!b) return; b.style.display = n > 0 ? '' : 'none'; b.textContent = n; appBadge(); }
+// 11/18 主畫面 App 圖示右上角紅點＝還沒簽的公告＋考試＋今天要做（通知來時 sw.js 先 +1，打開 App 再對成正確數字）
+function appBadge() {
+  try {
+    var n = 0;
+    if (!BOSS()) ['b4', 'b3', 'tdn'].forEach(function (k) { var e = $(k); if (e && e.style.display !== 'none') { var v = parseInt(e.textContent, 10); n += isNaN(v) ? 1 : v; } });
+    if ('setAppBadge' in navigator) (n ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(function () { });
+    if (window.caches) caches.open('badge').then(function (c) { return c.put('/n', new Response(String(n))); }).catch(function () { });
+  } catch (e) { }
+}
 
 // 11/17 公務機大家共用：留茶湯、營收報表送出前要選是誰填的
 var DEVN = null, DEVW = '';
@@ -1782,7 +1791,7 @@ function load(force) {
   // 11/17 變快：首頁、班表（lite）跟借支、考試、公告、帶人（more）同時拿，先到先顯示
   var uq = 's=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok, me0 = U.s + U.n, MK = ['money', 'says', 'exam', 'boss', 'lead', 'ann', 'hr', 'prof', 'sch2'];
   var more = null, gotCore = false;
-  var mergeMore = function () { if (!more || !DATA) return; MK.forEach(function (k) { if (k in more) DATA[k] = more[k]; }); LS('app_cache', JSON.stringify(DATA)); render(); if (CUR === 's2') s2Render(); };
+  var mergeMore = function () { if (!more || !DATA) return; MK.forEach(function (k) { if (k in more) DATA[k] = more[k]; }); LS('app_cache', JSON.stringify(DATA)); render(); if (CUR === 's2') s2Render(); appBadge(); };
   retry(function () { return api('op=more&' + uq); }, 2).then(function (m) { if (!m || !m.ok || me0 !== U.s + U.n) return; more = m; if (gotCore) mergeMore(); }).catch(function () { });
   retry(function () { return api('op=all&lite=1&' + uq); }, 2).then(function (j) {
     if (me0 !== U.s + U.n) return;
