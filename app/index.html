@@ -156,7 +156,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
     <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('exp')">💸 打支出</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('net')">💰 看淨利</span>
-    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('pub')">📅 發班表</span><span class="chip f" style="margin:0;text-align:center;padding:10px;background:#c0392b;border-color:#c0392b" onclick="qForm('hb')">🔴 登記紅榜</span></div>
+    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('pub')">📅 發班表</span><span class="chip f" style="margin:0;text-align:center;padding:10px;background:#c0392b;border-color:#c0392b" onclick="qForm('hb')">🔴 登記紅榜</span></div><div style="text-align:right;margin-top:-4px"><span class="chip" onclick="pushTest()">🔔 測試我的手機通知</span></div>
   <div id="qf"></div><div id="qr"></div>
   <div class="sec2">👤 查人</div><div class="card"><div id="qps"></div>
     <span class="chip" onclick="qP('#查員工','員工資料')">員工資料</span><span class="chip" onclick="qP('#查薪資','薪資')">薪資</span><span class="chip" onclick="qP('#查欠時數','欠時數')">欠時數</span><span class="chip" onclick="qP('#查借支','借支')">借支</span><span class="chip" onclick="qP('#查考核','考核')">考核</span><span class="chip" onclick="qP('#查紅黑榜','紅黑榜')">紅黑榜</span><span class="chip" onclick="qP('#查獎金','獎金')">獎金</span><span class="chip" onclick="qP('#查禮金','禮金')">禮金</span><span class="chip" onclick="qP('#查代班','代班')">代班</span></div>
@@ -195,6 +195,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div id="fr"><span id="sw" class="swf" style="display:none"></span><div class="msg" id="frm">📅 載入中…</div></div>
 
 <div class="bar" id="bar"></div>
+<div id="pushs" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.18);padding:22px 20px 34px;max-width:560px;margin:0 auto"></div>
 
 <div class="nav" id="nav">
   <div data-v="home"><i>🏠</i>首頁</div>
@@ -1357,6 +1358,62 @@ function hbSend() {
     hbLoad();
   }).catch(function () { HBB = 0; bar('網路不穩，請再按一次', 3000); hbRender(); });
 }
+
+// ---------- 11/18 手機通知（Firebase 推播）：公告、班表、考試；幹部另外收清潔驗收、茶湯、營收報表 ----------
+var FB_CFG = { apiKey: 'AIzaSyDfvgGLUZGc2U2OHx8f_9JeHVfR2VNMG9c', authDomain: 'cola-app-3d73f.firebaseapp.com', projectId: 'cola-app-3d73f', storageBucket: 'cola-app-3d73f.firebasestorage.app', messagingSenderId: '126537909536', appId: '1:126537909536:web:4efbd5469edfb1c7e78345' };
+var FB_VAPID = 'BDAW65vLcmE2_h1zh6rPmfiPNTT-Ldmrc7Tw-gZrUrVwa6c3uvUk3zzojmupzT98vGiaRfxCIoXv_LcBY97GvNA';
+var GO0 = null; try { GO0 = new URLSearchParams(location.search).get('go'); } catch (e) { }
+function pushOK() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+function isIOS() { return /iPhone|iPad|iPod/.test(navigator.userAgent); }
+function isSA() { return navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches); }
+function isLINE() { return / Line\//i.test(navigator.userAgent); }
+function fbLoad() {
+  return new Promise(function (res, rej) {
+    if (window.firebase && firebase.messaging) { res(); return; }
+    var L = ['firebase-app-compat.js', 'firebase-messaging-compat.js'], i = 0;
+    (function nx() { if (i >= L.length) { res(); return; } var sc = document.createElement('script'); sc.src = 'https://www.gstatic.com/firebasejs/10.12.2/' + L[i++]; sc.onload = nx; sc.onerror = function () { rej(new Error('載入失敗')); }; document.head.appendChild(sc); })();
+  });
+}
+function pushToken() {
+  return fbLoad().then(function () { if (!firebase.apps.length) firebase.initializeApp(FB_CFG); return navigator.serviceWorker.ready; })
+    .then(function (reg) { return firebase.messaging().getToken({ vapidKey: FB_VAPID, serviceWorkerRegistration: reg }); })
+    .then(function (t) { if (!t) throw new Error('拿不到通知代碼'); return api('op=pushreg&' + sqQ() + '&ft=' + encodeURIComponent(t) + '&ua=' + (isIOS() ? 'iPhone' : /Android/.test(navigator.userAgent) ? 'Android' : '其他')); })
+    .then(function (j) { if (j && j.ok) LS('push_day', new Date().toDateString()); return j; });
+}
+function pushHide() { $('pushs').style.display = 'none'; }
+function pushLater() { LS('push_later', String(Date.now())); pushHide(); }
+function pushSheet(kind) {
+  var lead = gwLead() && !BOSS(), h = '<div style="width:44px;height:5px;border-radius:3px;background:#ddd;margin:-8px auto 16px"></div><div style="font-size:21px;font-weight:700;margin-bottom:10px">🔔 請開啟手機通知</div>' +
+    '<div style="font-size:15px;line-height:1.75">有<b>新公告要簽名</b>、<b>班表發布</b>、<b>被開考試</b>' + (lead ? '，還有<b>清潔沒驗收、茶湯、營收報表沒填</b>' : '') + '的時候，手機會直接跳通知提醒你，不用一直開 LINE 看。</div>';
+  if (kind === 'ios') h += '<div class="card" style="margin:14px 0 0;font-size:14px;line-height:1.8;background:#fff8ec">iPhone 要先把 App 放到主畫面：<br>① 用 <b>Safari</b> 打開這個網址<br>② 按下面的 <b>分享 ⬆️</b> →「<b>加入主畫面</b>」<br>③ 從主畫面的「我喜歡上班」打開，就會出現「開啟通知」' + (isLINE() ? '<br><span style="color:#c0392b">現在是在 LINE 裡面開的，請先按右下角「⋯」→ 用 Safari 開啟</span>' : '') + '</div>';
+  else if (kind === 'line') h += '<div class="card" style="margin:14px 0 0;font-size:14px;line-height:1.8;background:#fff8ec">LINE 裡面開不了通知：請按右上角「⋮」→「<b>用預設瀏覽器開啟</b>」（Chrome），再按開啟通知</div>';
+  else h += '<button class="btn" style="margin-top:16px" onclick="pushAsk()">開啟通知</button><div style="font-size:12px;color:var(--mu);margin-top:10px">按下後手機會問「要允許通知嗎？」，請選「允許」</div>';
+  h += '<div style="text-align:center;margin-top:14px;color:var(--ac);font-size:15px" onclick="pushLater()">稍後再說</div>';
+  $('pushs').innerHTML = h; $('pushs').style.display = 'block';
+}
+function pushCheck() {
+  if (!U.tok || DEV()) return;
+  if (pushOK() && Notification.permission === 'granted') { if (LS('push_day') !== new Date().toDateString()) pushToken().catch(function () { }); return; }
+  if (pushOK() && Notification.permission === 'denied') return;
+  if (Date.now() - Number(LS('push_later') || 0) < 3 * 86400000) return;   // 稍後再說 → 3 天後再問
+  if (isIOS() && !isSA()) pushSheet('ios');
+  else if (isLINE()) pushSheet('line');
+  else if (pushOK()) pushSheet('ask');
+}
+function pushAsk() {
+  pushHide();
+  Notification.requestPermission().then(function (p) {
+    if (p !== 'granted') { bar('你按了不允許，之後要到手機的設定裡打開通知', 4000); return; }
+    bar('開通知中…');
+    pushToken().then(function (j) { bar(j && j.ok ? '通知開好了 👍' : '開通知失敗：' + ((j && j.err) || '請再試一次'), 3500); }).catch(function (e) { bar('開通知失敗：' + (e && e.message || e), 4000); });
+  });
+}
+function pushTest() {
+  if (!pushOK()) { bar('這支手機（或這個瀏覽器）不支援通知', 3000); return; }
+  if (Notification.permission !== 'granted') { LS('push_later', '0'); pushCheck(); return; }
+  bar('送測試通知…');
+  pushToken().then(function () { return api('op=pushtest&' + sqQ()); }).then(function (j) { bar(j.ok ? '已送出，等幾秒看手機有沒有跳' : (j.err || '失敗'), 4000); }).catch(function () { bar('網路不穩，請再試一次', 3000); });
+}
 // ---------- 可樂查詢頁（跟 LINE 一樣的指令，結果顯示在 App） ----------
 function qOut(h) { $('qr').innerHTML = h; $('qr').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 function qRun(c, lab, write) {
@@ -1733,6 +1790,8 @@ function load(force) {
     if (DATA && DATA.me && DATA.me.n === j.me.n && DATA.s === j.s) MK.forEach(function (k) { if (!(k in j) && k in DATA) j[k] = DATA[k]; });   // 慢的那批還沒到 → 先用上次的
     DATA = j; gotCore = true; LS('app_cache', JSON.stringify(j)); render(); if (CUR === 's2') s2Render(); if (more) mergeMore();
     tdLoad(force);   // 11/17 今天要做（背景拿，右下角顯示還剩幾項）
+    if (!window.__pc) { window.__pc = 1; setTimeout(pushCheck, 1500); }   // 11/18 手機通知
+    if (GO0) { var g0 = GO0; GO0 = null; try { history.replaceState(null, '', location.pathname); } catch (e) { } go(g0); }   // 點通知打開 → 直接到那一頁
     if (CUR === 'lv' || CUR === 'sc') {
       if (changed && !FRV) frame();   // 11/11 剛換店 → 直接顯示
       else if (changed) bar('有新資料，點這裡更新', 0, function () { $('bar').style.display = 'none'; frame(); });
