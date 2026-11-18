@@ -835,14 +835,15 @@ function cbPub() {
 }
 // ---------- 清潔打勾（11/17）：每日／週清／月清，打勾寫代號進清潔表；幹部、儲備驗收 ----------
 var CL = null, CLK = 'day', CLS = '', CLW = 0;
-function clSw() { $('sw').onclick(); CL = null; clLoad(); }
+function clSw() { $('sw').onclick(); CL = null; CLFS = ''; clLoad(); }
 function clShift() { if (CLS) return CLS; var s = tdShifts(); if (s.length === 1) return s[0]; return new Date().getHours() < 17 ? '早班' : '晚班'; }
 function clQ() { return sqQ() + (DEV() ? '&who=' + encodeURIComponent(DEVW) : ''); }
 function clLoad() {
   $('clsw').style.display = BOSS() ? '' : 'none'; $('clsw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
   if (CL) clRender(); else $('clb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
-  var want = U.s;
-  api('op=cl&' + clQ()).then(function (j) { if (want !== U.s || CUR !== 'cln') return; if (!j.ok) { $('clb').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; } CL = j; clRender(); }).catch(function () { if (!CL) $('clb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+  var want = U.s, t0 = Date.now();
+  clFsSub();   // 11/18 Firestore：先秀大家最新的打勾（幾乎不用等），清潔表在背景對
+  api('op=cl&' + clQ()).then(function (j) { if (want !== U.s || CUR !== 'cln') return; if (!j.ok) { $('clb').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; } clFromServer(j, t0); }).catch(function () { if (!CL) $('clb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
 }
 function clItems(k, sh) { var o = CL && CL[k]; return o && o.items ? o.items.filter(function (x) { return x.sh === sh; }) : []; }
 function clWho(a) { return a.join('、'); }
@@ -878,25 +879,83 @@ function clTap(k, r, on) {
   var me = CL.me || (DEV() ? '' : ''), old = { who: it.who.slice(), date: it.date };
   it.who = it.who.filter(function (x) { return x !== me; }); if (on && me) it.who.push(me);
   if (k !== 'day') it.date = it.who.length ? (it.date || (new Date().getMonth() + 1) + '/' + new Date().getDate()) : '';
-  it.busy = 1; clRender();
+  it.busy = 1; clRender(); clFsPut(k, it);
   api('op=cldo&k=' + k + '&r=' + r + '&v=' + on + '&sh=' + encodeURIComponent(clShift()) + '&' + clQ()).then(function (j) {
     it.busy = 0;
-    if (!j.ok) { it.who = old.who; it.date = old.date; clRender(); bar((j.err || '沒存到') + '，請再按一次', 3000); return; }
-    if (j.fast && j.item) { it.who = j.item.who; it.date = j.item.date; } else if (j.day) CL = j;
+    if (!j.ok) { it.who = old.who; it.date = old.date; clFsPut(k, it); clRender(); bar((j.err || '沒存到') + '，請再按一次', 3000); return; }
+    if (j.fast && j.item) { it.who = j.item.who; it.date = j.item.date; clFsPut(k, it); } else if (j.day) clFromServer(j, Date.now());
     clRender(); TD = null;
-  }).catch(function () { it.busy = 0; it.who = old.who; it.date = old.date; clRender(); bar('網路不穩，沒存到，請再按一次', 3000); });
+  }).catch(function () { it.busy = 0; it.who = old.who; it.date = old.date; clFsPut(k, it); clRender(); bar('網路不穩，沒存到，請再按一次', 3000); });
 }
 function clChk(k, r, on) {
   if (devNeed()) return;
   var sh = clShift(), it = k === 'day' ? null : clFind(k, r), vv = k === 'day' ? CL.day.ver[sh] : null, me = CL.me;
   var old = k === 'day' ? vv.who.slice() : (it.ver || []).slice();
   if (k === 'day') vv.who = on ? [me] : []; else { if (on && !it.who.length) { bar('還沒有人做，不能驗收', 2500); return; } it.ver = on ? [me] : []; }
-  clRender();
+  var put = function () { if (k === 'day') clFsPutV(sh, vv.who); else clFsPut(k, it); };
+  clRender(); put();
   api('op=clchk&k=' + k + '&r=' + r + '&v=' + on + '&sh=' + encodeURIComponent(sh) + '&' + clQ()).then(function (j) {
-    if (!j.ok) { if (k === 'day') vv.who = old; else it.ver = old; clRender(); bar((j.err || '沒存到') + '，請再按一次', 3000); return; }
-    if (j.fast) { if (j.item && it) it.ver = j.item.ver; if (j.ver && vv) vv.who = j.ver.who; } else if (j.day) CL = j;
+    if (!j.ok) { if (k === 'day') vv.who = old; else it.ver = old; put(); clRender(); bar((j.err || '沒存到') + '，請再按一次', 3000); return; }
+    if (j.fast) { if (j.item && it) it.ver = j.item.ver; if (j.ver && vv) vv.who = j.ver.who; put(); } else if (j.day) clFromServer(j, Date.now());
     clRender(); TD = null;
-  }).catch(function () { if (k === 'day') vv.who = old; else it.ver = old; clRender(); bar('網路不穩，沒存到，請再按一次', 3000); });
+  }).catch(function () { if (k === 'day') vv.who = old; else it.ver = old; put(); clRender(); bar('網路不穩，沒存到，請再按一次', 3000); });
+}
+
+// ---------- 11/18 清潔改 Firestore（cl/rh、cl/fs）：打開就秀、別人打勾馬上看到；清潔表照樣在背景寫 ----------
+//   snap＝最後一次從清潔表讀的整份（JSON）＋at 時間；ov＝之後每一格的打勾 {w 代號, d 日期, v 驗收, t 時間}
+var CLF = null, CLFS = '', CLFU = null, CLB = null, CLBT = 0;
+function clDoc(st) { return firebase.firestore().collection('cl').doc(st || U.s); }
+function clFsReady() { return fbLoad(['firebase-app-compat.js', 'firebase-firestore-compat.js']).then(function () { if (!firebase.apps.length) firebase.initializeApp(FB_CFG); }); }
+function clMeta() { try { return JSON.parse(LS('cl_meta_' + U.s + U.n) || 'null'); } catch (e) { return null; } }
+function clFsSub() {
+  if (CLFS === U.s && CLFU) return;
+  if (CLFU) { try { CLFU(); } catch (e) { } CLFU = null; }
+  CLFS = U.s; CLF = null; CLB = null; CLBT = 0;
+  var st = U.s;
+  clFsReady().then(function () {
+    if (st !== U.s) return;
+    CLFU = clDoc(st).onSnapshot(function (d) {
+      if (st !== U.s) return;
+      CLF = d.exists ? d.data() : null;
+      if (CLF && CLF.snap && CLF.at > CLBT && new Date(CLF.at).toDateString() === new Date().toDateString()) { try { CLB = JSON.parse(CLF.snap); CLBT = CLF.at; } catch (e) { } }
+      clMerge();
+    }, function () { });
+  }).catch(function () { });
+}
+function clFromServer(j, t0) {
+  var m = { me: j.me, lead: j.lead }; LS('cl_meta_' + U.s + U.n, JSON.stringify(m));
+  var base = JSON.parse(JSON.stringify(j)); delete base.me; delete base.lead;
+  if (t0 >= CLBT) { CLB = base; CLBT = t0; }
+  clMerge();
+  clFsReady().then(function () {   // 把清潔表最新的放上去，舊的打勾紀錄（比這次讀表還早的）清掉
+    var ov = (CLF && CLF.ov) || {}, keep = {};
+    Object.keys(ov).forEach(function (k) { if (ov[k].t > t0) keep[k] = ov[k]; });
+    return clDoc().set({ snap: JSON.stringify(base), at: t0, ov: keep });
+  }).catch(function () { });
+}
+function clMerge() {
+  if (!CLB) return;
+  var P = JSON.parse(JSON.stringify(CLB)), m = clMeta() || {}, ov = (CLF && CLF.ov) || {};
+  P.me = m.me || ''; P.lead = m.lead || (gwLead() ? 1 : 0); P.ok = true;
+  Object.keys(ov).forEach(function (key) {
+    var o = ov[key]; if (!o || o.t <= CLBT) return;
+    var p = key.split('_');
+    if (p[0] === 'dv') { if (P.day && P.day.ver && P.day.ver[p[1]]) P.day.ver[p[1]].who = o.w || []; return; }
+    var L = (P[p[0]] || {}).items || [], it = L.filter(function (x) { return String(x.r) === p[1]; })[0];
+    if (it) { it.who = o.w || []; if (o.d !== undefined) it.date = o.d; if (o.v) it.ver = o.v; }
+  });
+  if (CL) {   // 正在送出的那格先保留畫面上的樣子
+    ['day', 'week', 'mon'].forEach(function (k) { ((CL[k] || {}).items || []).forEach(function (x) { if (!x.busy) return; var y = ((P[k] || {}).items || []).filter(function (z) { return z.r === x.r; })[0]; if (y) { y.who = x.who; y.date = x.date; y.busy = 1; } }); });
+  }
+  CL = P; if (CUR === 'cln') clRender();
+}
+function clFsPut(k, it) {
+  if (!it) return; var o = {}; o[k + '_' + it.r] = { w: it.who || [], d: it.date || '', v: it.ver || [], t: Date.now() };
+  clFsReady().then(function () { return clDoc().set({ ov: o }, { merge: true }); }).catch(function () { });
+}
+function clFsPutV(sh, who) {
+  var o = {}; o['dv_' + sh] = { w: who || [], t: Date.now() };
+  clFsReady().then(function () { return clDoc().set({ ov: o }, { merge: true }); }).catch(function () { });
 }
 // ---------- 今天要做（11/17，右下角）：照今天班別列出茶湯、盤點、清潔、營收報表，做完自動打勾 ----------
 var TD = null, TDT = 0;
@@ -1376,12 +1435,15 @@ function pushOK() { return 'serviceWorker' in navigator && 'PushManager' in wind
 function isIOS() { return /iPhone|iPad|iPod/.test(navigator.userAgent); }
 function isSA() { return navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches); }
 function isLINE() { return / Line\//i.test(navigator.userAgent); }
-function fbLoad() {
-  return new Promise(function (res, rej) {
-    if (window.firebase && firebase.messaging) { res(); return; }
-    var L = ['firebase-app-compat.js', 'firebase-messaging-compat.js'], i = 0;
-    (function nx() { if (i >= L.length) { res(); return; } var sc = document.createElement('script'); sc.src = 'https://www.gstatic.com/firebasejs/10.12.2/' + L[i++]; sc.onload = nx; sc.onerror = function () { rej(new Error('載入失敗')); }; document.head.appendChild(sc); })();
-  });
+var FBL = {};
+function fbLoad(L) {   // 照順序載入 Firebase 檔案（同一個檔只載一次）
+  L = L || ['firebase-app-compat.js', 'firebase-messaging-compat.js'];
+  return L.reduce(function (p, f) {
+    return p.then(function () {
+      if (!FBL[f]) FBL[f] = new Promise(function (res, rej) { var sc = document.createElement('script'); sc.src = 'https://www.gstatic.com/firebasejs/10.12.2/' + f; sc.onload = res; sc.onerror = function () { delete FBL[f]; rej(new Error('載入失敗')); }; document.head.appendChild(sc); });
+      return FBL[f];
+    });
+  }, Promise.resolve());
 }
 function pushToken() {
   return fbLoad().then(function () { if (!firebase.apps.length) firebase.initializeApp(FB_CFG); return navigator.serviceWorker.ready; })
