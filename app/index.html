@@ -1409,10 +1409,14 @@ function pushAsk() {
   });
 }
 function pushTest() {
-  if (!pushOK()) { bar('這支手機（或這個瀏覽器）不支援通知', 3000); return; }
+  if (!pushOK()) { bar('這支手機（或這個瀏覽器）不支援通知' + (isIOS() ? '：iPhone 要 iOS 16.4 以上，而且要從主畫面打開' : ''), 5000); return; }
+  if (Notification.permission === 'denied') { bar('通知被關掉了：請到手機「設定 → 通知 → 我喜歡上班」打開', 5000); return; }
   if (Notification.permission !== 'granted') { LS('push_later', '0'); pushCheck(); return; }
   bar('送測試通知…');
-  pushToken().then(function () { return api('op=pushtest&' + sqQ()); }).then(function (j) { bar(j.ok ? '已送出，等幾秒看手機有沒有跳' : (j.err || '失敗'), 4000); }).catch(function () { bar('網路不穩，請再試一次', 3000); });
+  var step = '拿通知代碼';
+  pushToken().then(function (r) { if (!r || !r.ok) throw new Error('登記失敗：' + ((r && r.err) || '')); step = '送通知'; return api('op=pushtest&' + sqQ()); })
+    .then(function (j) { bar(j.ok ? '已送出，等幾秒看手機有沒有跳' : (j.err || '失敗'), 5000); })
+    .catch(function (e) { bar('❌ ' + step + '失敗：' + (e && (e.code || e.message) || e), 0, function () { $('bar').style.display = 'none'; }); });
 }
 // ---------- 可樂查詢頁（跟 LINE 一樣的指令，結果顯示在 App） ----------
 function qOut(h) { $('qr').innerHTML = h; $('qr').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
