@@ -2024,15 +2024,19 @@ function pdGo(force) {
     window.scrollTo(0, 0); return;
   }
   var j = { v: PDV, i: PDI, f: flags };
+  if (window.__pdgo) { bar('送出中，請稍等…', 2000); return; }   // 11/18 防止連按送好幾次
+  window.__pdgo = 1; var gb = $('pdgo'); if (gb) { gb.disabled = true; gb.textContent = '送出中…'; }
+  var done = function () { window.__pdgo = 0; var b2 = $('pdgo'); if (b2) { b2.disabled = false; pdCount(); } };
   bar('送出中…');
   api('op=pdset&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&sh=' + encodeURIComponent(PD.sh) + '&who=' + encodeURIComponent(PDW) + '&j=' + encodeURIComponent(JSON.stringify(j))).then(function (r) {
+    done();
     if (!r.ok) { bar(r.err || '沒送出去，請再按一次', 3000); return; }
     try { LS(pdKey(), null); } catch (e) { }
     pdFsClear(PD.sh);   // 11/18 雲端草稿清掉
     bar(r.live ? '已寫進庫存表' : '已送出（測試：沒寫進庫存表）', 2500);
     $('pdb').innerHTML = '<div class="card" style="margin-top:12px"><b style="color:#2e7d32">✅ ' + PD.sh + '盤點送出了</b><div style="font-size:13px;margin-top:6px">盤點人：' + esc(PDW) + '｜' + r.n + ' 項' + (r.flags ? '｜⚠️ ' + r.flags + ' 項已通知' + (r.live ? '幹部' : '可樂') : '') + (r.live ? '' : '<br>測試中，沒有寫進庫存表') + '</div></div><button class="btn" onclick="go(\'home\')">回首頁</button>';
     $('pdtab').innerHTML = '';
-  }).catch(function () { bar('網路不穩，請再按一次', 3000); });
+  }).catch(function () { done(); bar('網路不穩，請再按一次', 3000); });
 }
 function esc(x) { return String(x).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
 function hist(a) { $('sayh').innerHTML = a && a.length ? '<b>之前說過的</b>' + a.map(function (x) { return '<div>' + esc(x.x) + '<br><small>' + x.t + ' 送出</small></div>'; }).join('') : ''; }
