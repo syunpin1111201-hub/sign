@@ -514,14 +514,44 @@ function teaHome() {
   if (t && t.done) { el.textContent = t.who + ' ' + t.t + ' 填了'; $('b5').style.display = 'none'; }
   else { el.textContent = '今晚收店要留多少'; $('b5').style.display = 'none'; }
 }
-function teaSw() { $('sw').onclick(); TEA = null; teaLoad(); }
+function teaSw() { $('sw').onclick(); TEA = null; TEAT = 0; teaLoad(); }
+// ---------- 11/18 留茶湯改 Firestore（tea/rh、tea/fs）：打開先秀手機裡／雲端上一份，機器人在背景重算 ----------
+var TEAT = 0, TEAFU = null, TEAFS = '';
+function teaCanM() { try { return !!JSON.parse(LS('tea_can_' + U.s + U.n) || 'false'); } catch (e) { return false; } }
+function teaDoc(st) { return firebase.firestore().collection('tea').doc(st || U.s); }
+function teaGot(j, t0, render) {   // 機器人算好的（打開、改數字、送出都會回來）→ 畫面＋手機＋雲端
+  LS('tea_can_' + U.s + U.n, JSON.stringify(!!j.can));
+  if (t0 < TEAT) return; TEAT = t0;
+  TEA = j; if (render) { TEAF = null; teaRender(); }
+  var c = JSON.parse(JSON.stringify(j)); delete c.can;
+  var o = { snap: JSON.stringify(c), at: t0 };
+  try { LS('tea_snap_' + U.s, JSON.stringify(o)); } catch (e) { }
+  var st = U.s; clFsReady().then(function () { return teaDoc(st).set(o); }).catch(function () { });
+}
+function teaFsSub() {
+  if (TEAFS === U.s && TEAFU) return;
+  if (TEAFU) { try { TEAFU(); } catch (e) { } TEAFU = null; }
+  TEAFS = U.s; var st = U.s;
+  clFsReady().then(function () {
+    if (st !== U.s) return;
+    TEAFU = teaDoc(st).onSnapshot(function (d) {
+      var x = d.exists ? d.data() : null;
+      if (st !== U.s || !x || !x.snap || x.at <= TEAT || new Date(x.at).toDateString() !== new Date().toDateString()) return;
+      try { var P = JSON.parse(x.snap); P.can = teaCanM(); TEA = P; TEAT = x.at; LS('tea_snap_' + st, JSON.stringify({ snap: x.snap, at: x.at })); if (!TEAF && CUR === 'tea') teaRender(); } catch (e) { }
+    }, function () { });
+  }).catch(function () { });
+}
 function teaLoad() {
   $('teasw').style.display = BOSS() ? '' : 'none'; $('teasw').textContent = '⇄ 換' + (U.s === 'rh' ? '鳳山中山' : '熱河');
+  var t0 = Date.now(), st = U.s;
+  if (!TEA) { try { var ls = JSON.parse(LS('tea_snap_' + U.s) || 'null'); if (ls && new Date(ls.at).toDateString() === new Date().toDateString()) { TEA = JSON.parse(ls.snap); TEA.can = teaCanM(); TEAT = ls.at; TEAF = null; teaRender(); } } catch (e) { TEA = null; } }   // 11/18 手機裡存的 → 馬上秀
   if (!TEA) $('teab').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入中…</div>';
+  teaFsSub();
   api('op=tea&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok).then(function (j) {
-    if (!j.ok) { $('teab').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; }
-    TEA = j; TEAF = null; teaRender();
-  }).catch(function () { $('teab').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
+    if (st !== U.s) return;
+    if (!j.ok) { if (!TEA) $('teab').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; }
+    teaGot(j, t0, !TEAF);
+  }).catch(function () { if (!TEA) $('teab').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請再試一次</div>'; });
 }
 function teaTrend(f) { var p = Math.round((f - 1) * 100); return p >= 5 ? '⬆️ 比平常多 ' + p + '%' : p <= -5 ? '⬇️ 比平常少 ' + (-p) + '%' : '➖ 跟平常差不多'; }
 function teaTimes() {
@@ -543,7 +573,7 @@ function teaAdj(a, d) {
   bar('改好了，重新算…');
   api('op=teaadj&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + '&k=' + a[0] + '&t=' + encodeURIComponent(a[1]) + '&v=' + v).then(function (j) {
     if (!j.ok) { bar(j.err || '沒改到，請再按一次', 3000); return; }
-    TEA = j; teaRender(); bar(d === 0 ? '已改回機器人算的' : '已調整（只改明天這一次）', 1500);
+    teaGot(j, Date.now(), false); teaRender(); bar(d === 0 ? '已改回機器人算的' : '已調整（只改明天這一次）', 1500);
   }).catch(function () { bar('網路不穩，請再按一次', 3000); });
 }
 function teaRender() {
@@ -589,7 +619,7 @@ function teaSave() {
   bar('送出中…');
   api(q).then(function (j) {
     if (!j.ok) { bar(j.err || '沒送出，請再按一次', 3000); return; }
-    TEA = j; TEAF = null; teaRender(); window.scrollTo(0, 0); bar('已送出', 1500);
+    teaGot(j, Date.now(), true); window.scrollTo(0, 0); bar('已送出', 1500);
     if (DATA) { DATA.tea = { done: true, who: j.filled.who, t: j.filled.t }; teaHome(); }
   }).catch(function () { bar('網路不穩，請再按一次', 3000); });
 }
@@ -646,7 +676,7 @@ function teaEdSave() {
   bar('更新中…');
   api('op=fridgeset&s=' + U.s + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + devQ() + '&j=' + encodeURIComponent(JSON.stringify(TEAED))).then(function (j) {
     if (!j.ok) { bar(j.err || '沒更新到，請再按一次', 3000); return; }
-    TEA = j; TEAED = null; TEAK = 1; teaRender(); window.scrollTo(0, 0); bar('已更新', 1500);
+    teaGot(j, Date.now(), false); TEAED = null; TEAK = 1; teaRender(); window.scrollTo(0, 0); bar('已更新', 1500);
   }).catch(function () { bar('網路不穩，請再按一次', 3000); });
 }
 // ---------- 可樂：兩店班表（11/10） ----------
