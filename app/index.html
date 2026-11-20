@@ -912,8 +912,7 @@ function paSend() {
     if (!j.ok) { $('paC').innerHTML = '<div style="color:#c0392b;margin-top:8px">' + esc(j.err || '失敗') + '</div>'; return; }
     $('paT').value = '';
     $('paC').innerHTML = '<div style="color:#2d7a3a;margin-top:8px">✅ 已送出 ' + j.n + ' 人，手機有收到通知的 ' + j.sent + ' 人（沒開通知的人打開 App 也會看到）</div>';
-    paBoss(j.b);
-  }).catch(function () { $('paC').innerHTML = '<div style="color:#c0392b;margin-top:8px">網路不穩：先看下面有沒有已經送出，沒有再重新檢查一次</div>'; paBoss(); });
+  }).catch(function () { $('paC').innerHTML = '<div style="color:#c0392b;margin-top:8px">網路不穩：員工可能已經收到，先問一位名單上的人再決定要不要重送</div>'; });
 }
 function paBoss(b) {
   var el = $('paL'); if (!el) return;
@@ -1736,7 +1735,7 @@ function qForm(k) {
   else if (k === 'hb') { h = '<div class="card" id="hbf"><b>🔴 登記紅榜</b><div style="color:var(--mu)">載入中…</div></div>'; HB = null; HBF = { d: 0, dv: '', code: '', ns: {}, st: U.s === 'fs' ? '鳳山' : '熱河', amt: '', t: '' }; setTimeout(hbLoad, 0); }
   else if (k === 'pa' && PAK === 'at') h = paTabs() + '<div class="card"><b>⏰ 登記遲到早退</b><p style="font-size:13px;color:var(--mu);margin:4px 0 8px">一行一筆：姓名 日期 遲到/早退 分鐘（例：吳秉諭 11/9 遲到 74）。同人同天已經記過的會自動跳過</p><textarea id="atT" style="height:170px;font-size:14px" placeholder="吳秉諭 11/9 遲到 74&#10;羅佳妤 11/13 遲到 58"></textarea><button class="btn" style="margin-top:8px" onclick="atCheck()">檢查</button><div id="atC"></div></div>';
   else if (k === 'pa') { var dd = new Date(Date.now() + 3 * 864e5), dv = dd.getFullYear() + '-' + ('0' + (dd.getMonth() + 1)).slice(-2) + '-' + ('0' + dd.getDate()).slice(-2);
-    h = paTabs() + '<div class="card"><b>⏰ 發打卡申覆</b><p style="font-size:13px;color:var(--mu);margin:4px 0 8px">把核對考勤的公告整段貼上；只會推播給名單上的人，他們首頁會出現紅色卡片，送完自己按「已送出」</p><textarea id="paT" style="height:170px;font-size:14px" placeholder="【11/1–11/19 打卡異常申覆】&#10;▍熱河&#10;姓名｜11/12 下班沒打卡"></textarea><div style="font-size:13px;color:var(--mu);margin-top:6px">截止日</div><input id="paD" type="date" value="' + dv + '"><button class="btn" style="margin-top:8px" onclick="paCheck()">檢查名單</button><div id="paC"></div></div><div id="paL"></div>'; setTimeout(function () { paBoss(); }, 0); }
+    h = paTabs() + '<div class="card"><b>⏰ 發打卡申覆</b><p style="font-size:13px;color:var(--mu);margin:4px 0 8px">把核對考勤的公告整段貼上；只會推播給名單上的人，他們首頁會出現紅色卡片，送完自己按「已送出」；截止前一天晚上 9 點會自動再提醒還沒按的人</p><textarea id="paT" style="height:170px;font-size:14px" placeholder="【11/1–11/19 打卡異常申覆】&#10;▍熱河&#10;姓名｜11/12 下班沒打卡"></textarea><div style="font-size:13px;color:var(--mu);margin-top:6px">截止日</div><input id="paD" type="date" value="' + dv + '"><button class="btn" style="margin-top:8px" onclick="paCheck()">檢查名單</button><div id="paC"></div></div>'; }
   else if (k === 'pub') h = '<div class="card"><b>📅 發班表</b><p style="font-size:13px;color:var(--mu);margin:4px 0 0">發到大群給員工看；改班後再發一次＝新版本，只列有變的人</p>' +
     '<div style="font-size:13px;color:var(--mu);margin-top:10px">門市</div><select id="pbS"><option value="">兩店</option><option>熱河</option><option>鳳山</option></select>' +
     '<div style="font-size:13px;color:var(--mu);margin-top:6px">哪兩週（不選＝下一個還沒發的兩週；改班重發選那兩週的第一天）</div><input id="pbD" type="date">' +
