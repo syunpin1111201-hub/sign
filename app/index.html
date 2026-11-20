@@ -660,31 +660,33 @@ function teaExpHtml(P) {
   var h = '<div class="card"><b>⏰ 冰箱每一桶幾點到期</b>' + (P.fr ? '<div style="color:var(--mu);font-size:12px">' + esc(P.fr.who) + ' ' + esc(P.fr.t) + ' 更新</div>' : '<div style="color:var(--mu);font-size:13px;margin-top:6px">還沒填過冰箱</div>');
   (P.exp || []).forEach(function (x) {
     if (!x.n) return;
-    h += '<div style="border-bottom:1px dashed #eadfce;padding:7px 0"><b style="font-size:15px">' + x.t + '</b>　冰箱 ' + x.n + ' 桶<br>' +
-      x.list.map(function (b) { return '<span class="chip" style="margin:2px 4px 2px 0;font-size:12px;padding:2px 8px' + (b.w ? ';background:#fde3dc;border-color:#e8b4a0;color:#b3502e' : '') + '">' + (b.s === 0.5 ? '半桶 ' : '') + esc(b.b) + ' → ' + esc(b.e) + '</span>'; }).join('') + '<br>' +
-      (x.waste > 0 ? '<span style="color:#b3502e;font-weight:700">⚠️ ' + (x.same > 1 ? x.same + ' 桶同時 ' : '') + esc(x.first) + ' 到期，到時預估還剩約 ' + (x.waste >= 10000 ? (x.waste / 10000) + ' 桶' : x.waste + 'cc') + ' → 可能報廢</span>' +
-        (x.same > 1 ? '<br><span style="color:var(--mu);font-size:12px">下次同一款第二桶晚 ' + x.gap + ' 小時以上再開</span>' : '<br><span style="color:var(--mu);font-size:12px">先用這桶</span>')
-        : '<span style="color:#2e7d32;font-weight:700">✅ 最快 ' + esc(x.first) + ' 到期' + (x.after ? '，後面還有 ' + x.after + ' 桶' : '') + '，預估不會報廢</span>') + '</div>';
+    h += '<div style="border-bottom:1px dashed #eadfce;padding:7px 0"><b style="font-size:15px">' + x.t + '</b>　冰箱 ' + x.n + ' ' + (x.u || '桶') + '<br>' +
+      x.list.map(function (b) { return '<span class="chip" style="margin:2px 4px 2px 0;font-size:12px;padding:2px 8px' + (b.w ? ';background:#fde3dc;border-color:#e8b4a0;color:#b3502e' : '') + '">' + (b.s === 0.5 && !x.u ? '半桶 ' : '') + esc(b.b) + ' → ' + esc(b.e) + '</span>'; }).join('') + '<br>' +
+      (x.waste > 0 ? '<span style="color:#b3502e;font-weight:700">⚠️ ' + (x.same > 1 ? x.same + ' ' + (x.u || '桶') + '同時 ' : '') + esc(x.first) + ' 到期，到時預估還剩約 ' + (x.u ? (x.waste / x.cap) + ' ' + x.u : x.waste >= 10000 ? (x.waste / 10000) + ' 桶' : x.waste + 'cc') + ' → 可能報廢</span>' +
+        (x.u ? '<br><span style="color:var(--mu);font-size:12px">一次不要退冰太多，用完一' + x.u + '再退下一' + x.u + '（平常約 ' + x.gap + ' 小時用掉一' + x.u + '）</span>' : x.same > 1 ? '<br><span style="color:var(--mu);font-size:12px">下次同一款第二桶晚 ' + x.gap + ' 小時以上再開</span>' : '<br><span style="color:var(--mu);font-size:12px">先用這桶</span>')
+        : '<span style="color:#2e7d32;font-weight:700">✅ 最快 ' + esc(x.first) + ' 到期' + (x.after ? '，後面還有 ' + x.after + ' ' + (x.u || '桶') : '') + '，預估不會報廢</span>') + '</div>';
   });
-  h += '<div style="color:var(--mu);font-size:12px;margin-top:6px">照每個時段平常賣多少估的，先用最早煮的那桶</div>' +
+  h += '<div style="color:var(--mu);font-size:12px;margin-top:6px">照每個時段平常賣多少估的，先用最早煮（退冰）的那一桶／瓶</div>' +
     (P.can || P.frCan ? '<button class="btn" onclick="teaEdOpen()">🧊 更新冰箱</button>' : '') + '</div>';
   return h;
 }
-function teaEdOpen() { var b = (TEA.fr && TEA.fr.b) || {}; TEAED = {}; TEA.night.forEach(function (x) { TEAED[x.t] = (b[x.t] || []).slice(); }); teaRender(); window.scrollTo(0, 0); }
+function teaSzShow() { var e = $('tdS'), t = $('tdT'); if (e && t) e.style.display = /^(和茶|307|308|紅茶|505|406)$/.test(t.value) ? '' : 'none'; }
+function teaItems() { return TEA.frItems || TEA.night.map(function (x) { return { t: x.t, u: '桶' }; }); }   // 11/21 加果汁、琥珀糖、厚奶
+function teaEdOpen() { var b = (TEA.fr && TEA.fr.b) || {}; TEAED = {}; teaItems().forEach(function (x) { TEAED[x.t] = (b[x.t] || []).slice(); }); teaRender(); window.scrollTo(0, 0); }
 function teaTimeOpts() {
   var now = new Date(), o = [], base = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
   for (var k = 0; k <= 30; k++) { var d = new Date(base.getTime() - k * 3600000), td = d.getDate() === now.getDate(); o.push('<option value="' + d.getTime() + '">' + (td ? '今天 ' : '昨天 ') + ('0' + d.getHours()).slice(-2) + ':00</option>'); }
   return o.join('');
 }
-function teaTL(t) { var d = new Date(t), now = new Date(); return (d.getDate() === now.getDate() ? '' : '昨天 ') + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+function teaTL(t) { var d = new Date(t), now = new Date(), dd = Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5); return (dd === 0 ? '' : dd === 1 ? '昨天 ' : dd === 2 ? '前天 ' : (d.getMonth() + 1) + '/' + d.getDate() + ' ') + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
 function teaEdHtml() {
-  var h = '<div class="card"><b>🧊 更新冰箱：每款茶有幾桶、各是幾點煮的</b><div style="color:var(--mu);font-size:12px">看桶子上貼的時間；上次的已經帶出來，只改有變的</div>' +
-    '<div style="display:flex;gap:6px;margin:10px 0;flex-wrap:wrap"><select id="tdT" style="margin:0;width:auto">' + TEA.night.map(function (x) { return '<option>' + x.t + '</option>'; }).join('') + '</select>' +
-    '<select id="tdD" style="margin:0;width:auto"><option value="0">今天</option><option value="1">昨天</option></select><input id="tdH" type="time" value="' + teaNowHM() + '" style="margin:0;width:auto;font-size:16px"><select id="tdS" style="margin:0;width:auto"><option value="1">1 桶</option><option value="0.5">半桶</option></select>' +
+  var h = '<div class="card"><b>🧊 更新冰箱：每款茶幾桶、果汁幾瓶，各是幾點煮好／退冰的</b><div style="color:var(--mu);font-size:12px">看上面貼的時間；上次的已經帶出來，只改有變的。果汁、琥珀糖、厚奶一次加一瓶（罐、包）</div>' +
+    '<div style="display:flex;gap:6px;margin:10px 0;flex-wrap:wrap"><select id="tdT" style="margin:0;width:auto" onchange="teaSzShow()">' + teaItems().map(function (x) { return '<option>' + x.t + '</option>'; }).join('') + '</select>' +
+    '<select id="tdD" style="margin:0;width:auto"><option value="0">今天</option><option value="1">昨天</option><option value="2">前天</option></select><input id="tdH" type="time" value="' + teaNowHM() + '" style="margin:0;width:auto;font-size:16px"><select id="tdS" style="margin:0;width:auto"><option value="1">1 桶</option><option value="0.5">半桶</option></select>' +
     '<span class="chip f" style="margin:0;padding:8px 12px" onclick="teaEdAdd()">＋ 加入</span><span class="chip" style="margin:0;padding:8px 12px;color:#b3502e;border-color:#b3502e" onclick="teaEdClr()">🗑 一鍵清除</span></div>';
-  TEA.night.forEach(function (x) {
+  teaItems().forEach(function (x) {
     var L = TEAED[x.t] || [];
-    h += '<div style="border-bottom:1px dashed #eadfce;padding:7px 0"><b>' + x.t + '</b>　' + (L.length ? L.map(function (b, k) { return '<span class="chip" style="margin:2px 4px 2px 0;font-size:13px;padding:3px 9px">' + (b.s === 0.5 ? '半桶 ' : '') + teaTL(b.t) + ' <span onclick="teaEdDel(\'' + x.t + '\',' + k + ')" style="color:#b3502e">✕</span></span>'; }).join('') : '<span style="color:var(--mu);font-size:12px">沒有</span>') + '</div>';
+    h += '<div style="border-bottom:1px dashed #eadfce;padding:7px 0"><b>' + x.t + '</b>' + (L.length && x.u !== '桶' ? ' <small style="color:var(--mu)">' + L.length + ' ' + x.u + '</small>' : '') + '　' + (L.length ? L.map(function (b, k) { return '<span class="chip" style="margin:2px 4px 2px 0;font-size:13px;padding:3px 9px">' + (b.s === 0.5 ? '半桶 ' : '') + teaTL(b.t) + ' <span onclick="teaEdDel(\'' + x.t + '\',' + k + ')" style="color:#b3502e">✕</span></span>'; }).join('') : '<span style="color:var(--mu);font-size:12px">沒有</span>') + '</div>';
   });
   return h + '<button class="btn" onclick="teaEdSave()">更新</button><button class="btn" style="background:#fff;color:var(--ac);border:1px solid var(--ac);margin-top:8px" onclick="TEAED=null;teaRender()">取消</button></div>';
 }
@@ -694,9 +696,10 @@ function teaEdAdd() {
   var t = $('tdT').value, hm = ($('tdH').value || '').split(':'), now = new Date();
   if (hm.length < 2) { bar('請選幾點幾分煮的', 2000); return; }
   var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - Number($('tdD').value), +hm[0], +hm[1]);
-  if (d > now) { bar('這個時間還沒到，是不是昨天煮的？', 2500); return; }
-  TEAED[t].push({ t: d.getTime(), s: Number($('tdS').value) }); TEAED[t].sort(function (a, b) { return a.t - b.t; });
-  var keep = [$('tdT').value, $('tdD').value, $('tdH').value, $('tdS').value]; teaRender(); $('tdT').value = keep[0]; $('tdD').value = keep[1]; $('tdH').value = keep[2]; $('tdS').value = keep[3];
+  if (d > now) { bar('這個時間還沒到，是不是昨天煮（退冰）的？', 2500); return; }
+  if (!TEAED[t]) TEAED[t] = [];
+  TEAED[t].push({ t: d.getTime(), s: /^(和茶|307|308|紅茶|505|406)$/.test(t) ? Number($('tdS').value) : 1 }); TEAED[t].sort(function (a, b) { return a.t - b.t; });
+  var keep = [$('tdT').value, $('tdD').value, $('tdH').value, $('tdS').value]; teaRender(); $('tdT').value = keep[0]; $('tdD').value = keep[1]; $('tdH').value = keep[2]; $('tdS').value = keep[3]; teaSzShow();
 }
 // 11/13 一鍵清除：全部桶子先清空（還沒按「更新」前都不會存，按「取消」可以還原）
 function teaEdClr() { Object.keys(TEAED).forEach(function (t) { TEAED[t] = []; }); teaRender(); bar('已全部清除，加好現在冰箱的桶子再按「更新」', 2500); }
