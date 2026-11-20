@@ -158,7 +158,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
     <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('exp')">💸 打支出</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('net')">💰 看淨利</span>
-    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('pub')">📅 發班表</span><span class="chip f" style="margin:0;text-align:center;padding:10px;background:#c0392b;border-color:#c0392b" onclick="qForm('hb')">🔴 登記紅榜</span><span class="chip f" style="margin:0;text-align:center;padding:10px;grid-column:1/3" onclick="qForm('pa')">⏰ 發打卡申覆・看誰還沒送</span></div><div style="text-align:right;margin-top:-4px"><span class="chip" onclick="pushTest()">🔔 測試我的手機通知</span></div>
+    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('pub')">📅 發班表</span><span class="chip f" style="margin:0;text-align:center;padding:10px;background:#c0392b;border-color:#c0392b" onclick="qForm('hb')">🔴 登記紅榜</span><span class="chip f" style="margin:0;text-align:center;padding:10px;grid-column:1/3" onclick="qForm('pa')">⏰ 考勤：打卡申覆・遲到早退</span></div><div style="text-align:right;margin-top:-4px"><span class="chip" onclick="pushTest()">🔔 測試我的手機通知</span></div>
   <div id="qf"></div><div id="qr"></div>
   <div class="sec2">👤 查人</div><div class="card"><div id="qps"></div>
     <span class="chip" onclick="qP('#查員工','員工資料')">員工資料</span><span class="chip" onclick="qP('#查薪資','薪資')">薪資</span><span class="chip" onclick="qP('#查欠時數','欠時數')">欠時數</span><span class="chip" onclick="qP('#查借支','借支')">借支</span><span class="chip" onclick="qP('#查考核','考核')">考核</span><span class="chip" onclick="qP('#查紅黑榜','紅黑榜')">紅黑榜</span><span class="chip" onclick="qP('#查獎金','獎金')">獎金</span><span class="chip" onclick="qP('#查禮金','禮金')">禮金</span><span class="chip" onclick="qP('#查代班','代班')">代班</span></div>
@@ -855,6 +855,40 @@ function paDone(b) {
     if (!j.ok) { bar(j.err || '失敗，請再按一次', 3000); return; }
     PA = (PA || []).filter(function (x) { return x.b !== b; }); LS('pa_' + U.s + U.n, JSON.stringify(PA)); paHome(); appBadge(); bar('已記錄，謝謝！', 2000);
   }).catch(function () { bar('網路不穩，請再按一次', 3000); });
+}
+var PAK = 'pa', ATL = null;
+function paTabs() { return '<div style="display:flex;gap:8px;margin:0 16px 8px">' + [['pa', '打卡申覆'], ['at', '遲到早退']].map(function (x) { return '<span class="chip' + (PAK === x[0] ? ' f' : '') + '" onclick="PAK=\'' + x[0] + '\';qForm(\'pa\')">' + x[1] + '</span>'; }).join('') + '</div>'; }
+function atCheck() {
+  var t = $('atT').value.trim(); if (!t) { bar('請先貼名單', 2000); return; }
+  $('atC').innerHTML = '<div style="color:var(--mu);margin-top:8px">比對中…</div>';
+  paPost('at', { t: t, dry: '1' }).then(function (j) {
+    if (!j.ok) { $('atC').innerHTML = '<div style="color:#c0392b;margin-top:8px">' + esc(j.err || '失敗') + '</div>'; return; }
+    ATL = j.list; atRender();
+  }).catch(function () { $('atC').innerHTML = '<div style="color:#c0392b;margin-top:8px">網路不穩，請再按一次</div>'; });
+}
+function atRender() {
+  var L = ATL || [], nw = L.filter(function (x) { return x.st === 'new'; }).length, sk = L.length - nw;
+  var row = function (a, b, c) { return '<div class="pl" style="align-items:center"><span style="font-size:14px">' + a + '</span><span style="font-size:13px;text-align:right;color:' + c + '">' + b + '</span></div>'; };
+  var h = '<div style="margin-top:10px;font-size:14px"><b>會寫 ' + nw + ' 筆、跳過 ' + sk + ' 筆</b></div>';
+  L.forEach(function (x, i) {
+    var lab = x.n ? esc(x.n + ' ' + x.d + ' ' + x.type + (x.val ? ' ' + x.val + ' 分' : '')) : esc(x.line);
+    if (x.st === 'new') h += row(lab, '＋新增', '#2d7a3a');
+    else if (x.st === 'diff') h += row(lab, '已記過 ' + esc(x.ex.val) + ' 分<br><label style="color:#b7791f"><input type="checkbox" class="atfx" data-v="' + x.ex.id + ':' + x.val + '" style="width:auto;margin:0 4px 0 0">改成 ' + x.val + ' 分</label>', '#b7791f');
+    else if (x.st === 'dup') h += row(lab, x.ex ? '已記過（' + esc(x.ex.type + (x.ex.val ? ' ' + x.ex.val + ' 分' : '')) + '）・跳過' : esc(x.why || '跳過'), 'var(--mu)');
+    else h += row(lab, '⚠️ ' + esc(x.why || ''), '#c0392b');
+  });
+  var fx = L.some(function (x) { return x.st === 'diff'; });
+  h += (nw || fx ? '<button class="btn" style="margin-top:8px" onclick="atWrite()">寫入' + (nw ? ' ' + nw + ' 筆' : '') + (fx ? '（有勾的分鐘一起改）' : '') + '</button>' : '<div style="color:var(--mu);margin-top:8px">沒有要新增的</div>');
+  $('atC').innerHTML = h;
+}
+function atWrite() {
+  var fix = [].map.call(document.querySelectorAll('.atfx:checked'), function (e) { return e.getAttribute('data-v'); }).join(',');
+  $('atC').innerHTML = '<div style="color:var(--mu);margin-top:8px">寫入中…</div>';
+  paPost('at', { t: $('atT').value.trim(), fix: fix }).then(function (j) {
+    if (!j.ok) { $('atC').innerHTML = '<div style="color:#c0392b;margin-top:8px">' + esc(j.err || '失敗') + '</div>'; return; }
+    $('atT').value = ''; ATL = null;
+    $('atC').innerHTML = '<div style="color:#2d7a3a;margin-top:8px">✅ 新增 ' + j.added + ' 筆' + (j.fixed ? '、改分鐘 ' + j.fixed + ' 筆' : '') + '（考核第 11 項會算進去）</div>';
+  }).catch(function () { $('atC').innerHTML = '<div style="color:#c0392b;margin-top:8px">網路不穩：先按「檢查」看有沒有已經寫進去（寫過的會顯示已記過），再決定要不要重送</div>'; });
 }
 function paPost(op, data) {
   return fetch(EXEC + '?api=app&op=' + op + '&' + sqQ(), { method: 'POST', body: new URLSearchParams(data) }).then(function (r) { return r.json(); });
@@ -1700,8 +1734,9 @@ function qForm(k) {
   var h = '';
   if (k === 'net') { qRun('#更新財務 ' + ym(0), ym(0) + ' 淨利'); h = '<div class="card">看別的月份：<span class="chip" onclick="qRun(\'#更新財務 ' + ym(1) + '\',\'' + ym(1) + ' 淨利\')">' + ym(1) + '</span><span class="chip" onclick="qRun(\'#更新財務 ' + ym(2) + '\',\'' + ym(2) + ' 淨利\')">' + ym(2) + '</span></div>'; }
   else if (k === 'hb') { h = '<div class="card" id="hbf"><b>🔴 登記紅榜</b><div style="color:var(--mu)">載入中…</div></div>'; HB = null; HBF = { d: 0, dv: '', code: '', ns: {}, st: U.s === 'fs' ? '鳳山' : '熱河', amt: '', t: '' }; setTimeout(hbLoad, 0); }
+  else if (k === 'pa' && PAK === 'at') h = paTabs() + '<div class="card"><b>⏰ 登記遲到早退</b><p style="font-size:13px;color:var(--mu);margin:4px 0 8px">一行一筆：姓名 日期 遲到/早退 分鐘（例：吳秉諭 11/9 遲到 74）。同人同天已經記過的會自動跳過</p><textarea id="atT" style="height:170px;font-size:14px" placeholder="吳秉諭 11/9 遲到 74&#10;羅佳妤 11/13 遲到 58"></textarea><button class="btn" style="margin-top:8px" onclick="atCheck()">檢查</button><div id="atC"></div></div>';
   else if (k === 'pa') { var dd = new Date(Date.now() + 3 * 864e5), dv = dd.getFullYear() + '-' + ('0' + (dd.getMonth() + 1)).slice(-2) + '-' + ('0' + dd.getDate()).slice(-2);
-    h = '<div class="card"><b>⏰ 發打卡申覆</b><p style="font-size:13px;color:var(--mu);margin:4px 0 8px">把核對考勤的公告整段貼上；只會推播給名單上的人，他們首頁會出現紅色卡片，送完自己按「已送出」</p><textarea id="paT" style="height:170px;font-size:14px" placeholder="【11/1–11/19 打卡異常申覆】&#10;▍熱河&#10;姓名｜11/12 下班沒打卡"></textarea><div style="font-size:13px;color:var(--mu);margin-top:6px">截止日</div><input id="paD" type="date" value="' + dv + '"><button class="btn" style="margin-top:8px" onclick="paCheck()">檢查名單</button><div id="paC"></div></div><div id="paL"></div>'; setTimeout(function () { paBoss(); }, 0); }
+    h = paTabs() + '<div class="card"><b>⏰ 發打卡申覆</b><p style="font-size:13px;color:var(--mu);margin:4px 0 8px">把核對考勤的公告整段貼上；只會推播給名單上的人，他們首頁會出現紅色卡片，送完自己按「已送出」</p><textarea id="paT" style="height:170px;font-size:14px" placeholder="【11/1–11/19 打卡異常申覆】&#10;▍熱河&#10;姓名｜11/12 下班沒打卡"></textarea><div style="font-size:13px;color:var(--mu);margin-top:6px">截止日</div><input id="paD" type="date" value="' + dv + '"><button class="btn" style="margin-top:8px" onclick="paCheck()">檢查名單</button><div id="paC"></div></div><div id="paL"></div>'; setTimeout(function () { paBoss(); }, 0); }
   else if (k === 'pub') h = '<div class="card"><b>📅 發班表</b><p style="font-size:13px;color:var(--mu);margin:4px 0 0">發到大群給員工看；改班後再發一次＝新版本，只列有變的人</p>' +
     '<div style="font-size:13px;color:var(--mu);margin-top:10px">門市</div><select id="pbS"><option value="">兩店</option><option>熱河</option><option>鳳山</option></select>' +
     '<div style="font-size:13px;color:var(--mu);margin-top:6px">哪兩週（不選＝下一個還沒發的兩週；改班重發選那兩週的第一天）</div><input id="pbD" type="date">' +
