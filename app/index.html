@@ -629,13 +629,13 @@ function teaRender() {
   }
   // 11/12 16:00 發布的是「22:30 收店要留給明天早班」的量（晚上還會再煮，所以不算晚上用量；505、406 平常不留）
   h += '<div class="card"><b>🌙 22:30 收店前，冰箱要留給明天早班</b><div style="color:var(--mu);font-size:12px">照明天的星期、天氣、最近用量算好的量</div>' +
-    P.night.filter(function (x) { return x.keep > 0 || P.can; }).map(function (x) {
+    P.night.filter(function (x) { return x.t !== '505' && (x.keep > 0 || P.can); }).map(function (x) {
       return teaRow(x.t, x.keep / 10000, '桶', '', 'night', x.t, 0.5, x.adj, '不留');
     }).join('') +
     teaRow('厚奶', P.milk.keep, '包', '', 'night', '厚奶', 1, P.milk.adj) +
     (P.sugar ? teaRow('琥珀糖', P.sugar.keep, '罐', '5kg 糖＋約 1630 水', 'night', '琥珀糖', 1, P.sugar.adj) : '') +
     teaRow('白玉', P.ball, 'g', '準備好一盒，給明天開早用', 'night', '白玉', 500, P.ballAdj) +
-    '<div style="color:var(--mu);font-size:12px;margin-top:6px">今天的白玉當天賣完；黑烏龍、青茶（12H）今天報廢</div></div>';
+    '<div style="color:var(--mu);font-size:12px;margin-top:6px">今天的白玉當天賣完；505、黑烏龍、青茶（12H）當天沒賣完就報廢，不留</div></div>';
   $('teab').innerHTML = devWhoHtml('teaRender') + h;
 }
 function teaStep(i, d) {
@@ -659,7 +659,7 @@ function teaExpHtml(P) {
   if (TEAED) return teaEdHtml();
   var h = '<div class="card"><b>⏰ 冰箱每一桶幾點到期</b>' + (P.fr ? '<div style="color:var(--mu);font-size:12px">' + esc(P.fr.who) + ' ' + esc(P.fr.t) + ' 更新</div>' : '<div style="color:var(--mu);font-size:13px;margin-top:6px">還沒填過冰箱</div>');
   (P.exp || []).forEach(function (x) {
-    if (!x.n) return;
+    if (!x.n || x.t === '505') return;
     h += '<div style="border-bottom:1px dashed #eadfce;padding:7px 0"><b style="font-size:15px">' + x.t + '</b>　冰箱 ' + x.n + ' ' + (x.u || '桶') + '<br>' +
       x.list.map(function (b) { return '<span class="chip" style="margin:2px 4px 2px 0;font-size:12px;padding:2px 8px' + (b.w ? ';background:#fde3dc;border-color:#e8b4a0;color:#b3502e' : '') + '">' + (b.s === 0.5 && !x.u ? '半桶 ' : '') + esc(b.b) + ' → ' + esc(b.e) + '</span>'; }).join('') + '<br>' +
       (x.waste > 0 ? '<span style="color:#b3502e;font-weight:700">⚠️ ' + (x.same > 1 ? x.same + ' ' + (x.u || '桶') + '同時 ' : '') + esc(x.first) + ' 到期，到時預估還剩約 ' + (x.u ? (x.waste / x.cap) + ' ' + x.u : x.waste >= 10000 ? (x.waste / 10000) + ' 桶' : x.waste + 'cc') + ' → 可能報廢</span>' +
@@ -670,8 +670,8 @@ function teaExpHtml(P) {
     (P.can || P.frCan ? '<button class="btn" onclick="teaEdOpen()">🧊 更新冰箱</button>' : '') + '</div>';
   return h;
 }
-function teaSzShow() { var e = $('tdS'), t = $('tdT'); if (e && t) e.style.display = /^(和茶|307|308|紅茶|505|406)$/.test(t.value) ? '' : 'none'; }
-function teaItems() { return TEA.frItems || TEA.night.map(function (x) { return { t: x.t, u: '桶' }; }); }   // 11/21 加果汁、琥珀糖、厚奶
+function teaSzShow() { var e = $('tdS'), t = $('tdT'); if (e && t) e.style.display = /^(和茶|307|308|紅茶|406)$/.test(t.value) ? '' : 'none'; }
+function teaItems() { return (TEA.frItems || TEA.night.map(function (x) { return { t: x.t, u: '桶' }; })).filter(function (x) { return x.t !== '505'; }); }   // 11/21 505 當天報廢，不記冰箱   // 11/21 加果汁、琥珀糖、厚奶
 function teaEdOpen() { var b = (TEA.fr && TEA.fr.b) || {}; TEAED = {}; teaItems().forEach(function (x) { TEAED[x.t] = (b[x.t] || []).slice(); }); teaRender(); window.scrollTo(0, 0); }
 function teaTimeOpts() {
   var now = new Date(), o = [], base = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
@@ -698,7 +698,7 @@ function teaEdAdd() {
   var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - Number($('tdD').value), +hm[0], +hm[1]);
   if (d > now) { bar('這個時間還沒到，是不是昨天煮（退冰）的？', 2500); return; }
   if (!TEAED[t]) TEAED[t] = [];
-  TEAED[t].push({ t: d.getTime(), s: /^(和茶|307|308|紅茶|505|406)$/.test(t) ? Number($('tdS').value) : 1 }); TEAED[t].sort(function (a, b) { return a.t - b.t; });
+  TEAED[t].push({ t: d.getTime(), s: /^(和茶|307|308|紅茶|406)$/.test(t) ? Number($('tdS').value) : 1 }); TEAED[t].sort(function (a, b) { return a.t - b.t; });
   var keep = [$('tdT').value, $('tdD').value, $('tdH').value, $('tdS').value]; teaRender(); $('tdT').value = keep[0]; $('tdD').value = keep[1]; $('tdH').value = keep[2]; $('tdS').value = keep[3]; teaSzShow();
 }
 // 11/13 一鍵清除：全部桶子先清空（還沒按「更新」前都不會存，按「取消」可以還原）
