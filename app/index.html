@@ -116,6 +116,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <!-- 首頁 -->
 <div class="scr" id="home">
   <div class="hd"><div class="s" id="hs"></div><h2 id="hn"></h2><span class="rf" id="rf">↻ 更新</span></div>
+  <div class="card" id="pac" style="display:none;margin-top:14px;border:1px solid #f0b8b0;background:#fff3f1"></div>
   <div class="card" id="ldc" style="display:none;margin-top:14px"></div>
   <div id="btd" style="display:none"><div class="sec2" id="btdh"></div><div class="card" id="btdl"></div></div>
   <div id="btl" style="display:none"><div class="sec2">常用</div><div class="card" style="display:flex;gap:8px;flex-wrap:wrap"><span class="chip f" onclick="tool('grant')">🏖️ 多劃假</span><span class="chip f" onclick="tool('slip')">💵 簽收單</span><span class="chip f" onclick="tool('loan')">💳 借支單</span><span class="chip f" onclick="tool('exam')">📝 開考試</span></div></div>
@@ -157,7 +158,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
     <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('exp')">💸 打支出</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('net')">💰 看淨利</span>
-    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('pub')">📅 發班表</span><span class="chip f" style="margin:0;text-align:center;padding:10px;background:#c0392b;border-color:#c0392b" onclick="qForm('hb')">🔴 登記紅榜</span></div><div style="text-align:right;margin-top:-4px"><span class="chip" onclick="pushTest()">🔔 測試我的手機通知</span></div>
+    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('pub')">📅 發班表</span><span class="chip f" style="margin:0;text-align:center;padding:10px;background:#c0392b;border-color:#c0392b" onclick="qForm('hb')">🔴 登記紅榜</span><span class="chip f" style="margin:0;text-align:center;padding:10px;grid-column:1/3" onclick="qForm('pa')">⏰ 發打卡申覆・看誰還沒送</span></div><div style="text-align:right;margin-top:-4px"><span class="chip" onclick="pushTest()">🔔 測試我的手機通知</span></div>
   <div id="qf"></div><div id="qr"></div>
   <div class="sec2">👤 查人</div><div class="card"><div id="qps"></div>
     <span class="chip" onclick="qP('#查員工','員工資料')">員工資料</span><span class="chip" onclick="qP('#查薪資','薪資')">薪資</span><span class="chip" onclick="qP('#查欠時數','欠時數')">欠時數</span><span class="chip" onclick="qP('#查借支','借支')">借支</span><span class="chip" onclick="qP('#查考核','考核')">考核</span><span class="chip" onclick="qP('#查紅黑榜','紅黑榜')">紅黑榜</span><span class="chip" onclick="qP('#查獎金','獎金')">獎金</span><span class="chip" onclick="qP('#查禮金','禮金')">禮金</span><span class="chip" onclick="qP('#查代班','代班')">代班</span></div>
@@ -813,12 +814,90 @@ function render() {
   tdNav(); if (TD && CUR === 'tdo') tdRender();
   cbHome();
   khLoad();
+  paLoad();
   wrHome();
   var hr = d.hr;
   $('hrc').style.display = hr ? '' : 'none';
   if (hr) $('hrc').innerHTML = '<b>🔑 風行人資系統</b><div class="hrk"><span>網域</span><b>' + hr.dom + '<i onclick="cp(\'' + hr.dom + '\')">複製</i></b></div><div class="hrk"><span>帳號</span><b>' + esc(hr.id) + '<i onclick="cp(\'' + esc(hr.id) + '\')">複製</i></b></div><div class="hrk"><span>預設密碼</span><b>' + hr.pw + '</b></div>';
 }
 
+
+// ---------- 打卡申覆（11/20）：可樂貼公告 → 只推給名單上的人；員工首頁紅卡＋按「已送出」；可樂看誰還沒送 ----------
+var PA = null, PAT = 0;
+function paLoad() {
+  if (BOSS() || DEV()) { PA = null; paHome(); return; }
+  if (!PA) { try { PA = JSON.parse(LS('pa_' + U.s + U.n) || 'null'); } catch (e) { } }
+  paHome();
+  if (Date.now() - PAT < 60000) return; PAT = Date.now();
+  api('op=pa&' + sqQ()).then(function (j) { if (!j.ok) return; PA = j.list || []; LS('pa_' + U.s + U.n, JSON.stringify(PA)); paHome(); appBadge(); if (CUR === 'tdo' && TD) tdRender(); }).catch(function () { PAT = 0; });
+}
+function paHome() {
+  var el = $('pac'); if (!el) return;
+  if (!PA || !PA.length || BOSS() || DEV()) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML = PA.map(function (x) {
+    return '<b style="color:#c0392b">⏰ 打卡要補正（' + esc(x.dl) + ' 前）</b>' + (x.p ? '<div style="font-size:12px;color:var(--mu)">' + esc(x.p) + ' 打卡異常</div>' : '') +
+      x.items.map(function (t) { return '<div style="font-size:14px;padding:6px 0;border-bottom:1px dashed #f0cfc9">' + esc(t) + '</div>'; }).join('') +
+      '<div style="font-size:12px;color:var(--mu);margin-top:6px">打開風行 APP 送單補正；逾期沒補正，沒打卡的部分會依曠職計算薪資</div>' +
+      '<button class="btn" style="margin-top:8px" onclick="paDone(\'' + esc(x.b) + '\')">我已經送出申覆了</button>';
+  }).join('<div style="height:14px"></div>');
+}
+function paTd() {
+  if (!PA || !PA.length || BOSS() || DEV()) return '';
+  return '<div class="tdh" style="margin:10px 16px 0;padding:0;color:#c0392b">⏰ 打卡要補正</div><div class="tdl">' + PA.map(function (x) {
+    return '<div class="tdi" onclick="go(\'home\')"><span class="ic">⬜️</span><div>送風行申覆<small>' + esc(x.items.join('；')) + '</small></div><span class="r" style="color:#c0392b">' + esc(x.dl) + ' 前 ›</span></div>';
+  }).join('') + '</div>';
+}
+function paDone(b) {
+  if (!confirm('確定已經在風行 APP 送出申覆了？')) return;
+  bar('記錄中…');
+  api('op=padone&b=' + encodeURIComponent(b) + '&' + sqQ()).then(function (j) {
+    if (!j.ok) { bar(j.err || '失敗，請再按一次', 3000); return; }
+    PA = (PA || []).filter(function (x) { return x.b !== b; }); LS('pa_' + U.s + U.n, JSON.stringify(PA)); paHome(); appBadge(); bar('已記錄，謝謝！', 2000);
+  }).catch(function () { bar('網路不穩，請再按一次', 3000); });
+}
+function paPost(op, data) {
+  return fetch(EXEC + '?api=app&op=' + op + '&' + sqQ(), { method: 'POST', body: new URLSearchParams(data) }).then(function (r) { return r.json(); });
+}
+function paCheck() {
+  var t = $('paT').value.trim(), d = $('paD').value;
+  if (!t) { bar('請先貼公告', 2000); return; }
+  $('paC').innerHTML = '<div style="color:var(--mu);margin-top:8px">檢查中…</div>';
+  paPost('papub', { t: t, dl: d, dry: '1' }).then(function (j) {
+    if (!j.ok) { $('paC').innerHTML = '<div style="color:#c0392b;margin-top:8px">' + esc(j.err || '讀不到') + '</div>'; return; }
+    var by = {}; j.list.forEach(function (x) { (by[x.s] = by[x.s] || []).push(x.n); });
+    $('paC').innerHTML = '<div style="margin-top:10px;font-size:14px">讀到 <b>' + j.list.length + '</b> 人（' + esc(j.title || '') + '）</div>' +
+      Object.keys(by).map(function (s) { return '<div style="font-size:13px"><b>' + (s === '鳳山中山' ? '鳳山' : esc(s)) + '</b>：' + by[s].map(esc).join('、') + '</div>'; }).join('') +
+      (j.bad.length ? '<div style="color:#c0392b;font-size:13px;margin-top:4px">⚠️ 找不到這些人（不會送）：' + j.bad.map(esc).join('、') + '</div>' : '') +
+      '<button class="btn" style="margin-top:8px" onclick="paSend()">送出（只通知這 ' + j.list.length + ' 人）</button>';
+  }).catch(function () { $('paC').innerHTML = '<div style="color:#c0392b;margin-top:8px">網路不穩，請再按一次</div>'; });
+}
+function paSend() {
+  $('paC').innerHTML = '<div style="color:var(--mu);margin-top:8px">送出中…</div>';
+  paPost('papub', { t: $('paT').value.trim(), dl: $('paD').value }).then(function (j) {
+    if (!j.ok) { $('paC').innerHTML = '<div style="color:#c0392b;margin-top:8px">' + esc(j.err || '失敗') + '</div>'; return; }
+    $('paT').value = '';
+    $('paC').innerHTML = '<div style="color:#2d7a3a;margin-top:8px">✅ 已送出 ' + j.n + ' 人，手機有收到通知的 ' + j.sent + ' 人（沒開通知的人打開 App 也會看到）</div>';
+    paBoss(j.b);
+  }).catch(function () { $('paC').innerHTML = '<div style="color:#c0392b;margin-top:8px">網路不穩：先看下面有沒有已經送出，沒有再重新檢查一次</div>'; paBoss(); });
+}
+function paBoss(b) {
+  var el = $('paL'); if (!el) return;
+  el.innerHTML = '<div class="card" style="color:var(--mu)">載入誰還沒送…</div>';
+  api('op=pals' + (b ? '&b=' + b : '') + '&' + sqQ()).then(function (j) {
+    if (!j.ok || j.none) { el.innerHTML = ''; return; }
+    var dn = j.list.filter(function (x) { return x.done; }).length, left = j.list.length - dn;
+    var L = j.list.slice().sort(function (a, c) { return (a.done ? 1 : 0) - (c.done ? 1 : 0); });
+    el.innerHTML = '<div class="sec2">打卡申覆 ' + esc(j.p || '') + '　' + dn + '／' + j.list.length + '　<span style="font-size:12px;color:var(--mu)">' + esc(j.dl) + ' 截止</span></div><div class="card">' +
+      L.map(function (x) { return '<div class="pl"><span>' + esc(x.n) + ' <small style="color:var(--mu)">' + (x.s === '鳳山中山' ? '鳳山' : esc(x.s)) + '</small></span><span style="font-size:13px;color:' + (x.done ? '#2d7a3a' : '#c0392b') + '">' + (x.done ? '✓ ' + esc(x.done) : '還沒送' + (x.ping ? '（' + esc(x.ping) + ' 提醒過）' : '')) + '</span></div>'; }).join('') +
+      (left ? '<button class="btn" style="margin-top:8px" onclick="paPing(\'' + esc(j.b) + '\',' + left + ')">再提醒還沒送的 ' + left + ' 人（推播）</button>' : '<div style="color:#2d7a3a;margin-top:6px">✅ 都按已送出了（真的有沒有補，下次核對考勤再看）</div>') +
+      '<div style="font-size:12px;color:var(--mu);margin-top:6px">截止前一天晚上 9 點會自動提醒還沒送的人</div></div>';
+  }).catch(function () { el.innerHTML = ''; });
+}
+function paPing(b, n) {
+  if (!confirm('推播提醒還沒送的 ' + n + ' 人？')) return;
+  api('op=paping&b=' + b + '&' + sqQ()).then(function (j) { bar(j.ok ? '已提醒（手機收到 ' + j.sent + ' 人）' : (j.err || '失敗'), 3000); paBoss(b); }).catch(function () { bar('網路不穩', 2000); });
+}
 
 // ---------- 我的考核（11/19）：可樂打完「已完成」，幹部、儲備自己看分數和要改進的地方 ----------
 var KHO = false, KHM = null, KHT = 0;
@@ -1147,7 +1226,7 @@ function tdRender() {
     h += '</div>';
   });
   if (sh.length) h = '<div style="margin:12px 16px 0;font-size:17px;font-weight:700;color:var(--tx)">完成 ' + (all - left) + ' / ' + all + '</div>' + h + '<div style="margin:0 16px;color:var(--mu);font-size:12px">清潔：每日看今天、週清看這週、月清看這個月；做完填代號就會打勾（回這頁按 ↻ 或重開）</div>';
-  if (CUR === 'tdo') $('tdb').innerHTML = h;
+  if (CUR === 'tdo') $('tdb').innerHTML = paTd() + h;
   tdBadge(BOSS() || DEV() || gwLead() ? 0 : left);
 }
 function tdNav() { var d = document.querySelector('.nav div[data-v=tdo]'); if (d) d.firstChild.nextSibling.nodeValue = gwLead() ? '核對' : '今天要做'; }
@@ -1157,6 +1236,7 @@ function appBadge() {
   try {
     var n = 0;
     if (!BOSS()) ['b4', 'b3', 'tdn'].forEach(function (k) { var e = $(k); if (e && e.style.display !== 'none') { var v = parseInt(e.textContent, 10); n += isNaN(v) ? 1 : v; } });
+    if (!BOSS() && PA) n += PA.length;   // 11/20 打卡申覆還沒按已送出
     if ('setAppBadge' in navigator) (n ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(function () { });
     if (window.caches) caches.open('badge').then(function (c) { return c.put('/n', new Response(String(n))); }).catch(function () { });
   } catch (e) { }
@@ -1620,6 +1700,8 @@ function qForm(k) {
   var h = '';
   if (k === 'net') { qRun('#更新財務 ' + ym(0), ym(0) + ' 淨利'); h = '<div class="card">看別的月份：<span class="chip" onclick="qRun(\'#更新財務 ' + ym(1) + '\',\'' + ym(1) + ' 淨利\')">' + ym(1) + '</span><span class="chip" onclick="qRun(\'#更新財務 ' + ym(2) + '\',\'' + ym(2) + ' 淨利\')">' + ym(2) + '</span></div>'; }
   else if (k === 'hb') { h = '<div class="card" id="hbf"><b>🔴 登記紅榜</b><div style="color:var(--mu)">載入中…</div></div>'; HB = null; HBF = { d: 0, dv: '', code: '', ns: {}, st: U.s === 'fs' ? '鳳山' : '熱河', amt: '', t: '' }; setTimeout(hbLoad, 0); }
+  else if (k === 'pa') { var dd = new Date(Date.now() + 3 * 864e5), dv = dd.getFullYear() + '-' + ('0' + (dd.getMonth() + 1)).slice(-2) + '-' + ('0' + dd.getDate()).slice(-2);
+    h = '<div class="card"><b>⏰ 發打卡申覆</b><p style="font-size:13px;color:var(--mu);margin:4px 0 8px">把核對考勤的公告整段貼上；只會推播給名單上的人，他們首頁會出現紅色卡片，送完自己按「已送出」</p><textarea id="paT" style="height:170px;font-size:14px" placeholder="【11/1–11/19 打卡異常申覆】&#10;▍熱河&#10;姓名｜11/12 下班沒打卡"></textarea><div style="font-size:13px;color:var(--mu);margin-top:6px">截止日</div><input id="paD" type="date" value="' + dv + '"><button class="btn" style="margin-top:8px" onclick="paCheck()">檢查名單</button><div id="paC"></div></div><div id="paL"></div>'; setTimeout(function () { paBoss(); }, 0); }
   else if (k === 'pub') h = '<div class="card"><b>📅 發班表</b><p style="font-size:13px;color:var(--mu);margin:4px 0 0">發到大群給員工看；改班後再發一次＝新版本，只列有變的人</p>' +
     '<div style="font-size:13px;color:var(--mu);margin-top:10px">門市</div><select id="pbS"><option value="">兩店</option><option>熱河</option><option>鳳山</option></select>' +
     '<div style="font-size:13px;color:var(--mu);margin-top:6px">哪兩週（不選＝下一個還沒發的兩週；改班重發選那兩週的第一天）</div><input id="pbD" type="date">' +
