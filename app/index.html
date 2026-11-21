@@ -1211,16 +1211,19 @@ function tdItems(sh) {
 function tdOpen(gid) { var C = TD && TD.clean; if (!C) return; window.open(C.url + (gid ? '#gid=' + gid : ''), '_blank'); }
 // 11/17 可樂：核對兩店今天有沒有做完（公告簽名、早晚班各項，誰做的）
 var TDB = {}, TDBT = 0;
+var TDBK = -1;   // 11/21 可樂核對：0＝今天、1＝昨天（半夜 5 點前打開預設昨天）
+function tdBossDay(k) { TDBK = k; TDB = {}; TDBT = 0; tdBossLoad(true); }
 function tdBossLoad(force) {
+  if (TDBK < 0) TDBK = new Date().getHours() < 5 ? 1 : 0;
   if (!force && TDB.rh && Date.now() - TDBT < 120000) { tdBossRender(); return; }
   if (TDB.rh) tdBossRender(); else if (CUR === 'tdo') $('tdb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">載入兩間店…</div>';
   ['rh', 'fs'].forEach(function (k) {
-    api('op=today&s=' + k + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok).then(function (j) { if (j.ok) { TDB[k] = j; TDBT = Date.now(); tdBossRender(); } }).catch(function () { });
+    var want = TDBK; api('op=today&s=' + k + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + (TDBK ? '&back=1' : '')).then(function (j) { if (j.ok && want === TDBK) { TDB[k] = j; TDBT = Date.now(); tdBossRender(); } }).catch(function () { });
   });
 }
 function tdBossRender() {
-  $('tdsw').style.display = 'none'; $('tds').textContent = '兩間店・今天'; $('tdh').textContent = '✅ 核對';
-  var h = '', A = (DATA && DATA.ann && DATA.ann.boss) ? (DATA.ann.list || []) : null;
+  $('tdsw').style.display = 'none'; var dl = TDB.rh && TDB.rh.day ? '（' + TDB.rh.day + '）' : ''; $('tds').textContent = '兩間店・' + (TDBK ? '昨天' : '今天') + dl; $('tdh').textContent = '✅ 核對';
+  var h = '<div style="display:flex;gap:8px;margin:12px 16px 0"><span class="chip' + (TDBK ? '' : ' f') + '" onclick="tdBossDay(0)">今天</span><span class="chip' + (TDBK ? ' f' : '') + '" onclick="tdBossDay(1)">昨天</span></div>', A = (DATA && DATA.ann && DATA.ann.boss) ? (DATA.ann.list || []) : null;
   if (A) {
     var left = A.reduce(function (n, x) { return n + x.todo.length; }, 0);
     h += '<div class="tdl" onclick="go(\'sg\')"><div class="tdi"><span class="ic">' + (left ? '⬜️' : '✅') + '</span><div>公告簽名<small>' + (A.length ? A.length + ' 則進行中' : '沒有進行中的公告') + '</small></div><span class="r" style="color:' + (left ? '#c0392b' : '#2d7a3a') + '">' + (left ? left + ' 人未簽 ›' : '全部簽完') + '</span></div></div>';
