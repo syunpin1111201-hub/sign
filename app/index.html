@@ -158,7 +158,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
     <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('exp')">💸 打支出</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('net')">💰 看淨利</span>
-    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('pub')">📅 發班表</span><span class="chip f" style="margin:0;text-align:center;padding:10px;background:#c0392b;border-color:#c0392b" onclick="qForm('hb')">🔴 登記紅榜</span><span class="chip f" style="margin:0;text-align:center;padding:10px;grid-column:1/3" onclick="qForm('pa')">⏰ 考勤：打卡申覆・遲到早退</span></div><div style="text-align:right;margin-top:-4px"><span class="chip" onclick="pushTest()">🔔 測試我的手機通知</span></div>
+    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('pub')">📅 發班表</span><span class="chip f" style="margin:0;text-align:center;padding:10px;background:#c0392b;border-color:#c0392b" onclick="qForm('hb')">🔴 登記紅榜</span><span class="chip f" style="margin:0;text-align:center;padding:10px;grid-column:1/3" onclick="qForm('pa')">⏰ 考勤：打卡申覆・遲到早退</span><span class="chip f" style="margin:0;text-align:center;padding:10px;grid-column:1/3" onclick="qForm('vl')">🧭 拜訪地點・攤位名單</span></div><div style="text-align:right;margin-top:-4px"><span class="chip" onclick="pushTest()">🔔 測試我的手機通知</span></div>
   <div id="qf"></div><div id="qr"></div>
   <div class="sec2">👤 查人</div><div class="card"><div id="qps"></div>
     <span class="chip" onclick="qP('#查員工','員工資料')">員工資料</span><span class="chip" onclick="qP('#查薪資','薪資')">薪資</span><span class="chip" onclick="qP('#查欠時數','欠時數')">欠時數</span><span class="chip" onclick="qP('#查借支','借支')">借支</span><span class="chip" onclick="qP('#查考核','考核')">考核</span><span class="chip" onclick="qP('#查紅黑榜','紅黑榜')">紅黑榜</span><span class="chip" onclick="qP('#查獎金','獎金')">獎金</span><span class="chip" onclick="qP('#查禮金','禮金')">禮金</span><span class="chip" onclick="qP('#查代班','代班')">代班</span></div>
@@ -859,6 +859,87 @@ function paDone(b) {
     PA = (PA || []).filter(function (x) { return x.b !== b; }); LS('pa_' + U.s + U.n, JSON.stringify(PA)); paHome(); appBadge(); bar('已記錄，謝謝！', 2000);
   }).catch(function () { bar('網路不穩，請再按一次', 3000); });
 }
+// ---------- 拜訪地點、攤位設定（11/23，可樂先到現場建好） ----------
+var VL = null, VLE = null, VLS = null, VLWD = '一二三四五六日';
+function vlLoad() {
+  $('vlb').innerHTML = '<div class="card" style="color:var(--mu)">載入地點…</div>';
+  api('op=vl&' + sqQ()).then(function (j) { if (!j.ok) { $('vlb').innerHTML = '<div class="card" style="color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; } VL = j.list; vlRender(); }).catch(function () { $('vlb').innerHTML = '<div class="card" style="color:#c0392b">網路不穩，請重開</div>'; });
+}
+function vlRender() {
+  var el = $('vlb'); if (!el) return;
+  if (VLS) return vsRender();
+  if (VLE) return vlEdRender();
+  var h = '';
+  ['熱河', '鳳山中山'].forEach(function (st) {
+    var L = (VL || []).filter(function (x) { return x.s === st; });
+    h += '<div class="sec2">' + st + '</div><div class="card">' + (L.length ? L.map(function (x, i) {
+      return '<div class="pl" style="align-items:center;cursor:pointer" onclick="vlEdit(\'' + x.id + '\')"><span><b>' + esc(x.n) + '</b> <small style="color:var(--mu)">' + x.k + (x.a.length ? '・' + esc(x.a.length > 3 ? x.a[0] + '～' + x.a[x.a.length - 1] : x.a.join('／')) : '') + (x.wd ? '・' + x.wd + ' ' + x.sh : '') + '</small></span><span style="font-size:13px;color:var(--mu)">' + (x.k === '流動' ? '只記幾攤 ›' : x.cnt + ' 家 ›') + '</span></div>';
+    }).join('') : '<div style="color:var(--mu)">還沒有地點</div>') + '</div>';
+  });
+  el.innerHTML = h + '<button class="btn" onclick="vlEdit(\'\')">＋ 新增地點</button>';
+}
+function vlEdit(id) {
+  var x = (VL || []).filter(function (y) { return y.id === id; })[0];
+  VLE = x ? JSON.parse(JSON.stringify(x)) : { id: '', s: '熱河', n: '', k: '固定', a: [], wd: '', sh: '早班', note: '' };
+  vlRender(); window.scrollTo(0, 0);
+}
+function vlEdRender() {
+  var x = VLE, chip = function (on, txt, fn) { return '<span class="chip' + (on ? ' f' : '') + '" onclick="' + fn + '">' + txt + '</span>'; }, lb = function (t) { return '<div style="font-size:13px;color:var(--mu);margin-top:10px">' + t + '</div>'; };
+  var h = '<div class="card"><b>' + (x.id ? '修改地點' : '新增地點') + '</b>' +
+    lb('名稱') + '<input id="vlN" value="' + esc(x.n) + '" placeholder="例：建國路">' +
+    lb('門市') + chip(x.s === '熱河', '熱河', "vlF('s','熱河')") + chip(x.s === '鳳山中山', '鳳山中山', "vlF('s','鳳山中山')") +
+    lb('攤位') + chip(x.k === '固定', '固定（要建名單，員工用勾的）', "vlF('k','固定')") + chip(x.k === '流動', '流動（只記走了幾攤）', "vlF('k','流動')") +
+    lb('分區（一個一行；不分就空白）') + '<textarea id="vlA" style="height:110px;font-size:15px" placeholder="例：&#10;左側&#10;右側">' + esc(x.a.join('\n')) + '</textarea>' +
+    lb('平常哪天') + VLWD.split('').map(function (d) { return chip(x.wd.indexOf(d) >= 0, d, "vlWd('" + d + "')"); }).join('') +
+    lb('哪一班') + chip(x.sh === '早班', '早班', "vlF('sh','早班')") + chip(x.sh === '晚班', '晚班', "vlF('sh','晚班')") +
+    lb('備註（路線、幾點出發）') + '<input id="vlNote" value="' + esc(x.note || '') + '">' +
+    '<button class="btn" style="margin-top:12px" onclick="vlSave()">儲存</button>' +
+    '<button class="btn" style="background:#fff;color:var(--ac);border:1px solid var(--ac);margin-top:8px" onclick="VLE=null;vlRender()">返回</button>';
+  if (x.id && x.k === '固定') {
+    h += '<div style="margin-top:14px;font-weight:700">攤位名單</div>' + (x.a.length ? x.a : ['']).map(function (a) { return '<button class="btn" style="margin-top:6px;background:#fff;color:var(--tx);border:1px solid #e0d2bf" onclick="vsOpen(\'' + x.id + '\',\'' + esc(a).replace(/'/g, '') + '\')">管理攤位' + (a ? '：' + esc(a) : '') + ' ›</button>'; }).join('');
+  }
+  if (x.id) h += '<div style="text-align:center;margin-top:14px"><span style="color:#c0392b;font-size:13px" onclick="vlOff()">停用這個地點</span></div>';
+  $('vlb').innerHTML = h + '</div>';
+}
+function vlKeep() { if (!VLE || !$('vlN')) return; VLE.n = $('vlN').value; VLE.a = $('vlA').value.split('\n').map(function (s) { return s.trim(); }).filter(String); VLE.note = $('vlNote').value; }
+function vlF(k, v) { vlKeep(); VLE[k] = v; vlRender(); }
+function vlWd(d) { vlKeep(); var w = VLE.wd.indexOf(d) >= 0 ? VLE.wd.replace(d, '') : VLE.wd + d; VLE.wd = VLWD.split('').filter(function (c) { return w.indexOf(c) >= 0; }).join(''); vlRender(); }
+function vlSave(off) {
+  vlKeep(); var x = VLE;
+  if (!x.n.trim()) { bar('請填名稱', 2000); return; }
+  bar('儲存中…');
+  paPost('vlset', { id: x.id, s: x.s, n: x.n.trim(), k: x.k, a: x.a.join('\n'), wd: x.wd, sh: x.sh, note: x.note, off: off ? '1' : '' }).then(function (j) {
+    if (!j.ok) { bar(j.err || '沒存到', 3000); return; }
+    VL = j.list; bar(off ? '已停用' : '已儲存', 1500);
+    if (!x.id && !off) { var nx = VL.filter(function (y) { return y.n === x.n.trim() && y.s === x.s; }).pop(); VLE = nx ? JSON.parse(JSON.stringify(nx)) : null; } else VLE = off ? null : JSON.parse(JSON.stringify(VL.filter(function (y) { return y.id === x.id; })[0] || x));
+    vlRender();
+  }).catch(function () { bar('網路不穩，請再按一次', 3000); });
+}
+function vlOff() { if (confirm('停用「' + VLE.n + '」？之後員工就選不到這個地點（攤位名單會留著）')) vlSave(true); }
+function vsOpen(id, a) { VLS = { id: id, a: a, list: null }; vlRender(); api('op=vst&id=' + id + '&a=' + encodeURIComponent(a) + '&' + sqQ()).then(function (j) { if (j.ok && VLS) { VLS.list = j.list; vsRender(); } }); window.scrollTo(0, 0); }
+function vsRender() {
+  var S = VLS, L = S.list, loc = (VL || []).filter(function (y) { return y.id === S.id; })[0] || { n: '', a: [] };
+  var h = '<div class="card"><b>' + esc(loc.n) + (S.a ? '・' + esc(S.a) : '') + '</b><div style="color:var(--mu);font-size:12px">照實際走的順序輸入；一次貼很多家也可以（一行一家）</div>' +
+    (loc.a.length > 1 ? '<div style="margin-top:8px">' + loc.a.map(function (a) { return '<span class="chip' + (a === S.a ? ' f' : '') + '" onclick="vsOpen(\'' + S.id + '\',\'' + esc(a).replace(/'/g, '') + '\')">' + esc(a) + '</span>'; }).join('') + '</div>' : '') +
+    '<div style="display:flex;gap:6px;margin-top:8px"><textarea id="vsN" style="height:46px;font-size:16px;margin:0" placeholder="店名，例：王家水餃"></textarea><span class="chip f" style="margin:0;padding:10px 14px;align-self:center" onclick="vsAdd()">＋</span></div>';
+  if (!L) h += '<div style="color:var(--mu);margin-top:10px">載入中…</div>';
+  else if (!L.length) h += '<div style="color:var(--mu);margin-top:10px">還沒有攤位</div>';
+  else h += '<div style="margin-top:6px">' + L.map(function (x, i) {
+    return '<div class="pl" style="align-items:center"><span style="font-size:14px">' + (i + 1) + '. ' + esc(x.n) + '</span><span style="white-space:nowrap">' +
+      (i ? '<span class="chip" style="margin:0 2px;padding:3px 8px" onclick="vsMv(' + i + ',-1)">↑</span>' : '') + (i < L.length - 1 ? '<span class="chip" style="margin:0 2px;padding:3px 8px" onclick="vsMv(' + i + ',1)">↓</span>' : '') +
+      '<span class="chip" style="margin:0 2px;padding:3px 8px" onclick="vsRen(' + i + ')">✎</span><span class="chip" style="margin:0 2px;padding:3px 8px;color:#c0392b" onclick="vsDel(' + i + ')">✕</span></span></div>';
+  }).join('') + '</div>';
+  $('vlb').innerHTML = h + '<button class="btn" style="background:#fff;color:var(--ac);border:1px solid var(--ac);margin-top:12px" onclick="VLS=null;vlLoad()">返回地點</button></div>';
+}
+function vsDo(d, msg) {
+  bar('儲存中…'); d.id = VLS.id; d.a = VLS.a;
+  paPost('vstset', d).then(function (j) { if (!j.ok) { bar(j.err || '沒存到', 3000); return; } VLS.list = j.list; vsRender(); bar(msg, 1200); }).catch(function () { bar('網路不穩，請再按一次', 3000); });
+}
+function vsAdd() { var n = $('vsN').value.trim(); if (!n) { bar('請輸入店名', 1500); return; } vsDo({ act: 'add', n: n }, '已加入'); }
+function vsDel(i) { var x = VLS.list[i]; if (confirm('刪掉「' + x.n + '」？')) vsDo({ act: 'del', sid: x.sid }, '已刪除'); }
+function vsRen(i) { var x = VLS.list[i], n = prompt('改名字', x.n); if (n && n.trim() && n.trim() !== x.n) vsDo({ act: 'ren', sid: x.sid, n: n.trim() }, '已改名'); }
+function vsMv(i, d) { var L = VLS.list, t = L[i]; L[i] = L[i + d]; L[i + d] = t; vsRender(); vsDo({ act: 'order', ids: L.map(function (x) { return x.sid; }).join(',') }, '已換順序'); }
+
 var PAK = 'pa', ATL = null;
 function paTabs() { return '<div style="display:flex;gap:8px;margin:0 16px 8px">' + [['pa', '打卡申覆'], ['at', '遲到早退']].map(function (x) { return '<span class="chip' + (PAK === x[0] ? ' f' : '') + '" onclick="PAK=\'' + x[0] + '\';qForm(\'pa\')">' + x[1] + '</span>'; }).join('') + '</div>'; }
 function atCheck() {
@@ -1739,6 +1820,7 @@ function qForm(k) {
   var h = '';
   if (k === 'net') { qRun('#更新財務 ' + ym(0), ym(0) + ' 淨利'); h = '<div class="card">看別的月份：<span class="chip" onclick="qRun(\'#更新財務 ' + ym(1) + '\',\'' + ym(1) + ' 淨利\')">' + ym(1) + '</span><span class="chip" onclick="qRun(\'#更新財務 ' + ym(2) + '\',\'' + ym(2) + ' 淨利\')">' + ym(2) + '</span></div>'; }
   else if (k === 'hb') { h = '<div class="card" id="hbf"><b>🔴 登記紅榜</b><div style="color:var(--mu)">載入中…</div></div>'; HB = null; HBF = { d: 0, dv: '', code: '', ns: {}, st: U.s === 'fs' ? '鳳山' : '熱河', amt: '', t: '' }; setTimeout(hbLoad, 0); }
+  else if (k === 'vl') { VLE = null; VLS = null; h = '<div id="vlb"></div>'; setTimeout(vlLoad, 0); }
   else if (k === 'pa' && PAK === 'at') h = paTabs() + '<div class="card"><b>⏰ 登記遲到早退</b><p style="font-size:13px;color:var(--mu);margin:4px 0 8px">一行一筆：姓名 日期 遲到/早退 分鐘（例：吳秉諭 11/9 遲到 74）。同人同天已經記過的會自動跳過</p><textarea id="atT" style="height:170px;font-size:14px" placeholder="吳秉諭 11/9 遲到 74&#10;羅佳妤 11/13 遲到 58"></textarea><button class="btn" style="margin-top:8px" onclick="atCheck()">檢查</button><div id="atC"></div></div>';
   else if (k === 'pa') { var dd = new Date(Date.now() + 3 * 864e5), dv = dd.getFullYear() + '-' + ('0' + (dd.getMonth() + 1)).slice(-2) + '-' + ('0' + dd.getDate()).slice(-2);
     h = paTabs() + '<div class="card"><b>⏰ 發打卡申覆</b><p style="font-size:13px;color:var(--mu);margin:4px 0 8px">把核對考勤的公告整段貼上；只會推播給名單上的人，他們首頁會出現紅色卡片，送完自己按「已送出」；截止前一天晚上 9 點會自動再提醒還沒按的人</p><textarea id="paT" style="height:170px;font-size:14px" placeholder="【11/1–11/19 打卡異常申覆】&#10;▍熱河&#10;姓名｜11/12 下班沒打卡"></textarea><div style="font-size:13px;color:var(--mu);margin-top:6px">截止日</div><input id="paD" type="date" value="' + dv + '"><button class="btn" style="margin-top:8px" onclick="paCheck()">檢查名單</button><div id="paC"></div></div>'; }
