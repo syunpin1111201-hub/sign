@@ -704,7 +704,7 @@ function teaEdAdd() {
   var keep = [$('tdT').value, $('tdD').value, $('tdH').value, $('tdS').value]; teaRender(); $('tdT').value = keep[0]; $('tdD').value = keep[1]; $('tdH').value = keep[2]; $('tdS').value = keep[3]; teaSzShow();
 }
 // 11/13 一鍵清除：全部桶子先清空（還沒按「更新」前都不會存，按「取消」可以還原）
-function teaEdClr() { Object.keys(TEAED).forEach(function (t) { TEAED[t] = []; }); teaRender(); bar('已全部清除，加好現在冰箱的桶子再按「更新」', 2500); }
+function teaEdClr() { if (!confirm('確定要把冰箱全部清空嗎？\n（還沒按「更新」前，按「取消」可以還原）')) return; Object.keys(TEAED).forEach(function (t) { TEAED[t] = []; }); teaRender(); bar('已全部清除，加好現在冰箱的桶子再按「更新」', 2500); }
 function teaEdDel(t, k) { TEAED[t].splice(k, 1); teaRender(); }
 function teaEdSave() {
   if (devNeed()) return;
