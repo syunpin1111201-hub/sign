@@ -146,6 +146,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div class="out">不是你？<span onclick="logout()">登出</span></div>
 </div>
 
+<div class="scr" id="ws"><div class="hd"><div class="s" id="wss"></div><h2>🗑 報廢登記</h2></div><div id="wsb"></div><div style="height:20px"></div></div>
 <div class="scr" id="tea"><div class="hd"><div class="s" id="teas"></div><h2>🧊 留茶湯</h2><span class="rf" id="teasw" style="display:none" onclick="teaSw()"></span></div><div class="s2p" id="teatab"></div><div id="teab"></div><div style="height:20px"></div></div>
 <div class="scr" id="pd"><div class="hd"><div class="s" id="pds"></div><h2>📦 盤點</h2><span class="rf" id="pdsw" style="display:none" onclick="pdSw()"></span></div><div class="s2p" id="pdsh"></div><div class="s2p" id="pdtab"></div><div id="pdb"></div><div style="height:30px"></div></div>
 <div class="scr" id="gw"><div class="hd"><div class="s" id="gws"></div><h2 id="gwh">🧭 崗位</h2><span class="rf" id="gwsw" style="display:none" onclick="gwSw()"></span></div><div class="s2p" id="gwtab"></div><div class="s2p" id="gwtab2"></div><div id="gwb"></div><div style="height:30px"></div></div>
@@ -285,7 +286,7 @@ function logout() { ['app_s', 'app_n', 'app_tok', 'app_cache'].forEach(function 
 function show(v) {
   if (v === 'sc' && BOSS()) v = 's2';   // 11/10 可樂：兩店班表一起看
   CUR = v;
-  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'rv', 'tdo', 'cln', 'wr', 'tk', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
+  ['login', 'home', 'say', 'mt', 'kh', 'tl', 'q', 'ex', 'sg', 's2', 'tea', 'pd', 'gw', 'sgs', 'rv', 'tdo', 'cln', 'wr', 'tk', 'ws', 'gone'].forEach(function (x) { $(x).classList.toggle('on', x === v); });
   if (v !== 'sg') $('sgf').style.display = 'none';
   if (v === 'ex' && EXA()) { $('ex').classList.remove('on'); $('exf').style.display = 'flex'; exFrame(); } else $('exf').style.display = 'none';
   if (CUR0 === 'ex' && v !== 'ex' && EXA()) { LAST = 0; load(1); }   // 離開考試頁 → 看是不是交卷了
@@ -299,6 +300,7 @@ function show(v) {
   if (v === 'gw') { gwLoad(); window.scrollTo(0, 0); }
   if (v === 'sgs') { sqLoad(); window.scrollTo(0, 0); }
   if (v === 'rv') { rvLoad(); window.scrollTo(0, 0); }
+  if (v === 'ws') { wsLoad(); window.scrollTo(0, 0); }
   if (v === 'wr') { wrLoad(); window.scrollTo(0, 0); }
   if (v === 'cln') { clLoad(); window.scrollTo(0, 0); }
   if (v === 'tdo') { tdLoad(1); window.scrollTo(0, 0); }
@@ -667,7 +669,7 @@ function teaExpHtml(P) {
         : '<span style="color:#2e7d32;font-weight:700">✅ 最快 ' + esc(x.first) + ' 到期' + (x.after ? '，後面還有 ' + x.after + ' ' + (x.u || '桶') : '') + '，預估不會報廢</span>') + '</div>';
   });
   h += '<div style="color:var(--mu);font-size:12px;margin-top:6px">照每個時段平常賣多少估的，先用最早煮（退冰）的那一桶／瓶</div>' +
-    (P.can || P.frCan ? '<button class="btn" onclick="teaEdOpen()">🧊 更新冰箱</button>' : '') + '</div>';
+    (P.can || P.frCan ? '<button class="btn" onclick="teaEdOpen()">🧊 更新冰箱</button>' : '') + '<button class="btn" style="background:#fff;color:var(--ac);border:1px solid var(--ac);margin-top:8px" onclick="go(\'ws\')">🗑 報廢登記</button></div>';
   return h;
 }
 function teaSzShow() { var e = $('tdS'), t = $('tdT'); if (e && t) e.style.display = /^(和茶|307|308|紅茶|406)$/.test(t.value) ? '' : 'none'; }
@@ -859,6 +861,65 @@ function paDone(b) {
     PA = (PA || []).filter(function (x) { return x.b !== b; }); LS('pa_' + U.s + U.n, JSON.stringify(PA)); paHome(); appBadge(); bar('已記錄，謝謝！', 2000);
   }).catch(function () { bar('網路不穩，請再按一次', 3000); });
 }
+// ---------- 報廢登記（11/24）：到期的照冰箱帶出來、12H 茶固定列；寫進原本的報廢表＋簽名欄代號 ----------
+var WS = null, WSX = [], WSST = '', WSR = '';
+function wsS() { return WSST || U.s; }
+function wsLoad() {
+  if (!WSST) WSST = U.s;
+  $('wss').textContent = (wsS() === 'fs' ? '鳳山中山' : '熱河') + '・載入中';
+  $('wsb').innerHTML = '<div class="card" style="margin-top:12px;color:var(--mu)">讀報廢表…</div>';
+  api('op=ws&s=' + wsS() + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + devQ()).then(function (j) {
+    if (!j.ok) { $('wsb').innerHTML = '<div class="card" style="margin-top:12px;color:#c0392b">' + esc(j.err || '讀不到') + '</div>'; return; }
+    WS = j; WS.q = {}; (j.sug || []).forEach(function (x) { WS.q[x.k] = x.q === '' ? '' : String(x.q); }); wsRender();
+  }).catch(function () { $('wsb').innerHTML = '<div class="card" style="margin-top:12px;color:#c0392b">網路不穩，請重開</div>'; });
+}
+function wsIt(k) { return ((WS && WS.items) || []).filter(function (x) { return x.k === k; })[0] || { k: k, u: 'cc', pk: 0 }; }
+function wsKeepQ() { (WS.sug || []).forEach(function (x, i) { var e = $('wsq' + i); if (e) WS.q[x.k] = e.value; }); }
+function wsRender() {
+  var P = WS; if (!P) return;
+  $('wss').textContent = (wsS() === 'fs' ? '鳳山中山' : '熱河') + '・' + P.day;
+  var h = devWhoHtml('wsRender');
+  if (BOSS()) h += '<div style="display:flex;gap:8px;margin:12px 16px 0">' + [['rh', '熱河'], ['fs', '鳳山中山']].map(function (x) { return '<span class="chip' + (wsS() === x[0] ? ' f' : '') + '" onclick="WSST=\'' + x[0] + '\';WSX=[];wsLoad()">' + x[1] + '</span>'; }).join('') + '</div>';
+  h += '<div class="card" style="margin-top:12px"><b>🗑 今天要報廢的</b><div style="color:var(--mu);font-size:12px">照冰箱到期和 12H 茶帶出來；填實際倒掉的量，沒倒就空白</div>';
+  (P.sug || []).forEach(function (x, i) {
+    var it = wsIt(x.k);
+    h += '<div class="pl" style="align-items:center"><span><b>' + esc(x.k) + '</b><br><small style="color:var(--mu)">' + esc(x.why) + '</small></span><span style="white-space:nowrap"><input id="wsq' + i + '" type="number" inputmode="numeric" value="' + esc(P.q[x.k] || '') + '" style="width:84px;margin:0;text-align:right;font-size:16px"> ' + it.u +
+      (it.pk ? ' <span class="chip" style="margin:0 0 0 4px;padding:3px 8px" onclick="wsKeepQ();WS.q[\'' + x.k + '\']=String((Number(WS.q[\'' + x.k + '\'])||0)+' + it.pk + ');wsRender()">+1' + it.pn + '</span>' : '') + '</span></div>';
+  });
+  if (!(P.sug || []).length) h += '<div style="color:var(--mu);margin-top:8px">今天沒有到期的</div>';
+  h += '</div>';
+  // 其他報廢
+  h += '<div class="card"><b>➕ 其他報廢（煮錯、打翻、過期）</b><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><select id="wsk" style="margin:0;width:auto" onchange="wsU()">' + (P.items || []).map(function (x) { return '<option value="' + esc(x.k) + '">' + esc(x.label) + '</option>'; }).join('') + '</select>' +
+    '<input id="wsn" type="number" inputmode="numeric" placeholder="多少" style="width:96px;margin:0;font-size:16px"><span id="wsu" style="align-self:center;color:var(--mu)"></span></div>' +
+    '<div style="margin-top:6px">' + ['煮錯', '打翻', '過期', '其他'].map(function (r) { return '<span class="chip' + (WSR === r ? ' f' : '') + '" onclick="WSR=\'' + r + '\';wsKeepX();wsRender()">' + r + '</span>'; }).join('') + '</div>' +
+    '<input id="wsnote" placeholder="備註（例：茶包放錯）" style="margin-top:6px"><span class="chip f" style="margin-top:6px;display:inline-block" onclick="wsAddX()">＋ 加入</span>' +
+    WSX.map(function (x, i) { return '<div class="pl"><span>' + esc(x.k) + ' ' + x.q + wsIt(x.k).u + (x.r ? '・' + esc(x.r) : '') + (x.note ? '・' + esc(x.note) : '') + '</span><span style="color:#c0392b" onclick="WSX.splice(' + i + ',1);wsRender()">✕</span></div>'; }).join('') + '</div>';
+  h += '<button class="btn" onclick="wsSend()">送出報廢</button>';
+  if ((P.done || []).length) h += '<div class="card"><b>✅ 今天已登記</b>' + P.done.map(function (x) { return '<div class="pl"><span>' + esc(x.k) + ' ' + esc(x.q) + esc(x.u) + (x.r ? '・' + esc(x.r) : '') + '</span><span style="color:var(--mu);font-size:12px">' + esc(x.who) + ' ' + esc(x.t) + '</span></div>'; }).join('') + '<div style="color:var(--mu);font-size:12px;margin-top:6px">同一樣再登記會加上去（早晚班都可以登記）</div></div>';
+  $('wsb').innerHTML = h; wsU();
+  if (WS.xk) { $('wsk').value = WS.xk; $('wsn').value = WS.xn || ''; $('wsnote').value = WS.xnote || ''; wsU(); }
+}
+function wsKeepX() { wsKeepQ(); if ($('wsk')) { WS.xk = $('wsk').value; WS.xn = $('wsn').value; WS.xnote = $('wsnote').value; } }
+function wsU() { var e = $('wsk'); if (e && $('wsu')) $('wsu').textContent = wsIt(e.value).u; }
+function wsAddX() {
+  wsKeepQ(); var k = $('wsk').value, q = Number($('wsn').value);
+  if (!(q > 0)) { bar('請填數量', 1500); return; }
+  WSX.push({ k: k, q: q, r: WSR, note: $('wsnote').value.trim() }); WSR = ''; WS.xk = ''; WS.xn = ''; WS.xnote = ''; wsRender();
+}
+function wsSend() {
+  if (devNeed()) return;
+  wsKeepQ();
+  var L = (WS.sug || []).filter(function (x) { return Number(WS.q[x.k]) > 0; }).map(function (x) { return { k: x.k, q: Number(WS.q[x.k]), r: x.q === '' ? '12H' : '到期' }; }).concat(WSX);
+  if (!L.length) { bar('沒有要登記的（數量都空白）', 2500); return; }
+  if (!confirm('送出 ' + L.length + ' 樣報廢？\n' + L.map(function (x) { return x.k + ' ' + x.q + wsIt(x.k).u; }).join('\n'))) return;
+  bar('送出中…');
+  fetch(EXEC + '?api=app&op=wsset&s=' + wsS() + '&n=' + encodeURIComponent(U.n) + '&tok=' + U.tok + devQ(), { method: 'POST', body: new URLSearchParams({ j: JSON.stringify(L) }) }).then(function (r) { return r.json(); }).then(function (j) {
+    if (!j.ok) { bar(j.err || '沒送出，請再按一次', 3000); return; }
+    WSX = []; WS = j; WS.q = {}; (j.sug || []).forEach(function (x) { WS.q[x.k] = ''; }); wsRender(); window.scrollTo(0, 0); bar('已登記 ' + j.n + ' 樣' + (j.bad ? '（找不到：' + j.bad.join('、') + '）' : ''), 2500);
+    TDT = 0;
+  }).catch(function () { bar('網路不穩：先看「今天已登記」有沒有，再決定要不要重送', 4000); });
+}
+
 // ---------- 拜訪地點、攤位設定（11/23，可樂先到現場建好） ----------
 var VL = null, VLE = null, VLS = null, VLWD = '一二三四五六日';
 function vlLoad() {
@@ -1286,6 +1347,7 @@ function tdItems(sh) {
     var o = C[c[0]] && C[c[0]][sh]; if (!o || !o.total) return;
     L.push({ k: 'cl', grp: 1, n: c[1], done: o.left === 0, d: o.left === 0 ? '✓ 做完了' : '還有 ' + o.left + ' / ' + o.total, go: "CLK='" + c[0] + "';CLS='" + sh + "';go('cln')" });
   });
+  if (!am) L.push({ k: 'ws', n: '報廢登記', s: '收班前登記今天倒掉的（12H 茶、到期的）', done: !!P.ws, d: ok(P.ws), go: "go('ws')" });   // 11/24
   L.push({ k: 'rv', n: sh + '營收報表', s: am ? '16:30 算完錢填' : '收班算完錢填', done: !!(P.rv && P.rv[sh]), d: ok(P.rv && P.rv[sh]), go: "RVK='" + (am ? 'am' : 'pm') + "';RVD='';go('rv')" });
   return L;
 }
