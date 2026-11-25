@@ -1905,7 +1905,7 @@ function qForm(k) {
   $('qf').innerHTML = h; if (k !== 'net') { $('qr').innerHTML = ''; $('qf').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 }
 // ---------- 11/25 可樂發布開會內容（以前只能 LINE #開會內容） ----------
-var MG = null, MGH = null;
+var MG = null, MGH = null, MGF = null;
 function mgYm(o) { var d = new Date(); d = new Date(d.getFullYear(), d.getMonth() + o, 1); return String(d.getFullYear()).slice(2) + ('0' + (d.getMonth() + 1)).slice(-2); }
 function mgRender() {
   var x = $('mgT') ? $('mgT').value : '', ch = function (on, lab, js) { return '<span class="chip' + (on ? ' f' : '') + '" onclick="' + js + '">' + lab + '</span>'; };
@@ -1915,11 +1915,42 @@ function mgRender() {
     '<div style="font-size:13px;color:var(--mu);margin-top:6px">哪個月</div>' + [-1, 0, 1].map(function (o) { var y = mgYm(o); return ch(MG.ym === y, +y.slice(2) + ' 月', 'mgSet(\'ym\',\'' + y + '\')'); }).join('') +
     '<div style="font-size:13px;color:var(--mu);margin-top:6px">內容（整份貼上）</div><textarea id="mgT" style="height:200px;font-size:14px" placeholder="一、本月業績…&#10;二、清潔重點…"></textarea>' +
     '<div style="margin-top:4px">' + ch(!MG.add, '整份換新', 'mgSet(\'add\',0)') + ch(MG.add, '接在後面', 'mgSet(\'add\',1)') + '</div>' +
-    '<button class="btn" style="margin-top:8px" onclick="mgSend()">發布到員工 App</button><div id="mgR"></div><div style="font-size:12px;color:var(--mu);margin-top:8px">' + hv + '</div>';
+    '<button class="btn" style="margin-top:8px" onclick="mgSend()">發布到員工 App</button><div id="mgR"></div>' +
+    '<div style="font-size:13px;color:var(--mu);margin-top:12px">📎 附件（新品照片、PDF）・跟著上面選的店和月份</div>' +
+    (MGF === null ? '<div style="font-size:13px;color:var(--mu)">讀取中…</div>' : MGF.map(function (f) { return '<div class="pl"><span>' + (f.t === 'img' ? '🖼 ' : f.t === 'pdf' ? '📄 ' : '📎 ') + esc(f.n) + '</span><span class="chip" style="color:#c0392b" onclick="mgDel(\'' + f.id + '\')">刪除</span></div>'; }).join('') || '<div style="font-size:13px;color:var(--mu)">還沒有附件</div>') +
+    '<label class="chip" style="display:inline-block;margin-top:6px">＋ 加照片／檔案<input type="file" multiple accept="image/*,application/pdf,.pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx" style="display:none" onchange="mgUp(this.files)"></label><div id="mgU" style="font-size:13px;color:var(--mu)"></div>' +
+    '<div style="font-size:12px;color:var(--mu);margin-top:8px"><div style="font-size:12px;color:var(--mu);margin-top:8px">' + hv + '</div>';
   $('mgT').value = x;
 }
-function mgSet(k, v) { MG[k] = v; mgRender(); }
-function mgHave() { paPost('mtls', {}).then(function (j) { if (j.ok) { MGH = j.have; if ($('mgb')) mgRender(); } }).catch(function () { }); }
+function mgSet(k, v) { MG[k] = v; if (k !== 'add') MGF = null; mgRender(); if (k !== 'add') mgHave(); }
+function mgHave() { paPost('mtls', { st: MG.st, ym: MG.ym }).then(function (j) { if (j.ok) { MGH = j.have; MGF = j.files || []; if ($('mgb')) mgRender(); } }).catch(function () { MGF = MGF || []; }); }
+function mgB64(file) {   // 照片縮到 1600px 再傳；其他檔案原樣
+  return new Promise(function (ok, no) {
+    var rd = new FileReader(); rd.onerror = no;
+    if (!/^image\//.test(file.type) || /gif/.test(file.type)) { rd.onload = function () { ok({ b: rd.result, m: file.type || 'application/octet-stream', n: file.name }); }; rd.readAsDataURL(file); return; }
+    rd.onload = function () { var im = new Image(); im.onerror = function () { ok({ b: rd.result, m: file.type, n: file.name }); }; im.onload = function () {
+      var k = Math.min(1, 1600 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); ok({ b: c.toDataURL('image/jpeg', 0.85), m: 'image/jpeg', n: file.name.replace(/\.\w+$/, '') + '.jpg' }); }; im.src = rd.result; };
+    rd.readAsDataURL(file);
+  });
+}
+function mgUp(fs) {
+  fs = [].slice.call(fs || []); if (!fs.length) return;
+  var big = fs.filter(function (f) { return f.size > 20e6 && !/^image\//.test(f.type); }); if (big.length) { bar(big[0].name + ' 超過 20MB，請先壓縮', 4000); return; }
+  var st = MG.st, ym = MG.ym, i = 0;
+  (function next() {
+    if (i >= fs.length) { $('mgU').textContent = ''; bar('附件已上傳', 1500); return; }
+    var f = fs[i++]; $('mgU').textContent = '上傳中 ' + i + '／' + fs.length + '：' + f.name;
+    mgB64(f).then(function (o) { return paPost('mtfile', { st: st, ym: ym, name: o.n, mime: o.m, b64: o.b }); }).then(function (j) {
+      if (!j.ok) { $('mgU').textContent = ''; bar(j.err || '上傳失敗', 3000); return; }
+      if (MG.st === st && MG.ym === ym) { MGF = j.files; mgRender(); } next();
+    }).catch(function () { $('mgU').textContent = ''; bar('網路不穩，' + f.name + ' 沒傳上去', 3000); });
+  })();
+}
+function mgDel(id) {
+  if (!confirm('刪除這個附件？員工那邊也會看不到')) return;
+  paPost('mtfdel', { st: MG.st, ym: MG.ym, id: id }).then(function (j) { if (j.ok) { MGF = j.files; mgRender(); } else bar(j.err || '失敗', 2500); }).catch(function () { bar('網路不穩，請再按一次', 2500); });
+}
 function mgSend() {
   var x = $('mgT').value.trim(); if (!x) { bar('請先貼內容', 2000); return; }
   var sn = MG.st === '兩店' ? '兩店' : MG.st, mo = +MG.ym.slice(2) + ' 月';
@@ -2084,6 +2115,11 @@ function cp(t) { try { navigator.clipboard.writeText(t).then(function () { bar('
 // ---------- 開會內容（可樂私訊機器人 #開會內容 放上來） ----------
 var MTI = 0;
 function ymTxt(ym) { var p = ym.split('/'); return +p[0] + ' 年 ' + +p[1] + ' 月'; }
+function mtFile(f) {   // 11/25 開會附件：照片直接顯示、PDF／檔案用連結打開
+  var u = 'https://drive.google.com/file/d/' + encodeURIComponent(f.id) + '/view';
+  if (f.t === 'img') return '<a href="' + u + '" target="_blank"><img src="https://drive.google.com/thumbnail?id=' + encodeURIComponent(f.id) + '&sz=w1600" style="width:100%;border-radius:10px;margin:6px 0;display:block" alt="' + esc(f.n) + '"></a>';
+  return '<div class="pl"><span>' + (f.t === 'pdf' ? '📄 ' : '📎 ') + esc(f.n) + '</span><a class="chip f" href="' + u + '" target="_blank">打開 ›</a></div>';
+}
 function mtRender() {
   var L = (DATA && DATA.mtg) || [];
   $('mtc').style.display = L.length ? '' : 'none';
@@ -2092,7 +2128,8 @@ function mtRender() {
   $('mtt').innerHTML = ymTxt(L[0].ym) + (seen < L[0].ym + L[0].at ? '<span class="new">新</span>' : '');
   if (MTI >= L.length) MTI = 0;
   $('mts').textContent = (DATA.store || '') + '｜' + L[MTI].at + ' 更新';
-  $('mtb').innerHTML = '<div class="mchip">' + L.map(function (x, i) { return '<span class="' + (i === MTI ? 'on' : '') + '" onclick="MTI=' + i + ';mtRender()">' + ymTxt(x.ym).replace(/^\d+ 年 /, '') + '</span>'; }).join('') + '</div><div class="mtx">' + esc(L[MTI].x) + '</div>';
+  var F = L[MTI].f || [];
+  $('mtb').innerHTML = (L.length > 1 ? '<div style="font-size:13px;color:var(--mu);padding:12px 16px 0">看哪個月（點了換）</div>' : '') + '<div class="mchip">' + L.map(function (x, i) { return '<span class="' + (i === MTI ? 'on' : '') + '" onclick="MTI=' + i + ';mtRender()">' + ymTxt(x.ym).replace(/^\d+ 年 /, '') + '</span>'; }).join('') + '</div>' + (L[MTI].x ? '<div class="mtx">' + esc(L[MTI].x) + '</div>' : '') + (F.length ? '<div class="sec2">📎 附件</div><div class="card">' + F.map(mtFile).join('') + '</div>' : '');
   if (CUR === 'mt' && MTI === 0) LS('mt_seen_' + U.s, L[0].ym + L[0].at);
 }
 // ---------- 公告簽名（沿用原本簽名頁，從 App 打開直接帶本人） ----------
