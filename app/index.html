@@ -169,8 +169,8 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
   <div class="sec2">🗓️ 班表・飲品</div><div class="card"><div style="display:flex;gap:8px"><select id="qSt" style="margin:0"><option>熱河</option><option>鳳山</option></select><input id="qDay" type="date" style="margin:0;min-width:0"></div>
     <span class="chip" onclick="qRun('#今日班表\n'+$('qSt').value,$('qSt').value+'今日班表')">今日班表</span><span class="chip" onclick="qSched()">查那天班表</span>
     <div style="display:flex;gap:8px;margin-top:10px"><input id="qDrink" placeholder="飲品名，例：覺醒奶茶" style="margin:0"><span class="chip" style="flex:0 0 auto;margin:0;padding:10px" onclick="qDrink('#查飲品比例','比例')">比例</span><span class="chip" style="flex:0 0 auto;margin:0;padding:10px" onclick="qDrink('#飲品成本','成本')">成本</span></div></div>
-  <div class="sec2">🧽 SGS 稽核</div><div class="card"><div style="display:flex;gap:8px"><select id="sqSt" style="margin:0"><option>熱河</option><option>鳳山</option></select><input id="sqD" type="date" style="margin:0;min-width:0"><select id="sqSl" style="margin:0;width:auto"><option>上午</option><option selected>下午</option></select></div>
-    <span class="chip f" onclick="sqOpen()">開新一輪 SGS</span><span style="font-size:12px;color:var(--mu)">　開了會通知那間店的幹部群，員工 App 首頁就會出現清單</span></div>
+  <div style="display:none"><!-- 11/25 可樂：查詢頁先不顯示 SGS，用機器人開 --><div class="sec2">🧽 SGS 稽核</div><div class="card"><div style="display:flex;gap:8px"><select id="sqSt" style="margin:0"><option>熱河</option><option>鳳山</option></select><input id="sqD" type="date" style="margin:0;min-width:0"><select id="sqSl" style="margin:0;width:auto"><option>上午</option><option selected>下午</option></select></div>
+    <span class="chip f" onclick="sqOpen()">開新一輪 SGS</span><span style="font-size:12px;color:var(--mu)">　開了會通知那間店的幹部群，員工 App 首頁就會出現清單</span></div></div>
   <div class="sec2" id="qhh"></div><div class="card" id="qh" style="display:none"></div>
   <div style="height:20px"></div></div>
 <div class="scr" id="s2"><div class="hd"><div class="s">老闆・點日期兩間一起換</div><h2>🗓️ 兩店班表</h2></div><div id="s2b"></div><div style="height:20px"></div></div>
@@ -448,7 +448,6 @@ function sqStat(P) {
 }
 function sqDay(P) { var d = P.d; return (+d.slice(4, 6)) + '/' + (+d.slice(6)) + '（' + WK[new Date(+d.slice(0, 4), d.slice(4, 6) - 1, +d.slice(6)).getDay()] + '）'; }   // 11/15 上午／下午不給員工看
 function sqHome() {
-  if (BOSS()) { $('sqt').style.display = 'none'; $('sqhc').style.display = 'none'; return; }   // 11/25 可樂：首頁不顯示 SGS（看機器人就好）
   var want = U.s + U.n;
   api('op=sgs&' + sqQ()).then(function (j) {
     if (want !== U.s + U.n) return;
