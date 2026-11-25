@@ -159,7 +159,7 @@ textarea{width:100%;height:150px;border:1px solid #e0d2bf;border-radius:10px;pad
 <div class="scr" id="q"><div class="hd"><div class="s">老闆</div><h2>🔍 查詢</h2></div>
   <div class="sec2">最常用</div><div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
     <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('exp')">💸 打支出</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('net')">💰 看淨利</span>
-    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('pub')">📅 發班表</span><span class="chip f" style="margin:0;text-align:center;padding:10px;background:#c0392b;border-color:#c0392b" onclick="qForm('hb')">🔴 登記紅榜</span><span class="chip f" style="margin:0;text-align:center;padding:10px;grid-column:1/3" onclick="qForm('pa')">⏰ 考勤：打卡申覆・遲到早退</span><span class="chip f" style="margin:0;text-align:center;padding:10px;grid-column:1/3" onclick="qForm('vl')">🧭 拜訪地點・攤位名單</span></div><div style="text-align:right;margin-top:-4px"><span class="chip" onclick="pushTest()">🔔 測試我的手機通知</span></div>
+    <span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('waste')">📉 耗損</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('emp')">📝 補員工資料</span><span class="chip f" style="margin:0;text-align:center;padding:10px" onclick="qForm('pub')">📅 發班表</span><span class="chip f" style="margin:0;text-align:center;padding:10px;background:#c0392b;border-color:#c0392b" onclick="qForm('hb')">🔴 登記紅榜</span><span class="chip f" style="margin:0;text-align:center;padding:10px;grid-column:1/3" onclick="qForm('pa')">⏰ 考勤：打卡申覆・遲到早退</span><span class="chip f" style="margin:0;text-align:center;padding:10px;grid-column:1/3" onclick="qForm('vl')">🧭 拜訪地點・攤位名單</span><span class="chip f" style="margin:0;text-align:center;padding:10px;grid-column:1/3" onclick="qForm('mtg')">📋 發布開會內容</span></div><div style="text-align:right;margin-top:-4px"><span class="chip" onclick="pushTest()">🔔 測試我的手機通知</span></div>
   <div id="qf"></div><div id="qr"></div>
   <div class="sec2">👤 查人</div><div class="card"><div id="qps"></div>
     <span class="chip" onclick="qP('#查員工','員工資料')">員工資料</span><span class="chip" onclick="qP('#查薪資','薪資')">薪資</span><span class="chip" onclick="qP('#查欠時數','欠時數')">欠時數</span><span class="chip" onclick="qP('#查借支','借支')">借支</span><span class="chip" onclick="qP('#查考核','考核')">考核</span><span class="chip" onclick="qP('#查紅黑榜','紅黑榜')">紅黑榜</span><span class="chip" onclick="qP('#查獎金','獎金')">獎金</span><span class="chip" onclick="qP('#查禮金','禮金')">禮金</span><span class="chip" onclick="qP('#查代班','代班')">代班</span></div>
@@ -1882,6 +1882,7 @@ function qForm(k) {
   var h = '';
   if (k === 'net') { qRun('#更新財務 ' + ym(0), ym(0) + ' 淨利'); h = '<div class="card">看別的月份：<span class="chip" onclick="qRun(\'#更新財務 ' + ym(1) + '\',\'' + ym(1) + ' 淨利\')">' + ym(1) + '</span><span class="chip" onclick="qRun(\'#更新財務 ' + ym(2) + '\',\'' + ym(2) + ' 淨利\')">' + ym(2) + '</span></div>'; }
   else if (k === 'hb') { h = '<div class="card" id="hbf"><b>🔴 登記紅榜</b><div style="color:var(--mu)">載入中…</div></div>'; HB = null; HBF = { d: 0, dv: '', code: '', ns: {}, st: U.s === 'fs' ? '鳳山' : '熱河', amt: '', t: '' }; setTimeout(hbLoad, 0); }
+  else if (k === 'mtg') { MG = { st: U.s === 'fs' ? '鳳山中山' : '熱河', ym: ym(0), add: 0 }; h = '<div class="card" id="mgb"></div>'; setTimeout(function () { mgRender(); mgHave(); }, 0); }
   else if (k === 'vl') { VLE = null; VLS = null; h = '<div id="vlb"></div>'; setTimeout(vlLoad, 0); }
   else if (k === 'pa' && PAK === 'at') h = paTabs() + '<div class="card"><b>⏰ 登記遲到早退</b><p style="font-size:13px;color:var(--mu);margin:4px 0 8px">一行一筆：姓名 日期 遲到/早退 分鐘（例：吳秉諭 11/9 遲到 74）。同人同天已經記過的會自動跳過</p><textarea id="atT" style="height:170px;font-size:14px" placeholder="吳秉諭 11/9 遲到 74&#10;羅佳妤 11/13 遲到 58"></textarea><button class="btn" style="margin-top:8px" onclick="atCheck()">檢查</button><div id="atC"></div></div>';
   else if (k === 'pa') { var dd = new Date(Date.now() + 3 * 864e5), dv = dd.getFullYear() + '-' + ('0' + (dd.getMonth() + 1)).slice(-2) + '-' + ('0' + dd.getDate()).slice(-2);
@@ -1902,6 +1903,33 @@ function qForm(k) {
     window.__EF = F;
   }
   $('qf').innerHTML = h; if (k !== 'net') { $('qr').innerHTML = ''; $('qf').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+}
+// ---------- 11/25 可樂發布開會內容（以前只能 LINE #開會內容） ----------
+var MG = null, MGH = null;
+function mgYm(o) { var d = new Date(); d = new Date(d.getFullYear(), d.getMonth() + o, 1); return String(d.getFullYear()).slice(2) + ('0' + (d.getMonth() + 1)).slice(-2); }
+function mgRender() {
+  var x = $('mgT') ? $('mgT').value : '', ch = function (on, lab, js) { return '<span class="chip' + (on ? ' f' : '') + '" onclick="' + js + '">' + lab + '</span>'; };
+  var hv = MGH ? '已放：熱河 ' + (MGH['熱河'].map(function (y) { return +y.slice(5) + '月'; }).join('、') || '無') + '｜鳳山 ' + (MGH['鳳山中山'].map(function (y) { return +y.slice(5) + '月'; }).join('、') || '無') : '讀取已放的月份…';
+  $('mgb').innerHTML = '<b>📋 發布開會內容</b><p style="font-size:13px;color:var(--mu);margin:4px 0 6px">發布後員工 App 首頁「📋 開會內容」馬上看得到</p>' +
+    '<div style="font-size:13px;color:var(--mu)">哪間店</div>' + [['熱河', '熱河'], ['鳳山中山', '鳳山中山'], ['兩店', '兩店']].map(function (o) { return ch(MG.st === o[0], o[1], 'mgSet(\'st\',\'' + o[0] + '\')'); }).join('') +
+    '<div style="font-size:13px;color:var(--mu);margin-top:6px">哪個月</div>' + [-1, 0, 1].map(function (o) { var y = mgYm(o); return ch(MG.ym === y, +y.slice(2) + ' 月', 'mgSet(\'ym\',\'' + y + '\')'); }).join('') +
+    '<div style="font-size:13px;color:var(--mu);margin-top:6px">內容（整份貼上）</div><textarea id="mgT" style="height:200px;font-size:14px" placeholder="一、本月業績…&#10;二、清潔重點…"></textarea>' +
+    '<div style="margin-top:4px">' + ch(!MG.add, '整份換新', 'mgSet(\'add\',0)') + ch(MG.add, '接在後面', 'mgSet(\'add\',1)') + '</div>' +
+    '<button class="btn" style="margin-top:8px" onclick="mgSend()">發布到員工 App</button><div id="mgR"></div><div style="font-size:12px;color:var(--mu);margin-top:8px">' + hv + '</div>';
+  $('mgT').value = x;
+}
+function mgSet(k, v) { MG[k] = v; mgRender(); }
+function mgHave() { paPost('mtls', {}).then(function (j) { if (j.ok) { MGH = j.have; if ($('mgb')) mgRender(); } }).catch(function () { }); }
+function mgSend() {
+  var x = $('mgT').value.trim(); if (!x) { bar('請先貼內容', 2000); return; }
+  var sn = MG.st === '兩店' ? '兩店' : MG.st, mo = +MG.ym.slice(2) + ' 月';
+  if (!confirm('發布 ' + sn + ' ' + mo + ' 開會內容？\n' + (MG.add ? '接在原本內容後面' : '會整份換掉這個月原本的內容') + '（' + x.length + ' 字）')) return;
+  $('mgR').innerHTML = '<div style="color:var(--mu);margin-top:8px">發布中…</div>';
+  paPost('mtg', { st: MG.st, ym: MG.ym, x: x, add: MG.add ? '1' : '' }).then(function (j) {
+    if (!j.ok) { $('mgR').innerHTML = '<div style="color:#c0392b;margin-top:8px">' + esc(j.err || '失敗') + '</div>'; return; }
+    if (j.have) MGH = j.have; $('mgT').value = ''; mgRender();
+    $('mgR').innerHTML = '<div style="color:#2f6b12;margin-top:8px;white-space:pre-wrap">' + esc(j.text) + '</div>';
+  }).catch(function () { $('mgR').innerHTML = '<div style="color:#c0392b;margin-top:8px">網路不穩：先看底下「已放」有沒有出現這個月，沒有再按一次</div>'; });
 }
 function qPub(back) {
   var st = $('pbS').value, d = $('pbD').value, c = '#發班表' + (st ? ' ' + st : '') + (back ? ' 撤回' : (d ? ' ' + md2(d) : ''));
