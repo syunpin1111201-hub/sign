@@ -2049,11 +2049,14 @@ function tkRender() {
   h += '</div>';
   var c = d.cup || { cup: 0, red: 0, job: 0, other: 0, holiday: 0 };
   var lines = [['杯數獎金（' + d.cupTab + '）', c.cup], ['紅榜獎金', c.red], ['拜訪獎金', c.visit], ['職務加給', c.job], ['其他獎金', c.other], ['國定假日獎金', c.holiday], ['茶譜獎金', c.tea]];
+  var cupDone = !d.sign2 && !d.snap && d.ledger && d.ledger.length && (d.gift || []).length;   // 杯數表的已經在現金簽收單簽過 → 只簽禮金
+  if (cupDone) lines = [];
+  (d.gift || []).forEach(function (g) { lines.push([g.ym + ' ' + g.cat, g.amt]); });   // 11/26 還沒簽的禮金（體檢補助等）一起簽
   var tot = 0; lines.forEach(function (x) { tot += Number(x[1]) || 0; });
-  var led = (!d.sign2 && d.ledger && d.ledger.length) ? d.ledger[0] : null, showCash = tot > 0 || !!d.sign2;   // 沒有現金就不用簽收
+  var led = (!d.sign2 && d.ledger && d.ledger.length && !(d.gift || []).length) ? d.ledger[0] : null, showCash = tot > 0 || !!d.sign2;   // 沒有現金就不用簽收
   if (showCash) {
     h += '<div class="sec">獎金簽收單（當日現金發放）</div><div class="box">';
-    lines.forEach(function (x, i) { if (i < 1 || x[1]) h += '<div class="row2"><span>' + esc(x[0]) + '</span><span>' + tkMoney(x[1]) + '</span></div>'; });
+    lines.forEach(function (x, i) { if ((i < 1 && !cupDone) || x[1]) h += '<div class="row2"><span>' + esc(x[0]) + '</span><span>' + tkMoney(x[1]) + '</span></div>'; });
     h += '<div class="row2"><span><b>合計</b></span><span class="big">' + tkMoney(tot) + '</span></div>';
     if (d.cupMissing && !d.snap) h += '<div class="warn">杯數獎金檔還沒有 ' + esc(d.cupTab) + ' 分頁</div>';
     h += '<div style="margin-top:8px">本人已領取上述獎金，共新台幣 <b>' + tkMoney(tot) + '</b> 元。</div>';
